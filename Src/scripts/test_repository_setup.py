@@ -22,6 +22,27 @@ class RepositorySetupTests(unittest.TestCase):
             if not target.startswith(("https://", "http://", "#")):
                 self.assertTrue((ROOT / target.split("#")[0]).exists(), target)
 
+    def test_member_names_match_meeting_participants_and_roles(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        meeting = (ROOT / "Docs" / "01-立项会议记录.md").read_text(encoding="utf-8")
+        member_section = readme.split("## 小组成员", 1)[1].split("## ", 1)[0]
+        names = set(re.findall(r"^\| `[^`]+` \| ([^|]+) \|", member_section, re.MULTILINE))
+        names = {name.strip() for name in names}
+        self.assertEqual(len(names), 2)
+        self.assertTrue(all("[" not in name for name in names))
+        participant_match = re.search(r"^\| 参会者 \| ([^|]+) \|", meeting, re.MULTILINE)
+        self.assertIsNotNone(participant_match)
+        participants = set(participant_match.group(1).strip().split("、"))
+        self.assertEqual(names, participants)
+        for field in ("主持人", "记录人"):
+            field_match = re.search(rf"^\| {field} \| ([^|]+) \|", meeting, re.MULTILINE)
+            self.assertIsNotNone(field_match)
+            self.assertIn(field_match.group(1).strip(), participants)
+        assignments = meeting.split("## 9. 初步人员分工", 1)[1].split("## 10.", 1)[0]
+        assigned_names = set(re.findall(r"^\| ([^|]+) \|", assignments, re.MULTILINE))
+        assigned_names = {name.strip() for name in assigned_names} - {"成员", "---"}
+        self.assertEqual(participants, assigned_names)
+
     def test_private_files_ignored_but_template_retained(self):
         for name in (".env", ".env.production", "Src/backend/local.db", "Src/frontend/node_modules/package/index.js", ".vs/cache", "MeetFlow-course-starter.zip", "软件工程实践课程教案.pdf"):
             check = subprocess.run(["git", "check-ignore", "--no-index", "-q", name], cwd=ROOT)
