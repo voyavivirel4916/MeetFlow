@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+.vite/
+coverage/
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime uploads and logs
+uploads/
+logs/
+*.log
+
+
+# Private environment variants; keep the example template
+.env.*
+!.env.example
+*.sqlite
+*.db-shm
+*.db-wal
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Local course materials and starter archive/cache
+/MeetFlow-course-starter.zip
+/MeetFlow-course-starter/
+/软件工程实践课程教案.pdf
+.vs/
