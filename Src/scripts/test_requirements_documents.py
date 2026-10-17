@@ -51,7 +51,25 @@ class RequirementsDocumentTests(unittest.TestCase):
         self.assertEqual(len(rows), 10)
         for key, rest in rows:
             self.assertIn('待', rest.split('|')[3], key)
-        self.assertIn('本稿不存在已完成的 H 项', (DOCS / '09-需求分析文档.md').read_text(encoding='utf-8-sig'))
+        self.assertIn('待验证状态', body)
+
+    def test_nabcd_is_connected_to_requirements(self):
+        body = (DOCS / '09-需求分析文档.md').read_text(encoding='utf-8-sig')
+        nabcd = (DOCS / '02-NABCD分析.md').read_text(encoding='utf-8-sig')
+        for term in ('Need', 'Approach', 'Benefit', 'Competitors', 'Delivery'):
+            self.assertIn(term, body)
+            self.assertIn(term, nabcd)
+        self.assertIn('从NABCD到需求的映射', body)
+        self.assertEqual(body.count('https://github.com/'), 1)
+
+    def test_project_voice_and_real_revision_record(self):
+        for name in ('09-需求分析文档.md', '10-AI协作记录.md', '11-人工核实说明.md'):
+            body = (DOCS / name).read_text(encoding='utf-8-sig')
+            for phrase in ('请在正式提交时填写', '本人须', '提交前须', '不得伪填', '待本人填写', '内部分析重点的可复用表达', '本次仅成功读取首页'):
+                self.assertNotIn(phrase, body)
+        record = (DOCS / '10-AI协作记录.md').read_text(encoding='utf-8-sig')
+        self.assertIn('第2轮', record)
+        self.assertIn('不能出现你对于自己的提示', record)
 
 
 if __name__ == '__main__':
