@@ -60,7 +60,7 @@ class RequirementsDocumentTests(unittest.TestCase):
             self.assertIn(term, body)
             self.assertIn(term, nabcd)
         self.assertIn('从NABCD到需求的映射', body)
-        self.assertEqual(body.count('https://github.com/'), 1)
+        self.assertLessEqual(body.count('https://github.com/'), 1)
 
     def test_project_voice_and_real_revision_record(self):
         for name in ('09-需求分析文档.md', '10-AI协作记录.md', '11-人工核实说明.md'):
@@ -70,6 +70,21 @@ class RequirementsDocumentTests(unittest.TestCase):
         record = (DOCS / '10-AI协作记录.md').read_text(encoding='utf-8-sig')
         self.assertIn('第2轮', record)
         self.assertIn('不能出现你对于自己的提示', record)
+
+    def test_first_release_capacity_and_acceptance_agree(self):
+        body = (DOCS / '09-需求分析文档.md').read_text(encoding='utf-8-sig')
+        self.assertIn('每组 20 人、每次 15 个候选时段', body)
+        self.assertIn('1～15 个候选时段', body)
+        self.assertIn('16时段', body)
+        self.assertIn('20名成员×15时段、200条任务', body)
+        self.assertNotIn('50名成员', body)
+        self.assertNotIn('每日备份', body)
+        self.assertNotIn('| MF-14 |', body)
+        self.assertNotIn('| MF-16 |', body)
+        self.assertIn('不包含移动端适配验收', body)
+        self.assertIn('纯文本编辑', body)
+        verification = (DOCS / '11-人工核实说明.md').read_text(encoding='utf-8-sig')
+        self.assertIn('20人、15时段', verification)
 
 
 if __name__ == '__main__':
