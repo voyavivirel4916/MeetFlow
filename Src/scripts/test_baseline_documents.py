@@ -91,7 +91,7 @@ class BaselineDocumentTests(unittest.TestCase):
                 key, value = payload.split(b'\0', 1)
                 metadata[key.decode()] = value.decode()
             offset += 12 + size
-        self.assertEqual(metadata['source_sha256'], hashlib.sha256(raw).hexdigest())
+        self.assertEqual(metadata['source_sha256'], hashlib.sha256(raw.replace(b'\r\n', b'\n')).hexdigest())
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ def render(font_path):
             draw.text((x + 34, y + 90 + row * 48), item, font=fonts[28], fill='#24384b')
     draw.text((900, 1190), '需求 MF / 验收 AC / 设计 TV：沿用现有实验基线', font=fonts[26], fill='#526579', anchor='mt')
     metadata = PngImagePlugin.PngInfo()
-    metadata.add_text('source_sha256', hashlib.sha256(raw).hexdigest())
+    metadata.add_text('source_sha256', hashlib.sha256(raw.replace(b'\r\n', b'\n')).hexdigest())
     canvas.save(SOURCE.with_suffix('.png'), pnginfo=metadata)
 
     quote = lambda value: json.dumps(value, ensure_ascii=False)
