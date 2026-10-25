@@ -1,75 +1,17 @@
 digraph MeetFlowMindMap {
-  graph [
-    layout=neato,
-    overlap=false,
-    splines=curved,
-    bgcolor="#F7F9FC",
-    pad="0.5",
-    outputorder=edgesfirst
-  ];
-  node [
-    shape=box,
-    style="rounded,filled",
-    fontname="Noto Sans CJK SC",
-    fontsize=15,
-    color="#B8C2D8",
-    fontcolor="#263248",
-    penwidth=1.4,
-    margin="0.16,0.10"
-  ];
-  edge [color="#A5B1C6", penwidth=1.7];
-
-  root [label="MeetFlow（凑时）\n课程小组协作排期与会议闭环平台", pos="0,0!", width=3.25, height=0.85, fillcolor="#315EFB", color="#315EFB", fontcolor="white", fontsize=19];
-
-  users [label="用户与角色", pos="-5.3,3.8!", fillcolor="#E8F0FF", color="#5B83F5"];
-  pain [label="核心痛点", pos="0,5.3!", fillcolor="#FFF0E5", color="#F39A52"];
-  flow [label="核心流程", pos="5.3,3.8!", fillcolor="#E6F8F1", color="#43A983"];
-  modules [label="功能模块", pos="5.3,-3.8!", fillcolor="#F0EBFF", color="#8267D9"];
-  highlights [label="项目亮点", pos="0,-5.3!", fillcolor="#FFF6D9", color="#D6A82D"];
-  scope [label="项目边界", pos="-5.3,-3.8!", fillcolor="#FDEBEC", color="#DB6670"];
-
-  root -> users;
-  root -> pain;
-  root -> flow;
-  root -> modules;
-  root -> highlights;
-  root -> scope;
-
-  u1 [label="普通成员", pos="-8.2,5.2!", fillcolor="white"];
-  u2 [label="小组负责人", pos="-8.4,3.8!", fillcolor="white"];
-  u3 [label="系统管理员", pos="-8.2,2.4!", fillcolor="white"];
-  users -> u1; users -> u2; users -> u3;
-
-  p1 [label="群聊询问效率低", pos="-2.8,7.2!", fillcolor="white"];
-  p2 [label="关键成员权重缺失", pos="-0.9,8.0!", fillcolor="white"];
-  p3 [label="时间冲突不直观", pos="1.2,8.0!", fillcolor="white"];
-  p4 [label="会后任务难追踪", pos="3.0,7.2!", fillcolor="white"];
-  pain -> p1; pain -> p2; pain -> p3; pain -> p4;
-
-  f1 [label="创建/加入小组", pos="8.0,6.3!", fillcolor="white"];
-  f2 [label="发起排期", pos="9.3,5.1!", fillcolor="white"];
-  f3 [label="成员填写", pos="9.8,3.7!", fillcolor="white"];
-  f4 [label="推荐并确认", pos="9.3,2.3!", fillcolor="white"];
-  f5 [label="纪要与任务", pos="8.0,1.1!", fillcolor="white"];
-  flow -> f1; flow -> f2; flow -> f3; flow -> f4; flow -> f5;
-
-  m1 [label="账户与权限", pos="8.0,-1.1!", fillcolor="white"];
-  m2 [label="排期与投票", pos="9.3,-2.3!", fillcolor="white"];
-  m3 [label="矩阵与热力图", pos="9.8,-3.7!", fillcolor="white"];
-  m4 [label="推荐与解释", pos="9.3,-5.1!", fillcolor="white"];
-  m5 [label="会议与任务", pos="8.0,-6.3!", fillcolor="white"];
-  modules -> m1; modules -> m2; modules -> m3; modules -> m4; modules -> m5;
-
-  h1 [label="必到成员优先", pos="-3.0,-7.2!", fillcolor="white"];
-  h2 [label="推荐结果可解释", pos="-1.0,-8.0!", fillcolor="white"];
-  h3 [label="时间冲突可视化", pos="1.2,-8.0!", fillcolor="white"];
-  h4 [label="排期到任务闭环", pos="3.2,-7.2!", fillcolor="white"];
-  highlights -> h1; highlights -> h2; highlights -> h3; highlights -> h4;
-
-  s1 [label="不做即时聊天", pos="-8.0,-1.1!", fillcolor="white"];
-  s2 [label="不接教务系统", pos="-9.3,-2.3!", fillcolor="white"];
-  s3 [label="不依赖大模型", pos="-9.8,-3.7!", fillcolor="white"];
-  s4 [label="不做第三方推送", pos="-9.3,-5.1!", fillcolor="white"];
-  s5 [label="先完成Web闭环", pos="-8.0,-6.3!", fillcolor="white"];
-  scope -> s1; scope -> s2; scope -> s3; scope -> s4; scope -> s5;
+  graph [rankdir=LR, bgcolor="#f3f6fb"];
+  node [shape=box, style="rounded,filled", fillcolor="white", fontname="Microsoft YaHei"];
+  root [label="MeetFlow（凑时）"];
+  branch0 [label="用户与权限\n负责人：排期、确认、纪要、指派\n普通成员：本人填写、任务进度\n组内可见，服务端验证对象归属"];
+  root -> branch0;
+  branch1 [label="排期与推荐\n候选时间、必到成员、三态填写\n发布后冻结，截止后禁止提交\n时间矩阵、稳定排序、冲突解释"];
+  root -> branch1;
+  branch2 [label="会议与任务\n唯一确认、风险警告与选择理由\n纯文本议程与纪要\n任务列表、执行人、截止与三态"];
+  root -> branch2;
+  branch3 [label="本地运行与验收\nVue + FastAPI + SQLite\n桌面单实例，20人、15时段\n四账号闭环、权限、并发与恢复"];
+  root -> branch3;
+  branch4 [label="两人协作\n马若曦：统筹、主要开发、集成\n陈明强：填写页、结果页、汇报\n36项任务，验证后提交并双端同步"];
+  root -> branch4;
+  branch5 [label="边界与后续\nP1可选：本人首页汇总\n公开部署与真实反馈：后续交付\n手机、统计图、提醒、看板：不纳入"];
+  root -> branch5;
 }

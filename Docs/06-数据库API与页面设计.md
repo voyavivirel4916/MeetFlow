@@ -1,264 +1,70 @@
-# MeetFlow 数据库、API 与页面设计
+# MeetFlow 系统设计速查
 
-## 1. 数据库设计
+整理基线：B1｜2026-10-25。完整设计统一维护在[系统设计文档 V1.0](12-系统设计文档.md)，对应[需求分析 V1.2](09-需求分析文档.md)。本页用于开发导航，不重复维护全部字段、接口和算法定义。
 
-字段名称建议使用 `snake_case`，主键建议使用 UUID 或整数；全项目统一即可。所有业务表建议包含 `created_at` 和 `updated_at`。
+## 1. 架构与运行
 
-### 1.1 users 用户表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 用户唯一标识 |
-| username | 字符串 | 唯一、非空 |
-| email | 字符串 | 唯一、非空 |
-| password_hash | 字符串 | 非空，不得保存明文密码 |
-| display_name | 字符串 | 显示名称 |
-| avatar_url | 字符串 | 可空 |
-| is_active | 布尔 | 默认 true |
-| is_admin | 布尔 | 默认 false |
-
-### 1.2 groups 小组表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 小组唯一标识 |
-| name | 字符串 | 非空 |
-| description | 文本 | 可空 |
-| owner_id | 外键 | 指向 users |
-| invite_code | 字符串 | 唯一、非空 |
-| invite_enabled | 布尔 | 默认 true |
-
-### 1.3 group_members 小组成员表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 成员关系标识 |
-| group_id | 外键 | 指向 groups |
-| user_id | 外键 | 指向 users |
-| role | 枚举 | OWNER、MANAGER、MEMBER |
-| joined_at | 时间 | 加入时间 |
-
-唯一约束：`(group_id, user_id)`。
-
-### 1.4 scheduling_polls 排期表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 排期唯一标识 |
-| group_id | 外键 | 所属小组 |
-| creator_id | 外键 | 发起人 |
-| title | 字符串 | 非空 |
-| description | 文本 | 可空 |
-| location | 字符串 | 可空 |
-| response_deadline | 时间 | 填写截止时间 |
-| status | 枚举 | DRAFT、OPEN、CLOSED、CONFIRMED、CANCELLED |
-
-### 1.5 poll_participants 排期参与者表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 参与关系标识 |
-| poll_id | 外键 | 指向 scheduling_polls |
-| user_id | 外键 | 指向 users |
-| importance | 枚举 | REQUIRED、NORMAL |
-| submitted_at | 时间 | 可空，最后完整提交时间 |
-
-唯一约束：`(poll_id, user_id)`。
-
-### 1.6 poll_time_slots 候选时间段表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 时间段标识 |
-| poll_id | 外键 | 所属排期 |
-| start_at | 时间 | 非空 |
-| end_at | 时间 | 非空且晚于 start_at |
-
-唯一约束：`(poll_id, start_at, end_at)`。
-
-### 1.7 availability_votes 空闲状态表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 投票标识 |
-| poll_id | 外键 | 冗余但便于查询，可由实现决定是否保留 |
-| slot_id | 外键 | 指向 poll_time_slots |
-| user_id | 外键 | 指向 users |
-| availability | 枚举 | AVAILABLE、MAYBE、UNAVAILABLE |
-| note | 字符串 | 可空，简短说明 |
-
-唯一约束：`(slot_id, user_id)`。
-
-### 1.8 meetings 会议表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 会议标识 |
-| group_id | 外键 | 所属小组 |
-| poll_id | 外键 | 来源排期，可空 |
-| selected_slot_id | 外键 | 已确认候选时间，可空 |
-| title | 字符串 | 非空 |
-| start_at | 时间 | 非空 |
-| end_at | 时间 | 非空 |
-| location | 字符串 | 可空 |
-| agenda | 文本 | 可空 |
-| minutes | 文本 | 可空 |
-| status | 枚举 | SCHEDULED、IN_PROGRESS、FINISHED、CANCELLED |
-
-### 1.9 tasks 任务表
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 任务标识 |
-| group_id | 外键 | 所属小组 |
-| meeting_id | 外键 | 来源会议，可空 |
-| creator_id | 外键 | 创建人 |
-| assignee_id | 外键 | 负责人，可空 |
-| title | 字符串 | 非空 |
-| description | 文本 | 可空 |
-| due_at | 时间 | 可空 |
-| status | 枚举 | TODO、IN_PROGRESS、DONE、CANCELLED |
-| completed_at | 时间 | 完成时填写 |
-
-### 1.10 notifications 站内提醒表（P2）
-
-| 字段 | 类型 | 约束/说明 |
-| --- | --- | --- |
-| id | 主键 | 提醒标识 |
-| user_id | 外键 | 接收人 |
-| type | 字符串 | 提醒类型 |
-| title | 字符串 | 标题 |
-| content | 文本 | 内容 |
-| related_type | 字符串 | 关联对象类型 |
-| related_id | 字符串 | 关联对象ID |
-| is_read | 布尔 | 默认 false |
-
-## 2. 关键索引与约束
-
-- 为所有外键建立索引；
-- 为 `scheduling_polls(group_id, status)` 建立组合索引；
-- 为 `tasks(assignee_id, status, due_at)` 建立组合索引；
-- 为 `notifications(user_id, is_read)` 建立组合索引；
-- 数据库层和服务层都要验证时间范围；
-- 删除小组、排期或用户前必须定义关联数据处理策略；
-- 不允许客户端直接提交最终推荐分数，分数只能由后端计算。
-
-## 3. API 设计
-
-统一前缀建议为 `/api/v1`。成功响应返回明确数据模型，错误响应至少包含 `code`、`message` 和可选 `details`。
-
-### 3.1 认证与用户
-
-| 方法 | 路径 | 功能 |
-| --- | --- | --- |
-| POST | `/auth/register` | 注册 |
-| POST | `/auth/login` | 登录 |
-| POST | `/auth/logout` | 退出或失效当前会话 |
-| GET | `/users/me` | 当前用户信息 |
-| PATCH | `/users/me` | 修改个人资料 |
-
-### 3.2 小组
-
-| 方法 | 路径 | 功能 |
-| --- | --- | --- |
-| POST | `/groups` | 创建小组 |
-| GET | `/groups` | 获取我的小组 |
-| GET | `/groups/{group_id}` | 获取小组详情 |
-| PATCH | `/groups/{group_id}` | 修改小组信息 |
-| POST | `/groups/join` | 使用邀请码加入 |
-| POST | `/groups/{group_id}/invite-code/reset` | 更新邀请码 |
-| GET | `/groups/{group_id}/members` | 获取成员列表 |
-| PATCH | `/groups/{group_id}/members/{user_id}` | 修改成员角色 |
-| DELETE | `/groups/{group_id}/members/{user_id}` | 移除成员或退出 |
-
-### 3.3 排期、时间段与投票
-
-| 方法 | 路径 | 功能 |
-| --- | --- | --- |
-| POST | `/groups/{group_id}/polls` | 创建排期 |
-| GET | `/groups/{group_id}/polls` | 获取小组排期列表 |
-| GET | `/polls/{poll_id}` | 获取排期详情 |
-| PATCH | `/polls/{poll_id}` | 修改草稿或允许修改的字段 |
-| POST | `/polls/{poll_id}/open` | 开启填写 |
-| POST | `/polls/{poll_id}/close` | 提前截止 |
-| POST | `/polls/{poll_id}/cancel` | 取消排期 |
-| POST | `/polls/{poll_id}/slots` | 添加候选时间段 |
-| PATCH | `/polls/{poll_id}/slots/{slot_id}` | 修改候选时间段 |
-| DELETE | `/polls/{poll_id}/slots/{slot_id}` | 删除候选时间段 |
-| PUT | `/polls/{poll_id}/participants` | 设置参与者和重要程度 |
-| PUT | `/polls/{poll_id}/votes/me` | 保存当前用户全部空闲状态 |
-| GET | `/polls/{poll_id}/matrix` | 获取时间矩阵 |
-| GET | `/polls/{poll_id}/recommendations` | 获取推荐排名与解释 |
-| POST | `/polls/{poll_id}/confirm` | 确认候选时间并生成会议 |
-
-### 3.4 会议与任务
-
-| 方法 | 路径 | 功能 |
-| --- | --- | --- |
-| GET | `/groups/{group_id}/meetings` | 获取小组会议列表 |
-| GET | `/meetings/{meeting_id}` | 获取会议详情 |
-| PATCH | `/meetings/{meeting_id}` | 修改议程、地点或纪要 |
-| POST | `/meetings/{meeting_id}/finish` | 标记会议结束 |
-| POST | `/meetings/{meeting_id}/tasks` | 从会议创建任务 |
-| GET | `/groups/{group_id}/tasks` | 获取小组任务 |
-| GET | `/tasks/mine` | 获取个人待办 |
-| GET | `/tasks/{task_id}` | 获取任务详情 |
-| PATCH | `/tasks/{task_id}` | 修改任务内容或状态 |
-| DELETE | `/tasks/{task_id}` | 取消或删除任务，策略由实现统一 |
-
-### 3.5 工作台
-
-| 方法 | 路径 | 功能 |
-| --- | --- | --- |
-| GET | `/dashboard` | 我的待填写排期、近期会议和临近任务 |
-| GET | `/groups/{group_id}/statistics` | 小组任务和会议统计 |
-
-## 4. 页面设计
-
-| 页面 | 核心内容 | 主要操作 |
-| --- | --- | --- |
-| 产品介绍页 | 产品价值、核心流程、入口 | 注册、登录 |
-| 登录/注册页 | 表单和校验信息 | 注册、登录 |
-| 个人工作台 | 待填写排期、近期会议、临近任务 | 快速进入对应事项 |
-| 小组列表页 | 我创建和加入的小组 | 创建、加入、进入小组 |
-| 小组详情页 | 成员、排期、会议、任务摘要 | 管理成员、发起排期 |
-| 排期编辑页 | 基本信息、候选时间、参与者 | 保存草稿、开启填写 |
-| 空闲状态填写页 | 候选时间网格 | 批量选择、保存、提交 |
-| 排期结果页 | 热力图、矩阵、排名、冲突和解释 | 刷新、确认会议 |
-| 会议详情页 | 时间、地点、议程、纪要 | 编辑纪要、结束会议 |
-| 任务看板 | 按状态分列的任务 | 创建、指派、更新状态 |
-| 个人待办页 | 我的全部任务 | 筛选、更新状态 |
-| 管理页（P2） | 用户和异常数据 | 禁用或恢复账号 |
-
-## 5. 权限矩阵
-
-| 操作 | 普通成员 | 小组管理员 | 小组负责人 | 系统管理员 |
-| --- | :---: | :---: | :---: | :---: |
-| 查看所在小组 | 是 | 是 | 是 | 按维护需要 |
-| 填写本人空闲状态 | 是 | 是 | 是 | 否 |
-| 创建排期 | 否 | 是 | 是 | 否 |
-| 设置必到成员 | 否 | 是 | 是 | 否 |
-| 确认会议 | 否 | 是 | 是 | 否 |
-| 管理成员 | 否 | 有限 | 是 | 否 |
-| 转让负责人 | 否 | 否 | 是 | 否 |
-| 更新本人任务状态 | 是 | 是 | 是 | 否 |
-| 编辑会议纪要 | 经授权 | 是 | 是 | 否 |
-| 维护系统账号 | 否 | 否 | 否 | 是 |
-
-## 6. 推荐结果示例
-
-```json
-{
-  "slot_id": "slot-01",
-  "required_unavailable_count": 0,
-  "available_count": 5,
-  "maybe_count": 1,
-  "unavailable_count": 0,
-  "unsubmitted_count": 1,
-  "score": 27,
-  "rank": 1,
-  "reason": "全部必到成员均可参加，5人有空、1人勉强参加，关键成员冲突最少。"
-}
+```mermaid
+flowchart LR
+  A[本机桌面浏览器] --> B[Vue 表单、时间矩阵、任务列表]
+  B --> C[FastAPI API 与认证入口]
+  C --> D[业务服务、权限、事务]
+  D --> E[推荐纯函数]
+  D --> F[SQLAlchemy / SQLite]
 ```
 
-推荐接口不得只返回总分，必须返回构成总分所需的统计项，方便前端解释与测试。
+模块化单体、单进程；交付时由127.0.0.1上的同一服务提供前端静态文件和`/api/v1`，无外部业务服务依赖。开发时使用前端代理；首版不部署PostgreSQL或公网服务。
+
+## 2. 已确定的设计
+
+| 决策 | 实现要点 | 完整定义 |
+| --- | --- | --- |
+| 会话 | 服务端可撤销会话；Cookie传递随机令牌，数据库存摘要；退出撤销当前会话 | 12号文档API-01、IN-01 |
+| 负责人 | 以groups.owner_id为唯一依据；成员接口导出OWNER/MEMBER，无额外管理员字段 | DT-03、DT-04 |
+| 草稿与冻结 | 草稿整体保存；发布后禁止修改时段和参与者；时间截止在服务端写事务内复核 | API-04～06、FL-02/03 |
+| 推荐 | 不落库，按当前答案计算；未填贡献、权重、排序以09号第5节为准 | IN-04、API-07 |
+| 确认会议 | 一个poll只对应一个meeting，UNIQUE(poll_id)配合事务；同slot重试返回原会议 | DT-09、API-08 |
+| 任务重试 | client_request_id防止重复创建；同一标识不同正文返回冲突 | DT-10、API-10 |
+| 并发 | SQLite短写事务、取得写锁后再检查截止和状态；写锁失败给出可恢复错误 | 12号第4.4节 |
+| 时间 | UTC毫秒整数存储；带时区RFC3339输入，响应Z后缀；页面显示北京时间 | 12号第4.2节 |
+
+必到成员未提交、全部候选冲突及非首选确认都必须解释清楚。会话到期、角色不足、对象跨组、截止、重复请求等情况不能只靠前端按钮限制。
+
+## 3. 数据对象
+
+| 对象 | 作用 | 关键关系 |
+| --- | --- | --- |
+| users | 用户与密码哈希 | 用户名、邮箱唯一 |
+| sessions | 会话有效期与撤销 | 令牌摘要唯一，关联用户 |
+| groups | 小组及邀请码 | owner_id关联用户 |
+| group_members | 小组成员 | (group_id,user_id)唯一 |
+| polls | 排期主题、截止与状态 | 属于小组 |
+| participants | 本次参与者及重要程度 | 参与者必须是组内成员 |
+| slots | 候选时间 | 同排期起止组合唯一 |
+| votes | 三态答案 | 同slot、user唯一，属于同一排期 |
+| meetings | 确认结果、理由、议程与纪要 | poll_id唯一，来源slot与小组一致 |
+| tasks | 任务执行人、截止与状态 | 执行人属于组；去重键唯一 |
+
+完整字段、外键、索引和ER图以12号第4节为准。第一版不含notifications、独立记录人授权、额外会议状态、任务CANCELLED及历史物理删除接口。
+
+## 4. API 与页面导航
+
+| 流程 | API组 | 页面 | 主要权限 |
+| --- | --- | --- | --- |
+| 注册、登录、退出 | API-01 | 登录/注册 | 本人会话 |
+| 建组、入组、邀请码 | API-02、API-03 | 小组列表与详情 | 登录用户，邀请码重置限负责人 |
+| 草稿、发布、关闭、取消 | API-04、API-05 | 排期编辑与详情 | 负责人操作，组员查看 |
+| 本人填写 | API-06 | 空闲状态填写 | 本次参与者 |
+| 矩阵、推荐、确认 | API-07、API-08 | 排期结果 | 组员查看，负责人确认 |
+| 议程与纪要 | API-09 | 会议详情 | 组员查看，负责人编辑 |
+| 任务创建、进度和待办 | API-10、API-11 | 会议任务列表、个人待办 | 负责人创建；负责人或执行人改状态 |
+| 首页汇总（P1） | API-12 | 可选工作台 | 当前用户 |
+| 健康检查 | API-13 | 无独立业务页 | 本地诊断 |
+
+接口路径、请求响应、错误码以12号第5节为准。页面可合并，例如会议详情包含纪要和任务列表；不为了文档中的模块数增加页面。
+
+## 5. 验证与维护
+
+开发时按“MF需求 → API/DT设计 → AC验收/TV验证”追踪。完整矩阵与16项TV在12号第11、12节，[07](07-验收标准与测试计划.md)提供阶段验收入口。
+
+业务范围发生变化时先更新09及03，设计变化更新12及本页相关入口，再记录到[版本与变更记录](13-版本与变更记录.md)。只改实现内部结构、且不影响需求与接口时，可在Git提交中说明，避免重复抄写技术内容。
