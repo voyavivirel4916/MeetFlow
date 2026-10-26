@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MeetFlow · 表单与状态规范</title>
+<style>
+:root{--paper:#f7f5ef;--ink:#292d50;--muted:#69616a;--brand:#454c96;--yes-fg:#48508f;--yes-bg:#e1e4f7;--maybe-fg:#866022;--maybe-bg:#fbefce;--no-fg:#954c39;--no-bg:#f8e2d8;--unknown-fg:#69616a;--unknown-bg:#efebe5;font:14px "Microsoft YaHei",system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+*{box-sizing:border-box}body{margin:0}main{max-width:1160px;margin:auto;padding:40px 30px}h1{font-size:29px;margin:12px 0}h2{font-size:18px}h3{font-size:14px}p{line-height:1.9}small,.muted{font-size:12px;color:var(--muted)}.overline{color:var(--muted);letter-spacing:2px;font-size:11px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:25px 0}button,input{font:inherit}button{cursor:pointer;border:1px solid #d7d3dd;background:#fffefa;color:var(--ink);border-radius:6px;padding:10px 15px;min-height:40px}button[aria-pressed=true],.primary{background:var(--brand);color:white;border-color:var(--brand)}button:disabled{cursor:not-allowed;opacity:.55}button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offset:3px}.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(230px,1fr);gap:23px}.panel{background:#fffefa;border:1px solid #e3ded9;border-radius:10px;padding:27px}.bar{display:flex;justify-content:space-between;align-items:center;gap:12px}label.field{display:grid;gap:10px;margin:22px 0 8px}input[type=text]{width:100%;padding:12px;border:1px solid #c9c4d3;border-radius:6px;color:var(--ink);background:#fffefa}input[aria-invalid=true]{border-color:var(--no-fg)}input:disabled{background:#efede9}.legend{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}.chip{padding:8px 12px;border-radius:5px;font-size:12px}.yes{background:var(--yes-bg);color:var(--yes-fg)}.maybe{background:var(--maybe-bg);color:var(--maybe-fg)}.no{background:var(--no-bg);color:var(--no-fg)}.unknown{background:var(--unknown-bg);color:var(--unknown-fg);border:1px dashed #aaa2a0}.options{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.options label{display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 14px;border:1px solid #cfcad8;border-radius:5px;cursor:pointer}.options input{accent-color:var(--brand)}.banner{padding:14px 16px;background:#eeedf6;border-radius:6px;font-size:12px;line-height:1.9;margin:18px 0}.banner.error{background:var(--no-bg);color:var(--no-fg)}.banner.warn{background:var(--maybe-bg);color:var(--maybe-fg)}.banner.success{background:var(--yes-bg);color:var(--yes-fg)}.banner a{color:inherit;text-decoration:underline}.error-text{font-size:12px;color:var(--no-fg);margin-top:8px}.foot{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;border-top:1px solid #e5dfdc;padding-top:20px;margin-top:24px}.skeleton{height:35px;background:#ece8e2;border-radius:5px;margin:16px 0}.empty{padding:55px 20px;text-align:center}.empty strong{display:block;font-size:18px;margin-bottom:13px}.aside-copy p{color:var(--muted);font-size:12px}.state-name{font-size:12px;color:var(--muted)}.flag{font-size:12px;color:var(--muted)}#preview[aria-busy=true] .flag{color:var(--brand)}footer{font-size:12px;color:var(--muted);margin-top:25px;line-height:1.8}@media(max-width:820px){.layout{grid-template-columns:minmax(0,1fr)}main{padding:28px 20px}}
+</style>
+</head>
+<body><main>
+<div class="overline">MEETFLOW / T04 / UI1</div><h1>从填写到保存，每一步都有回应。</h1><p class="muted">正式实现的状态参考。仅使用示例数据，不连接业务接口；切换状态查看反馈和可操作范围。</p>
+<div class="controls" aria-label="切换示例状态"></div>
+<div class="layout"><section class="panel" id="preview" aria-label="表单状态示例"></section><aside class="panel aside-copy"><h2>时间拼图的表达</h2><div class="legend"><span class="chip yes">✓ 有空</span><span class="chip maybe">~ 勉强</span><span class="chip no">× 没空</span><span class="chip unknown">· 未填写</span></div><p>未知表示尚未提交，不属于可以选择的答案。每种状态都同时保留文字和符号。</p><h3>保持一致</h3><p>加载与空数据分开；收到成功响应才显示已保存；超时先核对；不能编辑时说明原因。</p><p>浅色只承担底色和强调，主要信息使用可读正文颜色；键盘焦点始终可见。</p><h3>这一步的边界</h3><p>示例说明组件应如何回应。字段上限、截止规则、权限和事务由正式服务校验，不能以此页代替业务测试。</p></aside></div>
+<footer>说明、接口映射和各表单边界见16号规范。当前示例中的保存时间为固定演示值，不是实际业务记录。</footer>
+</main>
+<script>
+const states={ready:'就绪',loading:'加载中',empty:'空数据',error:'校验失败',denied:'无编辑权限',success:'保存成功',uncertain:'未确认保存',dirty:'未保存更改',expired:'会话过期'};
+const panel=document.querySelector('#preview');
+let scene='ready',draft='第一版需求评审',answer='yes',timer;
+document.querySelector('.controls').innerHTML=Object.entries(states).map(([key,label])=>`<button data-scene="${key}" aria-pressed="false">${label}</button>`).join('');
+document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=()=>show(b.dataset.scene,true));
+const escape=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const banners={error:'主题未通过校验，请检查填写内容。 <a href="#title" id="locate">定位到主题字段</a>',success:'已保存 · 2026-10-26 18:30（北京时间，示例）',uncertain:'尚未确认保存结果。输入已保留；请先核对已保存内容，再手动重试。',dirty:'有未保存更改，离开或刷新前请确认。',expired:'会话已过期，暂时无法保存。重新登录后核对最新数据再继续。'};
+function show(next,focus=false){
+ clearTimeout(timer);scene=next;
+ document.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.scene===scene)));
+ panel.setAttribute('aria-busy',String(scene==='loading'||scene==='saving'));
+ const heading=`<div class="bar"><h2>排期填写示例</h2><span class="state-name">${states[scene]||'提交中'}</span></div>`;
+ if(scene==='empty'||scene==='denied'){
+  panel.innerHTML=heading+`<div class="empty"><strong>${scene==='empty'?'还没有候选时间':'当前账号没有编辑权限'}</strong><p class="muted">${scene==='empty'?'等待负责人发布排期后，再来填写。':'请联系小组负责人；已有组内信息仍可只读查看。'}</p></div>`;return;
+ }
+ const blocked=['loading','saving','uncertain','expired'].includes(scene);
+ const banner=banners[scene]?`<div id="summary" class="banner ${scene==='error'?'error':scene==='success'?'success':'warn'}" role="${['error','uncertain','expired'].includes(scene)?'alert':'status'}" tabindex="-1">${banners[scene]}</div>`:'';
+ panel.innerHTML=heading+banner+`${scene==='loading'?'<p role="status">正在读取排期信息…</p><div class="skeleton" aria-hidden="true"></div>':''}<form><label class="field" for="title">排期主题（必填）</label><input id="title" type="text" required maxlength="100" value="${escape(draft)}" ${blocked?'disabled':''} ${scene==='error'?'aria-invalid="true" aria-describedby="title-error title-hint"':'aria-describedby="title-hint"'}><small id="title-hint">1～100字；这是示例字段，正式草稿与发布分开校验。</small>${scene==='error'?'<div id="title-error" class="error-text">请检查主题是否符合长度要求。</div>':''}<fieldset style="border:0;padding:0;margin:22px 0"><legend>候选一 · 你的空闲状态</legend><div class="options">${[['yes','✓ 有空'],['maybe','~ 勉强'],['no','× 没空']].map(([value,label])=>`<label><input type="radio" name="availability" value="${value}" ${value===answer?'checked':''} ${blocked?'disabled':''}>${label}</label>`).join('')}</div></fieldset><div class="foot"><span class="flag" aria-live="polite">${scene==='loading'?'正在读取…':scene==='saving'?'正在保存…':scene==='success'?'示例保存已确认':scene==='dirty'?'有未保存更改':'修改后再保存'}</span><button class="primary" type="submit" ${blocked?'disabled':''}>${scene==='saving'?'正在保存…':'保存示例'}</button></div></form>`;
+ panel.querySelector('form').onsubmit=e=>{e.preventDefault();if(blocked)return;show('saving');timer=setTimeout(()=>show('success'),700);};
+ panel.querySelector('#title').oninput=e=>{draft=e.target.value;panel.querySelector('.flag').textContent='有未保存更改';};
+ panel.querySelectorAll('[name=availability]').forEach(input=>input.onchange=()=>{answer=input.value;panel.querySelector('.flag').textContent='有未保存更改';});
+ panel.querySelector('#locate')?.addEventListener('click',e=>{e.preventDefault();panel.querySelector('#title').focus();});
+ if(focus&&scene==='error')panel.querySelector('#summary').focus();
+}
+show('ready');
+</script></body></html>

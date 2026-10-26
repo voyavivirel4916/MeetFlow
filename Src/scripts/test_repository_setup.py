@@ -44,7 +44,7 @@ class RepositorySetupTests(unittest.TestCase):
         self.assertEqual(participants, assigned_names)
 
     def test_private_files_ignored_but_template_retained(self):
-        for name in (".env", ".env.production", "Src/backend/local.db", "Src/frontend/node_modules/package/index.js", ".vs/cache", "MeetFlow-course-starter.zip", "软件工程实践课程教案.pdf"):
+        for name in (".env", ".env.production", "Src/backend/local.db", "Src/backend/data/backup.bin", "Src/frontend/node_modules/package/index.js", ".vs/cache", "MeetFlow-course-starter.zip", "软件工程实践课程教案.pdf"):
             check = subprocess.run(["git", "check-ignore", "--no-index", "-q", name], cwd=ROOT)
             self.assertEqual(check.returncode, 0, name)
         check = subprocess.run(["git", "check-ignore", "--no-index", "-q", "Src/backend/.env.example"], cwd=ROOT)

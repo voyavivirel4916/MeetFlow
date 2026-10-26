@@ -1,0 +1,7 @@
+# Runtime ranges; requirements.txt locks the tested resolution and wheel hashes.
+fastapi>=0.115,<1
+pydantic>=2.10,<3
+pydantic-settings>=2.7,<3
+uvicorn>=0.30,<1
+SQLAlchemy>=2.0,<3
+alembic>=1.14,<2
