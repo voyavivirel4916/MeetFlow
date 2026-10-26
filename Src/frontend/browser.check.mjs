@@ -173,6 +173,10 @@ try {
     const { verifyAuthUI } = await import('./auth-ui.browser.mjs');
     await verifyAuthUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
+  if (process.argv.includes('--groups')) {
+    const { verifyGroups } = await import('./groups.browser.mjs');
+    await verifyGroups(browser, origin);
+  }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
 } finally {
   if (browser) await browser.close();
