@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MeetFlow 凑时 · 交互原型</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="workspace">
+    <aside class="sidebar">
+      <a class="brand" href="#group"><span class="brand-icon">m<span>·</span></span><span>MeetFlow<small>凑时 · 小组协作</small></span></a>
+      <div class="workspace-label">我的工作空间</div>
+      <nav aria-label="主导航">
+        <a href="#group" data-nav="group"><span>▦</span>我的小组</a>
+        <a href="#draft" data-nav="draft"><span>＋</span>发起排期</a>
+        <a href="#vote" data-nav="vote"><span>▤</span>填写时间</a>
+        <a href="#results" data-nav="results"><span>◷</span>时间与推荐</a>
+        <a href="#meeting" data-nav="meeting"><span>▧</span>会议与任务</a>
+        <a href="#tasks" data-nav="tasks"><span>✓</span>我的待办</a>
+      </nav>
+      <div class="sidebar-note"><span class="live-dot"></span>让小组协作有始有终<p>从找到共同时间，<br>到完成下一件事。</p></div>
+      <div class="sidebar-foot">MeetFlow / 第一版交互原型<small>本机演示 · 无需注册</small></div>
+    </aside>
+    <div class="main-wrap">
+      <header class="topbar"><div id="breadcrumb">工作空间 / 我的小组</div><div class="profile"><span class="avatar" id="avatar">马</span><strong id="profile-name">马若曦</strong><span id="profile-role">负责人</span></div></header>
+      <section class="demo-bar" aria-label="原型演示控制">
+        <span class="demo-tag">交互原型</span><span class="demo-description">仅使用本机演示数据</span>
+        <label>模拟账号 <select id="user" aria-label="模拟账号"></select></label>
+        <label>场景 <select id="scenario" aria-label="演示场景"><option value="">选择场景…</option><option value="normal">已填写的排期</option><option value="unknown">必到成员未填写</option><option value="conflict">所有时段有冲突</option></select></label>
+        <button class="text-button" id="reset">重置演示</button>
+      </section>
+      <main id="app" tabindex="-1"></main>
+      <footer>把时间凑在一起，把事情继续做下去。<span>所有时间按本机北京时间演示</span></footer>
+    </div>
+  </div>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title"></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>
