@@ -3,6 +3,8 @@ import StagePage from './views/StagePage.vue'
 import ConnectionPage from './views/ConnectionPage.vue'
 import AuthPage from './views/AuthPage.vue'
 import SessionCheckPage from './views/SessionCheckPage.vue'
+import GroupsPage from './views/GroupsPage.vue'
+import GroupDetailPage from './views/GroupDetailPage.vue'
 import { onUnauthorized } from './api/client'
 import type { Session } from './auth/session'
 import { safeReturnPath } from './navigation'
@@ -14,8 +16,8 @@ const page = (path: string, title: string, description: string): RouteRecordRaw 
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/groups' },
-  page('/groups', '我的小组', '小组列表与创建、加入功能将在账户和小组接口完成后接入。'),
-  page('/groups/:groupId([1-9]\\d*)', '小组空间', '这里将展示成员、排期和小组任务。'),
+  { path: '/groups', component: GroupsPage, meta: { title: '我的小组', requiresAuth: true } },
+  { path: '/groups/:groupId([1-9]\\d*)', component: GroupDetailPage, meta: { title: '小组空间', requiresAuth: true } },
   page('/groups/:groupId([1-9]\\d*)/polls/new', '发起排期', '这里将设置候选时间和必到成员。'),
   page('/polls/:pollId([1-9]\\d*)/edit', '编辑排期', '草稿编辑将在排期接口完成后接入。'),
   page('/polls/:pollId([1-9]\\d*)/vote', '填写时间', '这里将填写本人在各候选时间的空闲状态。'),

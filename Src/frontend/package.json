@@ -13,7 +13,8 @@
     "check:delivery": "node browser.check.mjs --built",
     "check:auth": "node browser.check.mjs --built --auth",
     "check:auth-ui": "node browser.check.mjs --built --auth-ui",
-    "check:groups": "node browser.check.mjs --built --groups"
+    "check:groups": "node browser.check.mjs --built --groups",
+    "check:groups-ui": "node browser.check.mjs --built --groups-ui"
   },
   "dependencies": {
     "vue": "3.5.44",

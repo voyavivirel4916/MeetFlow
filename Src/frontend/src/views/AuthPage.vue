@@ -14,7 +14,7 @@ const errors = ref<FieldErrors>({}), message = ref(''), requestId = ref<string>(
 const pending = ref(false), uncertain = ref(false), dirty = ref(false), showPassword = ref(false)
 const summary = ref<HTMLElement>(), usernameInput = ref<HTMLInputElement>(), emailInput = ref<HTMLInputElement>(), passwordInput = ref<HTMLInputElement>()
 const title = computed(() => props.registering ? '创建你的账号' : '欢迎回来')
-const notice = computed(() => route.query.expired === '1' ? '登录状态已过期，请重新登录后继续。' : hint?.message || '')
+const notice = computed(() => route.query.expired === '1' ? '登录状态已过期，未提交的输入已清空。请重新登录后核对最新内容。' : hint?.message || '')
 const returnPath = () => safeReturnPath(route.query.returnTo, router)
 const links = computed(() => ({ returnTo: returnPath() }))
 const labels = { username: '用户名', email: '邮箱', password: '密码' }
@@ -24,8 +24,10 @@ function blur(field: FieldName) {
   const error = validateAuth(props.registering, fields)[field]
   errors.value = { ...errors.value, [field]: error }
 }
-function edited() {
+function edited(event: Event) {
   dirty.value = true
+  const field = (event.target as HTMLInputElement).name
+  if ((field === 'username' || field === 'email' || field === 'password') && errors.value[field] && !validateAuth(props.registering, fields)[field]) errors.value[field] = undefined
   // Keep the recovery action available until an uncertain write is reconciled.
   if (!uncertain.value) { message.value = ''; requestId.value = undefined }
 }
