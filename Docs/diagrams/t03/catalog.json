@@ -1,0 +1,12 @@
+{
+  "baseline": "需求V1.2 / 系统设计V1.0 T03勘误 / 原型P0.3",
+  "diagrams": [
+    {"id":"01-use-cases","title":"用例视图","requirements":["MF-01","MF-02","MF-03","MF-04","MF-05","MF-06","MF-07","MF-08","MF-09","MF-10","MF-11","MF-12","MF-13"]},
+    {"id":"02-poll-state","title":"排期状态图","requirements":["MF-03","MF-04","MF-05","MF-09"]},
+    {"id":"03-task-state","title":"任务状态图","requirements":["MF-11","MF-12"]},
+    {"id":"04-data-er","title":"数据实体关系图","requirements":["MF-01","MF-02","MF-03","MF-04","MF-06","MF-09","MF-10","MF-11","MF-12","MF-13"]},
+    {"id":"05-vote-sequence","title":"全量填写与保存时序图","requirements":["MF-05","MF-06","MF-13"]},
+    {"id":"06-confirm-sequence","title":"确认会议与重试时序图","requirements":["MF-08","MF-09","MF-13"]},
+    {"id":"07-task-sequence","title":"任务创建、状态与待办时序图","requirements":["MF-11","MF-12","MF-13"]}
+  ]
+}

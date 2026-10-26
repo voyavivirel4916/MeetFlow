@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> TODO: 负责人创建 / 组内执行人和未来截止
+    TODO --> IN_PROGRESS: 开始执行
+    TODO --> DONE: 直接完成
+    IN_PROGRESS --> TODO: 退回待办
+    IN_PROGRESS --> DONE: 完成
+    DONE --> TODO: 重开为待办
+    DONE --> IN_PROGRESS: 重开并继续执行
+    note right of IN_PROGRESS
+      负责人或执行人更新
+      其他成员不可代改
+      未完成时清空完成时间
+    end note
+    note right of DONE
+      首次完成记录时间
+      重复完成保留时间
+      重开清空完成时间
+      默认待办隐藏完成项
+    end note

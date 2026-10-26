@@ -1,0 +1,50 @@
+sequenceDiagram
+    actor O as 小组负责人
+    participant B as 时间拼图推荐页 UI-05
+    participant A as API-08
+    participant S as 会议服务 MD-06
+    participant R as 纯推荐函数 IN-04
+    participant D as SQLite
+    O->>B: 关闭收集后选择候选
+    B-->>O: 必到没空、未填或非首选时要求警告确认和理由
+    B->>A: slot_id、acknowledged、selection_reason
+    A->>S: 已认证actor与确认参数
+    S->>D: BEGIN IMMEDIATE；复查组关系、负责人、排期与原会议
+    alt 越权
+      S->>D: ROLLBACK
+      S-->>A: 404 / 403
+    else 已存在会议
+      S->>D: 结束只读分支，释放事务
+      alt 选择原slot
+        S-->>A: 200 原MeetingOut
+      else 选择其他slot
+        S-->>A: 409 STATE_CONFLICT
+      end
+    else 尚无会议
+      S->>D: 锁后读取时钟；检查effective_status=CLOSED和slot归属
+      alt 状态或slot无效
+        S->>D: ROLLBACK
+        S-->>A: 409 / 422
+      else 可确认
+        S->>D: 读取当前参与者、slots、votes
+        S->>R: 重新计算排名、冲突和未知
+        R-->>S: 排名与风险条件
+        alt 需确认但未勾选或理由为空
+          S->>D: ROLLBACK
+          S-->>A: 400 ACK_REQUIRED
+        else 风险确认有效或无此风险
+          S->>D: INSERT会议快照；UPDATE poll=CONFIRMED
+          Note over S,D: UNIQUE(poll_id)；两次写入同一事务提交
+          alt 写入或提交失败
+            S->>D: ROLLBACK
+            Note over S,D: 唯一冲突后回读原会议，再按同slot/异slot返回
+            S-->>A: 原结果、冲突或存储错误
+          else 提交成功
+            S->>D: COMMIT
+            S-->>A: 201 MeetingOut
+          end
+        end
+      end
+    end
+    A-->>B: MeetingOut或统一错误
+    B-->>O: 成功进入会议；失败保留选择和理由

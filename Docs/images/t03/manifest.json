@@ -1,0 +1,128 @@
+{
+  "baseline": "需求V1.2 / 系统设计V1.0 T03勘误 / 原型P0.3",
+  "mermaid_version": "12.2.0",
+  "diagrams": [
+    {
+      "id": "01-use-cases",
+      "title": "用例视图",
+      "requirements": [
+        "MF-01",
+        "MF-02",
+        "MF-03",
+        "MF-04",
+        "MF-05",
+        "MF-06",
+        "MF-07",
+        "MF-08",
+        "MF-09",
+        "MF-10",
+        "MF-11",
+        "MF-12",
+        "MF-13"
+      ],
+      "source": "../../diagrams/t03/01-use-cases.mmd",
+      "sha256": "65506ca7ce8977af2150b163338829168d0233e6be22394e9bba12dbe1329e93",
+      "svg_sha256": "4e059927252044d12b56d9b166069964e0a951aefda4536f137863391be4169a",
+      "png_sha256": "486e97d99f4fc215e8aa6e30cf1873d0688fcf204127f5c94ba67aab8d1d9107",
+      "width": 861,
+      "height": 1683
+    },
+    {
+      "id": "02-poll-state",
+      "title": "排期状态图",
+      "requirements": [
+        "MF-03",
+        "MF-04",
+        "MF-05",
+        "MF-09"
+      ],
+      "source": "../../diagrams/t03/02-poll-state.mmd",
+      "sha256": "c46b6c37457f5b204c647ca7ebd2745a72c1462d9bb0a424ef795f4b045a7a48",
+      "svg_sha256": "b6f3aa02b7fd93397d676d2ffec91c58c51e3b6129882d512d67750d96f503b1",
+      "png_sha256": "f910059ccff809f559d6f7bdab23f56736354b3c9ee1e4225bcc5f4afe8f5a2a",
+      "width": 1328,
+      "height": 1477
+    },
+    {
+      "id": "03-task-state",
+      "title": "任务状态图",
+      "requirements": [
+        "MF-11",
+        "MF-12"
+      ],
+      "source": "../../diagrams/t03/03-task-state.mmd",
+      "sha256": "a4137f838ca8c6b8a06e8f9471c99f5b0c557e32d44658e5265f8c39e5a12af5",
+      "svg_sha256": "fedf8800a6ee7ef5988f6c3d9a799a6f1194e1b05d165339c0e9df63451e20a0",
+      "png_sha256": "fe9b34a26d9430e65733cd2da0820deeee5c37487799bc111a674c9bc8cac1a3",
+      "width": 607,
+      "height": 1125
+    },
+    {
+      "id": "04-data-er",
+      "title": "数据实体关系图",
+      "requirements": [
+        "MF-01",
+        "MF-02",
+        "MF-03",
+        "MF-04",
+        "MF-06",
+        "MF-09",
+        "MF-10",
+        "MF-11",
+        "MF-12",
+        "MF-13"
+      ],
+      "source": "../../diagrams/t03/04-data-er.mmd",
+      "sha256": "5b8f0f84e7bc11d9d5f62790c1867ba48e2e0c6d9bab16ac4e6b8c47e9ddc3c1",
+      "svg_sha256": "617df80383ac6de9257447e2476346cc0d53e089ff6da9a14c6d950ebb7e316b",
+      "png_sha256": "ad21b922e7f0313c2ac35cb2ce003edaf1bc4abcb8cb6ca948f96a147e351204",
+      "width": 1256,
+      "height": 2158
+    },
+    {
+      "id": "05-vote-sequence",
+      "title": "全量填写与保存时序图",
+      "requirements": [
+        "MF-05",
+        "MF-06",
+        "MF-13"
+      ],
+      "source": "../../diagrams/t03/05-vote-sequence.mmd",
+      "sha256": "dfb562179de17731ccb17f79c8fbe5da53c994ecd7f4d6c9ddd005e04339da88",
+      "svg_sha256": "9e2d7af01e0df8c1e06954904e7ab80e6ccc81349e146030e8039dbcd89ec267",
+      "png_sha256": "d609bca8f14d826f7f179958e7359c2cbd45356ba35f3d71e6843ba69818644b",
+      "width": 1609,
+      "height": 1744
+    },
+    {
+      "id": "06-confirm-sequence",
+      "title": "确认会议与重试时序图",
+      "requirements": [
+        "MF-08",
+        "MF-09",
+        "MF-13"
+      ],
+      "source": "../../diagrams/t03/06-confirm-sequence.mmd",
+      "sha256": "1fb65b2c58b4a83addee56177527a1ef3ca963d9720bfb31d1f3af1499b37e0a",
+      "svg_sha256": "d5dc16e123c96f557ee55c29e3ccde017f08737c703755c496854216bc5bde6e",
+      "png_sha256": "9d3130cdc0f0de09eb540a07c6917a885cf370dc9b141f6f0ecc4b0022ad6217",
+      "width": 1744,
+      "height": 2215
+    },
+    {
+      "id": "07-task-sequence",
+      "title": "任务创建、状态与待办时序图",
+      "requirements": [
+        "MF-11",
+        "MF-12",
+        "MF-13"
+      ],
+      "source": "../../diagrams/t03/07-task-sequence.mmd",
+      "sha256": "de7cc37650ca37d2b206aeb51ff6a0e53a29b34f2b7b4b9afc0e34c3ccb5aa92",
+      "svg_sha256": "5e75a721185f264fa74b06afcfc634a7fc1c66072c3548dd8973d06f57ddd0f3",
+      "png_sha256": "71aee9a5da9728f8fcd4788331d9a3e405adf802085aed159a135467475572e6",
+      "width": 1773,
+      "height": 2063
+    }
+  ]
+}

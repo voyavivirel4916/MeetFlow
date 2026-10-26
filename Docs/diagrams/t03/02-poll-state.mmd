@@ -1,0 +1,33 @@
+stateDiagram-v2
+    [*] --> DRAFT: 创建草稿
+    DRAFT --> DRAFT: 整体暂存（允许不完整）
+    DRAFT --> OPEN: 负责人发布 / 完整性校验通过
+    OPEN --> CLOSED: 负责人提前关闭 / 到期请求判定
+    CLOSED --> CONFIRMED: 负责人确认 / 同事务生成唯一会议
+    DRAFT --> CANCELLED: 负责人取消
+    OPEN --> CANCELLED: 负责人取消
+    CLOSED --> CANCELLED: 负责人取消
+    CONFIRMED --> [*]
+    CANCELLED --> [*]
+    note right of DRAFT
+      可修改候选及参与者
+      发布时才检查完整性
+      至少1位参与者
+      1至15个有效时段
+      未来截止早于候选开始
+    end note
+    note right of OPEN
+      冻结候选及参与者
+      截止前可本人全量填写
+    end note
+    note right of CLOSED
+      GET到期视为关闭
+      存储状态可能仍为OPEN
+      写事务核时并落库
+      无需后台定时器
+    end note
+    note left of CONFIRMED
+      终态均不可重开
+      同slot重试返回原会议
+      异slot重试返回409
+    end note

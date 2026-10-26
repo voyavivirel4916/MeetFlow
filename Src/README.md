@@ -25,6 +25,8 @@ Src/
 
 ## 仓库检查与双平台同步
 
+T03设计图导出工具独立位于[scripts/diagrams](scripts/diagrams/README.md)，只用于报告素材；它与产品前后端依赖分开。图源、图片及原型差异交接见[15号记录](../Docs/15-设计图与需求原型核对.md)。
+
 在仓库根目录运行（仅依赖 Python 标准库与 Git）：
 
 ```powershell

@@ -1,0 +1,45 @@
+sequenceDiagram
+    actor O as 负责人
+    actor M as 任务执行人
+    participant B as 会议页 / 个人待办
+    participant A as API-10 / API-11
+    participant S as 任务服务 MD-07
+    participant D as SQLite tasks
+    O->>B: 填标题、组内执行人、未来截止
+    B->>A: 创建任务＋client_request_id
+    A->>S: 已认证actor与TaskIn
+    S->>D: BEGIN IMMEDIATE；检查会议、成员与负责人
+    alt 相同creator_id与client_request_id已存在
+      alt 规范化请求内容相同
+        S-->>A: 200 原任务，不重复创建
+      else 请求内容不同
+        S-->>A: 409 IDEMPOTENCY_CONFLICT
+      end
+    else 新请求且字段及权限有效
+      S->>D: INSERT TODO任务；COMMIT
+      S-->>A: 201 TaskOut
+    else 权限、字段或存储失败
+      S->>D: ROLLBACK已开始事务
+      S-->>A: 统一错误，数据不部分保存
+    end
+    Note over S,D: 去重分支必须结束事务；新请求先验权，再创建
+    A-->>B: 创建结果或错误
+    M->>B: 将本人任务改为DONE
+    B->>A: PATCH status=DONE
+    A->>S: actor、task_id、status
+    S->>D: BEGIN IMMEDIATE；校验负责人或执行人
+    alt 有权且状态有效
+      S->>D: 首次DONE记录完成时间；相同DONE保留时间；COMMIT
+      S-->>A: TaskOut
+    else 越权或失败
+      S->>D: ROLLBACK
+      S-->>A: 统一错误；保留旧状态
+    end
+    A-->>B: 状态更新结果
+    B->>A: 手动读取小组任务 / GET tasks/mine
+    A->>S: 已认证actor与小组/本人查询条件
+    S->>D: 从同一tasks查询；mine默认排除DONE
+    D-->>S: 一致的任务记录
+    S-->>A: TaskOut列表
+    A-->>B: 小组任务或个人待办
+    Note over M,D: 执行人或负责人重开为TODO或IN_PROGRESS，清空completed_at，重新进入待办

@@ -1,0 +1,39 @@
+flowchart LR
+    GUEST["«actor»<br/>访客"]
+    USER["«actor»<br/>已登录用户"]
+    MEMBER["«actor»<br/>组内成员（含负责人）"]
+    OWNER["«actor»<br/>小组负责人"]
+    subgraph MF["MeetFlow 本地第一版 · 用例视图"]
+        direction TB
+        C01(["注册 / 登录<br/>MF-01"])
+        C13(["退出当前会话<br/>MF-01"])
+        C02(["创建 / 加入小组<br/>MF-02"])
+        C03(["编辑排期草稿<br/>MF-03 / MF-04"])
+        C04(["发布 / 关闭 / 取消收集<br/>MF-05"])
+        C05(["填写或覆盖本人答案<br/>MF-06 · UC-01"])
+        C06(["查看时间拼图与推荐解释<br/>MF-07 / MF-08"])
+        C07(["确认唯一会议<br/>MF-09 · UC-02"])
+        C08(["查看会议、议程与纪要<br/>MF-10"])
+        C09(["维护纯文本议程与纪要<br/>MF-10"])
+        C10(["创建并指派任务<br/>MF-11"])
+        C11(["更新任务状态<br/>MF-11"])
+        C12(["查看小组任务 / 个人待办<br/>MF-12"])
+    end
+    GUEST --- C01
+    USER --- C13
+    USER --- C02
+    MEMBER ---|仅本次参与者| C05
+    MEMBER --- C06
+    MEMBER --- C08
+    MEMBER ---|仅本人执行的任务| C11
+    MEMBER --- C12
+    OWNER --- C03
+    OWNER --- C04
+    OWNER --- C07
+    OWNER --- C09
+    OWNER --- C10
+    OWNER ---|组内任务| C11
+    classDef actor fill:#eeedf6,stroke:#989bc0,color:#303759
+    classDef goal fill:#fffdf7,stroke:#c6bfce,color:#444967
+    class GUEST,USER,MEMBER,OWNER actor
+    class C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13 goal

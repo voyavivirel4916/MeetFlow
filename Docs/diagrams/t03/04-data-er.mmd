@@ -1,0 +1,83 @@
+erDiagram
+    USERS ||..o{ SESSIONS : owns
+    USERS ||--o{ GROUP_MEMBERS : joins
+    GROUPS ||--|{ GROUP_MEMBERS : contains
+    USERS ||..o{ GROUPS : owns
+    GROUPS ||..o{ POLLS : has
+    POLLS ||--o{ PARTICIPANTS : selects
+    GROUP_MEMBERS ||..o{ PARTICIPANTS : participates
+    POLLS ||..o{ SLOTS : offers
+    PARTICIPANTS ||..o{ VOTES : submits
+    SLOTS ||--o{ VOTES : receives
+    POLLS ||..o| MEETINGS : confirms
+    SLOTS ||..o| MEETINGS : selected_for
+    GROUPS ||..o{ MEETINGS : contains
+    MEETINGS ||..o{ TASKS : produces
+    GROUP_MEMBERS ||..o{ TASKS : assigned
+    USERS ||..o{ TASKS : creates
+    USERS {
+      int id PK
+      string username UK
+      string email UK
+      string password_hash
+    }
+    SESSIONS {
+      int id PK
+      int user_id FK
+      string token_hash UK
+      int expires_at
+      int revoked_at "nullable"
+    }
+    GROUPS {
+      int id PK
+      int owner_id FK
+      string invite_code UK
+    }
+    GROUP_MEMBERS {
+      int group_id PK,FK
+      int user_id PK,FK
+    }
+    POLLS {
+      int id PK
+      int group_id FK
+      string status
+      int response_deadline
+    }
+    PARTICIPANTS {
+      int poll_id PK,FK
+      int user_id PK,FK
+      int group_id FK
+      string importance
+      int submitted_at "nullable"
+    }
+    SLOTS {
+      int id PK
+      int poll_id FK
+      int start_at
+      int end_at
+    }
+    VOTES {
+      int slot_id PK,FK
+      int user_id PK,FK
+      int poll_id FK
+      string availability
+    }
+    MEETINGS {
+      int id PK
+      int poll_id FK,UK
+      int group_id FK
+      int selected_slot_id FK
+      string selection_reason
+      string minutes
+    }
+    TASKS {
+      int id PK
+      int meeting_id FK
+      int group_id FK
+      int creator_id FK
+      int assignee_id FK
+      string client_request_id
+      string status
+      int due_at
+      int completed_at "nullable"
+    }

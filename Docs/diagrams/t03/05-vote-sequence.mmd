@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor U as 参与者
+    participant B as 时间拼图填写页 UI-04
+    participant A as API-06 / 认证入口
+    participant S as 答案服务 MD-04
+    participant D as SQLite
+    U->>B: 为全部候选选择三态答案
+    B->>A: PUT votes/me（只提交本人全量答案）
+    A->>S: 已识别actor、poll_id、VoteIn
+    S->>D: BEGIN IMMEDIATE；读取排期、成员与参与者
+    Note over S,D: 取得写锁后读取服务端时钟；检查截止与effective_status
+    alt 无成员或参与者权限
+      S->>D: ROLLBACK
+      S-->>A: 404 / 403
+    else 非OPEN或已达到截止
+      S->>D: ROLLBACK
+      S-->>A: 409 POLL_CLOSED / STATE_CONFLICT
+    else 漏填、重复或跨排期slot
+      S->>D: ROLLBACK
+      S-->>A: 422；旧答案不变
+    else 校验通过
+      S->>D: upsert全部答案；更新submitted_at
+      alt 写入或提交失败
+        S->>D: ROLLBACK
+        S-->>A: 错误响应，不返回保存成功
+      else 提交成功
+        S->>D: COMMIT
+        S-->>A: VoteOut
+      end
+    end
+    A-->>B: 成功数据或统一错误
+    alt 收到成功响应
+      B-->>U: 显示保存时间；重新读取结果
+    else 错误或响应丢失
+      B-->>U: 保留输入，标记尚未确认保存
+      Note over U,B: 超时不等于未提交；GET本人答案核对后再手动重试
+    end
+    Note over A,D: 会话或CSRF失败可在进入业务事务前直接拒绝；BEGIN失败不进入写入分支
