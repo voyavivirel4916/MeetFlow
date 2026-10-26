@@ -40,18 +40,28 @@ def write_transaction(engine):
             raise
 
 
-def require_current_schema(settings):
+def require_current_schema(settings, *, writable: bool = False):
     from app.db.migrate import migration_config
     from alembic.script import ScriptDirectory
     from alembic.runtime.migration import MigrationContext
+    from app.db.models import metadata
 
     engine = make_engine(database_path(settings))
     try:
         with engine.connect() as connection:
+            if writable:
+                connection.exec_driver_sql('BEGIN IMMEDIATE')
             current = MigrationContext.configure(connection).get_current_heads()
             expected = ScriptDirectory.from_config(migration_config()).get_heads()
             if set(current) != set(expected):
                 raise ConfigurationError('Database migration required; run python -m app.db.migrate.')
+            for table in metadata.sorted_tables:
+                # Validate the migrated columns without loading user records.
+                connection.execute(table.select().limit(0))
+            if writable:
+                # Exercise actual SQLite write permission, then leave all data unchanged.
+                connection.exec_driver_sql('UPDATE alembic_version SET version_num = version_num')
+            connection.rollback()
     except ConfigurationError:
         raise
     except Exception:

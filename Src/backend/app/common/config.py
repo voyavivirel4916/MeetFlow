@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     port: int = Field(default=8000, ge=1, le=65535)
     log_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'INFO'
     data_dir: Path = BACKEND_ROOT / 'data'
+    frontend_dir: Path = BACKEND_ROOT.parent / 'frontend' / 'dist'
 
     @model_validator(mode='after')
     def resolve_data_directory(self):
@@ -33,6 +34,9 @@ class Settings(BaseSettings):
         if not self.data_dir.is_absolute():
             self.data_dir = BACKEND_ROOT / self.data_dir
         self.data_dir = self.data_dir.resolve()
+        if not self.frontend_dir.is_absolute():
+            self.frontend_dir = BACKEND_ROOT / self.frontend_dir
+        self.frontend_dir = self.frontend_dir.resolve()
         return self
 
 

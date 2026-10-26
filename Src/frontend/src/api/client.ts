@@ -16,6 +16,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 }
 
 export function checkLiveness() { return send<{ status: 'ok' }>('/livez', {}) }
+export function checkHealth() { return request<{ status: 'ok' }>('/api/v1/health') }
 
 async function send<T>(path: string, options: RequestOptions): Promise<Envelope<T>> {
   const method = options.method || 'GET'

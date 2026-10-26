@@ -4,12 +4,13 @@ import sys
 import uvicorn
 
 from app.common.config import ConfigurationError, load_settings
-from app.main import create_app
+from app.main import create_app, validate_runtime
 
 
 def main() -> int:
     try:
         settings = load_settings()
+        validate_runtime(settings)
     except ConfigurationError as error:
         print(str(error), file=sys.stderr)
         return 2

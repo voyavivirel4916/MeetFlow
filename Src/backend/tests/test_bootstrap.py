@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from app.common.config import ConfigurationError, Settings
 from app.common.responses import ApiError, InputModel
 from app.main import create_app
+from app.db.migrate import upgrade
 
 
 def assert_error(response, status, code):
@@ -18,31 +19,30 @@ def assert_error(response, status, code):
     return body
 
 
-def test_liveness_has_request_id_and_does_not_claim_database_readiness(client, settings):
+def test_liveness_has_request_id_and_health_checks_database(client, settings):
     response = client.get('/livez')
     assert response.status_code == 200
     assert response.json()['data'] == {'status': 'ok'}
     assert response.json()['request_id'] == response.headers['X-Request-ID']
-    assert list(settings.data_dir.iterdir()) == []
-    assert_error(client.get('/api/v1/health'), 404, 'NOT_FOUND')
+    assert client.get('/api/v1/health').json()['data'] == {'status': 'ok'}
 
 
 def test_ids_are_server_generated_and_request_values_are_not_logged(client, caplog):
     marker = 'private-request-value'
     with caplog.at_level(logging.INFO, logger='meetflow.requests'):
         first = client.get('/livez', headers={'X-Request-ID': marker, 'Cookie': f'session={marker}'})
-        second = client.get('/missing/' + marker + '?password=' + marker,
+        second = client.get('/api/v1/missing/' + marker + '?password=' + marker,
                             headers={'Authorization': 'Bearer ' + marker})
     assert first.json()['request_id'] != marker
     assert first.json()['request_id'] != second.json()['request_id']
     assert marker not in caplog.text
     assert marker not in second.text
     assert 'route=/livez' in caplog.text
-    assert 'route=<unmatched>' in caplog.text
+    assert 'route=/{path:path}' in caplog.text
 
 
 def test_unknown_route_and_wrong_method_have_consistent_envelopes(client):
-    assert_error(client.get('/not-implemented'), 404, 'NOT_FOUND')
+    assert_error(client.get('/api/v1/not-implemented'), 404, 'NOT_FOUND')
     response = client.post('/livez', json={})
     assert_error(response, 405, 'INVALID_INPUT')
     assert 'GET' in response.headers['allow']
@@ -73,6 +73,7 @@ def test_expected_business_error_preserves_public_code(app, client):
     @app.get('/_test/conflict')
     def conflict():
         raise ApiError(409, 'STATE_CONFLICT', '当前状态不支持该操作。')
+    app.router.routes.insert(0, app.router.routes.pop())
     assert_error(client.get('/_test/conflict'), 409, 'STATE_CONFLICT')
 
 
@@ -80,6 +81,7 @@ def test_unhandled_failure_is_generic_in_response_and_logs(app, client, caplog):
     @app.get('/_test/failure')
     def fail():
         raise RuntimeError('private-exception-value')
+    app.router.routes.insert(0, app.router.routes.pop())
     with caplog.at_level(logging.INFO, logger='meetflow.requests'):
         response = client.get('/_test/failure')
     assert_error(response, 500, 'INTERNAL_ERROR')
@@ -105,9 +107,13 @@ def test_startup_fails_when_data_directory_is_a_file(tmp_path):
     assert path.read_text(encoding='utf-8') == 'keep me'
 
 
-def test_app_factory_keeps_runtime_configuration_isolated(tmp_path):
-    first = create_app(Settings(_env_file=None, app_env='test', data_dir=tmp_path / 'first'))
-    second = create_app(Settings(_env_file=None, app_env='test', data_dir=tmp_path / 'second'))
+def test_app_factory_keeps_runtime_configuration_isolated(tmp_path, settings):
+    first_config = settings.model_copy(update={'data_dir': tmp_path / 'first'})
+    second_config = settings.model_copy(update={'data_dir': tmp_path / 'second'})
+    upgrade(first_config)
+    upgrade(second_config)
+    first = create_app(first_config)
+    second = create_app(second_config)
     with TestClient(first, base_url='http://127.0.0.1'), TestClient(second, base_url='http://127.0.0.1'):
         assert first.state.settings.data_dir != second.state.settings.data_dir
         assert first.state.settings.data_dir.is_dir()

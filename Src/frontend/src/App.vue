@@ -15,7 +15,7 @@ const route = useRoute()
       <p class="aside-note">从找到共同时间，<br>到完成下一件事。</p>
     </aside>
     <div class="workspace">
-      <header><span>工作空间 / {{ route.meta.title }}</span><span class="stage">工程起步版 · T06</span></header>
+      <header><span>工作空间 / {{ route.meta.title }}</span><span class="stage">工程起步版 · T08</span></header>
       <main id="content" tabindex="-1"><RouterView /></main>
     </div>
   </div>

@@ -4,11 +4,16 @@ T05已建立应用工厂、配置、启动检查、统一响应/错误和请求�
 
 T07已加入SQLite连接、显式Alembic迁移和独立测试库；当前迁移建立账户、会话、小组和成员四张基础表。认证、小组、排期等业务按T09之后的任务逐步接入，不导入演示数据，也不宣称业务已经就绪。
 
+T08已将构建后的前端与API接入同一本机服务。平时查看页面只需运行后端，无需同时运行Vite；修改前端后重新构建。
+
 ## 安装与启动
 
 在PowerShell执行，直接使用虚拟环境里的Python，不需要修改执行策略：
 
 ```powershell
+cd D:\软件工程\Src\frontend
+npm ci
+npm run build
 cd D:\软件工程\Src\backend
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --require-hashes -r requirements-dev.txt
@@ -18,13 +23,15 @@ python -m venv .venv
 
 已存在本项目的`.venv`时跳过创建步骤；安装过程只作用于该目录。仅运行服务可改装`requirements.txt`，测试使用开发清单。`requirements-dev.in`受运行锁文件约束，避免开发与运行版本不同。
 
-服务默认绑定`127.0.0.1:8000`，单进程；Ctrl+C停止。另开终端检查：
+前端构建使用Node 22.20.0，具体依赖见[前端说明](../frontend/README.md)。后端默认绑定`127.0.0.1:8000`，单进程；Ctrl+C停止。访问[正式工程页面](http://127.0.0.1:8000/)或[连接检查](http://127.0.0.1:8000/connection)，另开终端检查：
 
 ```powershell
-Invoke-RestMethod http://127.0.0.1:8000/livez
+Invoke-RestMethod http://127.0.0.1:8000/api/v1/health
 ```
 
-`/livez`返回`data.status=ok`及本次`request_id`，说明应用进程已启动。它不检查数据库和业务能力。正式`/api/v1/health`与数据库版本启动检查在T08接入；当前访问health为404。`/openapi.json`提供本机接口描述；框架依赖公网CDN的交互文档页未启用。
+`/api/v1/health`无需登录，数据库可读且结构版本正确时返回`data.status=ok`及本次`request_id`，存储异常时返回503和`STORAGE_UNAVAILABLE`；不返回文件路径或账号信息，不缓存结果。`/livez`仅表示进程存活，数据库暂时不可读时仍可返回ok；两者都不代表账户和会议业务已实现。
+
+页面深链接可直接打开和刷新。`/assets`提供构建资源；未知API、缺失资源和保留路径保持JSON错误，不回退成HTML。未知页面由Vue显示找不到页面。`/openapi.json`提供本机接口描述；依赖公网CDN的交互文档页未启用。
 
 ## 配置
 
@@ -37,14 +44,15 @@ Invoke-RestMethod http://127.0.0.1:8000/livez
 | MEETFLOW_PORT | 8000 | 1～65535 |
 | MEETFLOW_LOG_LEVEL | INFO | DEBUG/INFO/WARNING/ERROR |
 | MEETFLOW_DATA_DIR | data | 相对路径始终相对后端目录，避免随终端位置变化 |
+| MEETFLOW_FRONTEND_DIR | ../frontend/dist | 前端构建目录，相对路径同样基于后端目录 |
 
-启动先校验配置，并用自动清理的临时文件检查数据目录可写。错误配置或不可写目录使启动失败，提示不输出配置值。启动不会自动创建表、清库或覆盖已有文件。
+启动先校验配置、数据目录与数据库文件可写性、迁移版本及基础表，再检查前端入口和入口引用的本地构建资源。缺库、错误版本、只读数据库、缺失构建文件都会终止启动。命令行给出简短提示，不输出配置值或堆栈；不会自动迁移、创建表、清库或导入账号。
 
 ## 数据库迁移
 
 默认数据库为数据目录下的 `meetflow.sqlite3`。只有显式执行 `python -m app.db.migrate` 才会新建空库或升级版本；重复执行保留现有数据。已有数据升级前先保留备份，不直接修改旧迁移文件。非空无版本库、未知版本库会被拒绝，不将资料文件或其他数据库当作新库覆盖。
 
-`app/db/connection.py`提供已有库连接、结构版本检查及写事务。每个连接启用外键和5秒忙等待；`write_transaction`先取得写锁，再由服务检查时间与状态，异常回滚。结构版本检查函数已具备，但尚未接入启动流程，所以此阶段即使未迁移也能启动存活探针。T08将补上启动与健康检查。
+`app/db/connection.py`提供已有库连接、结构版本检查及写事务。每个连接启用外键和5秒忙等待；`write_transaction`先取得写锁，再由服务检查时间与状态，异常回滚。启动的写权限探测在事务中写回相同版本值并回滚，不改变已有记录；运行中的健康检查只读，不探测写入。
 
 后续表通过新迁移逐步增加，不自动建表或导入演示账号，不提供破坏性降级命令。完整备份恢复流程在T33验证。
 
@@ -56,7 +64,8 @@ Invoke-RestMethod http://127.0.0.1:8000/livez
 app/
   __main__.py       # python -m app，使用经过校验的本机配置
   main.py           # create_app与生命周期
-  api/system.py     # /livez
+  api/system.py     # /livez与/api/v1/health
+  web.py            # 前端构建检查、静态资源与SPA回退边界
   common/           # 配置、统一响应、错误与请求上下文
   db/               # 连接、基础表、显式迁移入口和事务
 migrations/         # 冻结的Alembic版本文件
@@ -70,7 +79,7 @@ tests/              # 独立临时目录、迁移、约束、接口和启动验�
 .\.venv\Scripts\python.exe -m pip check
 ```
 
-测试使用独立临时目录，不改开发数据。除配置、启动和接口基础检查外，覆盖空库迁移、重复升级保留数据、模型一致性、缺库不创建、错误版本拒绝、外键与唯一约束、写锁、回滚及中文特殊字符路径。测试专用路由只在测试内注册，不进入产品应用。
+测试使用独立临时目录与最小前端文件，不依赖实际dist，也不改开发数据。覆盖配置、迁移、约束、写锁与回滚，以及同源页面、静态路径边界、健康检查、只读库和缺失构建文件。真实Vue构建的双浏览器检查见前端`npm run check:delivery`。测试专用路由只在测试内注册，不进入产品应用。
 
 依赖调整时用本项目环境安装`pip-tools==7.6.2`，重新生成两份锁文件，再安装和测试：
 
@@ -79,4 +88,4 @@ tests/              # 独立临时目录、迁移、约束、接口和启动验�
 .\.venv\Scripts\python.exe -m piptools compile --generate-hashes --strip-extras --output-file requirements-dev.txt requirements-dev.in
 ```
 
-T05历史范围见[17号记录](../../Docs/17-后端基础工程记录.md)，当前T06/T07交付见[18号记录](../../Docs/18-前端与数据库工程记录.md)，表单反馈约定见[16号规范](../../Docs/16-表单与状态展示规范.md)。生命周期和配置实现分别参考[FastAPI官方说明](https://fastapi.tiangolo.com/advanced/events/)及[Pydantic Settings官方说明](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)。
+历史结果见[17号记录](../../Docs/17-后端基础工程记录.md)、[18号记录](../../Docs/18-前端与数据库工程记录.md)，当前同源运行结果见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，表单约定见[16号规范](../../Docs/16-表单与状态展示规范.md)。生命周期和配置分别参考[FastAPI官方说明](https://fastapi.tiangolo.com/advanced/events/)及[Pydantic Settings官方说明](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)。

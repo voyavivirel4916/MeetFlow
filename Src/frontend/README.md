@@ -2,17 +2,19 @@
 
 T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端。沿用已确认的暖白、靛蓝、珊瑚橙风格。当前业务页面为明确的待接入状态，登录和业务交互按后续任务实现；[T02原型](../prototype/README.md)继续单独保留。
 
-## 安装与开发
+## 本机运行与开发
 
 本轮使用 Node 22.20.0、npm 10.9.3。依赖精确版本和完整性保存在 `package.json`、`package-lock.json`；后续安装用 `npm ci`。
 
 ```powershell
 cd D:\软件工程\Src\frontend
 npm ci
-npm run dev
+npm run build
 ```
 
-访问 [本机前端](http://127.0.0.1:5173/)。开发服务只绑定127.0.0.1，端口被占用时直接报错。另开终端按[后端说明](../backend/README.md)启动8000端口的服务，再访问[连接检查](http://127.0.0.1:5173/connection)。Vite把 `/api` 和 `/livez` 代理到本机后端，无需开放跨域权限。
+然后按[后端说明](../backend/README.md)安装、显式迁移并启动服务，访问[同源前端](http://127.0.0.1:8000/)及[连接检查](http://127.0.0.1:8000/connection)。构建后只需运行后端，修改前端后重新构建；后端启动会检查构建入口及其引用文件是否齐全。
+
+开发时可另开终端执行 `npm run dev`，访问[开发前端](http://127.0.0.1:5173/)。Vite只绑定127.0.0.1，端口被占用时报错，将 `/api` 和 `/livez` 代理到8000端口，无需开放跨域权限。开发代理仍需已启动的后端和一次有效构建。
 
 | 页面 | 路径 |
 | --- | --- |
@@ -41,14 +43,15 @@ npm run build
 npm audit
 ```
 
-构建输出在被Git忽略的 `dist/`。生产同源静态托管与数据库健康接口属于T08，当前构建成功不代表已完成该任务。
+构建输出在被Git忽略的 `dist/`。T08已接入后端同源托管；连接检查调用真实 `/api/v1/health`，数据库不可读或版本不符时展示存储错误，恢复后可再次检查。该结果不表示账户与会议业务完成。
 
 浏览器检查额外需要Playwright和本机Chrome/Edge、已安装依赖的后端。默认从Node环境查找Playwright；可把已安装模块的绝对路径设为 `PLAYWRIGHT_MODULE_PATH`。默认使用后端Windows虚拟环境，其他环境通过 `MEETFLOW_TEST_PYTHON` 指定Python可执行文件：
 
 ```powershell
 npm run check:browser
+npm run check:delivery
 $env:PROTOTYPE_BROWSER='msedge'
-npm run check:browser
+npm run check:delivery
 ```
 
-检查脚本启动独立临时后端和空闲端口的Vite，结束后清理，不使用开发数据库或占用5173；加 `-- --screenshots` 可更新[验证截图](../../Docs/images/t06)。本轮结果见[18号记录](../../Docs/18-前端与数据库工程记录.md)。
+先运行 `npm run build`。检查脚本显式迁移独立临时数据库；`check:browser`验证Vite开发代理，`check:delivery`只启动后端并验证正式构建的同源页面。使用空闲端口，结束后清理，不使用开发数据库或占用8000/5173。加 `-- --screenshots` 更新对应截图。本轮结果与截图见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，T06/T07历史结果见[18号记录](../../Docs/18-前端与数据库工程记录.md)。

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiFailure, checkLiveness, request } from '../src/api/client'
+import { ApiFailure, checkHealth, checkLiveness, request } from '../src/api/client'
 
 const id = 'c07e357967c148068a4f9aa539c759e2'
 function json(body: unknown, status = 200) {
@@ -86,5 +86,12 @@ describe('API transport', () => {
     vi.stubGlobal('fetch', fetch)
     expect((await checkLiveness()).data.status).toBe('ok')
     expect(fetch).toHaveBeenCalledWith('/livez', expect.any(Object))
+  })
+
+  it('checks database health through the versioned API', async () => {
+    const fetch = vi.fn().mockResolvedValue(json({ data: { status: 'ok' } }))
+    vi.stubGlobal('fetch', fetch)
+    expect((await checkHealth()).data.status).toBe('ok')
+    expect(fetch).toHaveBeenCalledWith('/api/v1/health', expect.any(Object))
   })
 })

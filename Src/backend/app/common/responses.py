@@ -29,7 +29,7 @@ def error_response(request_id: str, status: int, code: str, message: str,
     return JSONResponse(
         status_code=status,
         content={'error': {'code': code, 'message': message, 'details': details or {}}, 'request_id': request_id},
-        headers={'X-Request-ID': request_id},
+        headers={'X-Request-ID': request_id, 'Cache-Control': 'no-store'},
     )
 
 

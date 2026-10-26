@@ -8,6 +8,14 @@ from app.api.system import router
 from app.common.config import Settings, load_settings, prepare_runtime
 from app.common.middleware import RequestContextMiddleware
 from app.common.responses import ApiError, error_response, request_id
+from app.db.connection import require_current_schema
+from app.web import check_frontend, install_frontend
+
+
+def validate_runtime(settings: Settings):
+    prepare_runtime(settings)
+    require_current_schema(settings, writable=True)
+    check_frontend(settings)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -15,7 +23,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        prepare_runtime(config)
+        validate_runtime(config)
         yield
 
     app = FastAPI(title='MeetFlow', version='0.1.0', lifespan=lifespan,
@@ -47,4 +55,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return response
 
     app.include_router(router)
+    install_frontend(app, config)
     return app

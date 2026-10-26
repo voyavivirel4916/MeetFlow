@@ -15,8 +15,10 @@ def test_defaults_and_relative_paths_are_independent_of_shell_directory(tmp_path
     assert defaults.bind_host == '127.0.0.1'
     assert defaults.port == 8000
     assert defaults.data_dir == BACKEND_ROOT / 'data'
-    custom = Settings(_env_file=None, data_dir='local-data')
+    assert defaults.frontend_dir == BACKEND_ROOT.parent / 'frontend' / 'dist'
+    custom = Settings(_env_file=None, data_dir='local-data', frontend_dir='../custom-build')
     assert custom.data_dir == BACKEND_ROOT / 'local-data'
+    assert custom.frontend_dir == (BACKEND_ROOT.parent / 'custom-build').resolve()
 
 
 def test_env_overrides_dotenv_and_unknown_dotenv_keys_are_rejected(tmp_path, monkeypatch):
