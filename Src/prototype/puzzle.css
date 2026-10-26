@@ -1,0 +1,219 @@
+/* Direction A: warm paper, indigo structure, coral accents, shared time pieces. */
+:root {
+  --paper: #f7f5ef;
+  --ink: #292d50;
+  --indigo: #454c96;
+  --coral: #d57660;
+  --teal: var(--indigo);
+  --line: #e3e1d9;
+  --muted: #7c7b87;
+  color: var(--ink);
+  background: var(--paper);
+}
+body { background: var(--paper); }
+h1, h2, h3, .profile strong { color: var(--ink); }
+h1 { font-size: 31px; letter-spacing: -.9px; }
+.sidebar { background: #eeede7; color: #777888; border-right: 1px solid #dfded6; }
+.brand { color: var(--ink); font-size: 23px; }
+.brand small { color: #85848b; letter-spacing: 1px; }
+.brand-icon.puzzle-logo {
+  background: transparent; display: grid; grid-template-columns: repeat(2, 16px);
+  grid-template-rows: repeat(2, 16px); gap: 3px; width: 40px; height: 40px;
+  place-content: center; border-radius: 0; flex-shrink: 0;
+}
+.puzzle-logo i, .puzzle-sign i { background: var(--indigo); border-radius: 3px; position: relative; }
+.puzzle-logo i { width: 16px; height: 16px; }
+.puzzle-logo i:nth-child(2), .puzzle-sign i:nth-child(2) { background: var(--coral); transform: translate(3px, -3px); }
+.puzzle-logo i:nth-child(3), .puzzle-sign i:nth-child(3) { background: #a8acd4; }
+.puzzle-logo i:nth-child(4), .puzzle-sign i:nth-child(4) { background: #787fb2; }
+.workspace-label, .eyebrow, .section-label { color: #8d8b94; }
+nav a { color: #727281; }
+nav a span { color: #828398; }
+nav a.active { background: #e0e1ee; color: #3f467e; }
+nav a.active span { color: #464c91; }
+nav a:hover { background: #e6e5df; }
+.sidebar-note { border-color: #dbdad2; color: #77798b; }
+.sidebar-note p, .sidebar-foot { color: #96959e; }
+.live-dot { background: var(--coral); }
+.topbar { background: #fbfaf6; }
+.demo-bar { background: #f0efe8; border-color: #e2e0d7; color: #7d7c88; }
+.demo-bar select { border-color: #dad8d0; background: #fbfaf7; }
+.demo-tag { border-color: #cfcdd3; color: #7b7b8d; }
+.avatar { color: #5c6095; background: #e9e8f2; }
+.button { color: #535776; border-color: #d4d4df; background: #fffefa; border-radius: 7px; }
+.button:hover { background: #eeedf6; }
+.button.primary { color: #fff; background: var(--indigo); border-color: var(--indigo); }
+.button.primary:hover { background: #353d81; }
+.text-button { color: var(--indigo); }
+.text-button.danger { color: #ac6655; }
+.panel { background: #fffefa; border-color: var(--line); box-shadow: 0 2px 0 #e9e6dc33; }
+.hero { background: #ecebf3; border-color: #dedeea; }
+.hero::after { color: #dbdbea; }
+.hero p, .statline, .statline strong { color: #6d6d8c; }
+.statline { border-color: #d9d7e6; }
+.date-tile { background: #eeedf6; color: #8986a3; border-color: #e1deed; }
+.date-tile strong { color: #52598d; }
+.progress { background: #eceaf0; height: 6px; }
+.progress > span { background: #777eaf; }
+.pill { color: #777887; background: #efedf1; }
+.pill.yes, .pill.open { color: #515994; background: #e9eaf8; }
+.pill.confirmed { color: #4b568e; background: #e3e6f8; }
+.pill.maybe, .pill.closed { color: #987431; background: #faf0d7; }
+.pill.no, .pill.cancelled { color: #a65e4b; background: #fae7df; }
+.pill.unknown { color: #908d97; background: #eeece9; }
+.note { background: #eeedf5; color: #72728e; }
+.note.warn { background: #fcf2df; color: #97713d; border-color: #eedecc; }
+.stepper .current { color: var(--indigo); }
+.stepper .current i { background: var(--indigo); border-color: var(--indigo); }
+.stepper i, .stepper b { border-color: #dcd9df; }
+.stepper { color: #93919a; }
+.field, label.field { color: #65657c; }
+input, textarea, select { color: var(--ink); border-color: #dcd9dc; background: #fffefa; }
+input:focus, textarea:focus, select:focus { outline-color: #9b9dcc; }
+.meeting-banner { background: #eaeaf6; border-color: #d9dbea; }
+.meeting-banner p { color: #7d7e99; }
+.aside-list, details p, .rank-foot p { color: #85838e; }
+details summary { color: #686f9f; }
+.aside-list li::before { color: var(--coral); }
+footer { color: #a29da4; border-color: #e5e0d9; }
+#toast { background: #3d426d; }
+dialog { color: var(--ink); background: #fffefa; }
+dialog::backdrop { background: #292d5066; }
+
+/* The four pieces repeat in the brand, form introduction and shared-time board. */
+.puzzle-intro { display: flex; align-items: center; gap: 17px; margin: 0 0 26px; padding: 20px 24px; border: 1px solid #e4ded5; border-radius: 9px; background: #f0ede4; }
+.puzzle-sign { display: grid; grid-template-columns: repeat(2, 16px); grid-template-rows: repeat(2, 16px); gap: 3px; flex-shrink: 0; }
+.puzzle-intro .section-label { font-size: 11px; letter-spacing: 1px; color: #6e6b78; }
+.puzzle-intro p { font-size: 12px; color: #857970; margin-top: 7px; }
+.intro-number { margin-left: auto; font-size: 32px; color: #bcafa4; font-family: Georgia, serif; white-space: nowrap; }
+.intro-number small { font: 10px "Microsoft YaHei", sans-serif; color: #9c928d; }
+.vote-layout { grid-template-columns: minmax(0, 2.5fr) minmax(250px, 1fr); }
+.vote-panel { padding: 24px; }
+.vote-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.time-card { background: #f8f7f3; border: 1px solid #e4e0dc; padding: 17px; border-radius: 9px; transition: border-color .15s, background .15s; }
+.time-card[data-answer="yes"] { background: #f2f2fa; border-color: #a5a9cf; }
+.time-card[data-answer="maybe"] { background: #fcf8ed; border-color: #dfc58b; }
+.time-card[data-answer="no"] { background: #fcf2ed; border-color: #daa68f; }
+.time-card-top { display: flex; justify-content: space-between; align-items: center; color: #96909c; font-size: 10px; letter-spacing: 1px; }
+.time-card-dot { height: 7px; width: 7px; background: #d9d5d1; border-radius: 50%; }
+[data-answer="yes"] .time-card-dot { background: #6d73b2; }
+[data-answer="maybe"] .time-card-dot { background: #d3b264; }
+[data-answer="no"] .time-card-dot { background: var(--coral); }
+.calendar-day { font-family: Georgia, serif; font-size: 54px; color: #424975; line-height: 1.1; margin: 24px 0 10px; }
+.calendar-day span { font: 11px "Microsoft YaHei", sans-serif; color: #8a8599; margin-left: 7px; }
+.time-card-date { font-size: 11px; color: #858293; }
+.time-card-hours { font-size: 14px; margin: 7px 0 24px; letter-spacing: .2px; color: #555a80; }
+.time-card-hours span, .rank-time span { color: #b9b2bb; padding: 0 3px; }
+.puzzle-options { display: grid; gap: 9px; margin-left: 0; }
+.puzzle-options label { min-width: 0; }
+.puzzle-options input { inset: 0; width: 100%; height: 100%; margin: 0; z-index: 2; cursor: pointer; }
+.puzzle-options input:disabled { cursor: not-allowed; }
+.puzzle-options span { position: relative; display: flex; align-items: center; gap: 10px; padding: 11px 9px; border-radius: 5px; background: #fffefa; font-size: 12px; border: 1px solid #e1dde1; color: #93909c; }
+.puzzle-options b { font-size: 15px; font-weight: 400; }
+.puzzle-options small { margin-left: auto; font-size: 9px; opacity: .8; }
+.puzzle-options input:checked + .yes { background: #e1e4f7; border-color: #989ec9; color: #48508f; }
+.puzzle-options input:checked + .maybe { background: #fbefce; border-color: #d6b66e; color: #967033; }
+.puzzle-options input:checked + .no { background: #f8e2d8; border-color: #d6a28e; color: #a4624e; }
+.puzzle-options input:checked + span::after { content: ''; position: absolute; right: -5px; top: calc(50% - 5px); width: 9px; height: 9px; background: inherit; border-right: 1px solid; border-top: 1px solid; border-color: inherit; border-radius: 50%; transform: rotate(45deg); }
+.puzzle-options input:focus-visible + span { outline: 2px solid var(--indigo); outline-offset: 3px; }
+.progress-total { font: 32px Georgia, serif; color: #51578b; }
+.progress-total small { font-size: 15px; color: #a8a1b1; }
+.progress-panel .progress { margin: 19px 0 9px; }
+.puzzle-note { background: #efebe1; padding: 22px; color: #928578; }
+.note-index { display: block; color: #b3937e; font-size: 10px; margin-bottom: 12px; letter-spacing: 2px; }
+.puzzle-note strong { display: block; color: #72646b; font-weight: 500; margin-bottom: 10px; }
+
+/* Time pieces retain text labels so color is never the sole status cue. */
+.puzzle-board { padding: 27px 28px 20px; }
+.puzzle-board .section-label { font-size: 9px; letter-spacing: 1.7px; margin-bottom: 10px; }
+.puzzle-board h2 { font-size: 20px; }
+.puzzle-board .panel-title { align-items: flex-start; }
+.puzzle-legend { display: flex; flex-wrap: wrap; gap: 13px; font-size: 10px; padding-top: 8px; }
+.puzzle-legend .yes { color: #666da7; }
+.puzzle-legend .maybe { color: #b78a37; }
+.puzzle-legend .no { color: #c57d64; }
+.puzzle-legend .unknown { color: #a49d9d; }
+.puzzle-matrix { border-collapse: separate; border-spacing: 9px 7px; table-layout: fixed; min-width: 600px; }
+.puzzle-matrix th, .puzzle-matrix td { border: 0; padding: 5px 11px; }
+.puzzle-matrix th { background: transparent; height: 118px; vertical-align: top; padding-top: 14px; }
+.puzzle-matrix th:first-child { width: 172px; }
+.matrix-axis { display: block; color: #aba5ac; font-size: 10px; line-height: 2.3; padding-top: 18px; }
+.candidate-no { display: block; font-size: 10px; letter-spacing: 1.4px; color: #80748b; margin-bottom: 9px; }
+.puzzle-matrix th strong { display: block; color: #5d5b7a; font-size: 13px; font-weight: 500; margin-bottom: 9px; }
+.puzzle-matrix th > span:not(.candidate-no) { font-size: 11px; color: #7c7286; }
+.puzzle-matrix th small { display: inline-block; color: #757aac; background: #e9e9f4; padding: 3px 9px; border-radius: 20px; font-size: 9px; margin-top: 8px; }
+.puzzle-matrix .person { gap: 11px; font-size: 12px; color: #676178; }
+.puzzle-matrix .person small { display: block; margin-top: 4px; color: #a49493; font-size: 9px; }
+.puzzle-matrix .avatar { width: 32px; height: 32px; background: #f0edf4; color: #84819c; }
+.matrix-piece { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 47px; border-radius: 5px; position: relative; font-size: 11px; }
+.matrix-piece::after { content: ''; position: absolute; right: -6px; top: calc(50% - 6px); width: 12px; height: 12px; background: inherit; border-radius: 50%; z-index: 1; }
+.matrix-piece b { font-size: 16px; font-weight: 400; }
+.matrix-piece.yes, .puzzle-piece.yes { color: #5a63a0; background: #e2e5f7; }
+.matrix-piece.maybe, .puzzle-piece.maybe { color: #9e7b3c; background: #f6eacb; }
+.matrix-piece.no, .puzzle-piece.no { color: #b47760; background: #f5ddd2; }
+.matrix-piece.unknown, .puzzle-piece.unknown { color: #7d7474; background: repeating-linear-gradient(135deg, #efebe5 0, #efebe5 4px, #f6f3ee 4px, #f6f3ee 8px); border: 1px dashed #d8d1c8; }
+.matrix-piece.unknown::after { display: none; }
+.puzzle-matrix .first-choice { background: #f1f0f8; border-radius: 5px; }
+.puzzle-matrix th.first-choice { border-top: 2px solid #969bc5; }
+.matrix-totals td { padding-top: 13px; padding-bottom: 13px; font-size: 10px; color: #9c91a1; }
+.board-foot { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+.board-foot > span { display: flex; align-items: center; gap: 10px; }
+.board-foot .muted { font-size: 10px; }
+.ranking-section { margin-top: 34px; }
+.ranking-section .section-label { color: #af968c; font-size: 9px; letter-spacing: 1.8px; }
+.rank-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 17px; margin-bottom: 22px; }
+.rank-card { background: #fffefa; padding: 23px; border-color: var(--line); margin: 0; }
+.rank-card.best { border-color: #a0a3cb; background: #f7f6fc; }
+.rank-head { align-items: flex-start; }
+.rank-number { color: #c8c2ce; font-size: 37px; line-height: 1; }
+.best .rank-number { color: #7b80b3; }
+.rank-head > div { padding-top: 2px; }
+.rank-head .candidate-no { margin-bottom: 8px; }
+.rank-head h3 { font-size: 12px; color: #6d6780; }
+.score { margin-left: auto; font: 28px Georgia, serif; color: #595e8b; }
+.score small { color: #a99eaa; font: 9px "Microsoft YaHei", sans-serif; }
+.rank-time { font-size: 16px; color: #777491; margin: 18px 0; letter-spacing: .5px; }
+.puzzle-strip { display: flex; flex-wrap: wrap; gap: 5px; padding-right: 6px; }
+.puzzle-piece { border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 49px; height: 47px; position: relative; gap: 4px; }
+.puzzle-piece::after { content: ''; position: absolute; right: -4px; width: 8px; height: 8px; top: 20px; background: inherit; border-radius: 50%; }
+.puzzle-piece.unknown::after { display: none; }
+.puzzle-piece b { font-size: 11px; font-weight: 500; }
+.puzzle-piece > span { font-size: 8px; }
+.rank-metrics { gap: 10px; flex-wrap: wrap; color: #7c7185; font-size: 10px; margin: 17px 0 12px; }
+.rank-explanation { font-size: 11px; color: #8d7c84; }
+.score-breakdown { font-size: 11px; color: #8c7c88; margin-top: 5px; }
+.rank-action { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 19px; padding-top: 17px; border-top: 1px solid #e6e0e6; font-size: 10px; color: #a59aa4; }
+.rank-action .button { padding: 8px 12px; font-size: 11px; }
+.top-rank-label { color: #7d80af; font-size: 9px; }
+.rule-panel { display: flex; align-items: flex-start; justify-content: space-between; gap: 25px; }
+.rule-panel > div { min-width: 0; }
+.rule-panel .danger { white-space: nowrap; }
+@media (max-width: 1250px) {
+  .vote-layout { grid-template-columns: minmax(0, 1fr); }
+  .vote-layout > aside { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
+  .vote-layout > aside > p { grid-column: 1 / -1; }
+  .puzzle-options small { font-size: 10px; }
+  .rank-card { padding: 18px; }
+}
+@media (max-width: 1050px) {
+  .rank-grid { grid-template-columns: minmax(0, 1fr); }
+  .rank-card { padding: 22px; }
+  .puzzle-board .panel-title { flex-wrap: wrap; }
+}
+@media (max-width: 800px) {
+  .vote-cards { grid-template-columns: minmax(0, 1fr); }
+  .time-card { display: grid; grid-template-columns: 110px minmax(0, 1fr); column-gap: 20px; padding: 20px; }
+  .time-card-top { grid-column: 1 / -1; margin-bottom: 7px; }
+  .calendar-day { margin: 13px 0 5px; }
+  .time-card-date { grid-column: 1; }
+  .time-card-hours { grid-column: 1; font-size: 12px; margin: 6px 0 0; }
+  .puzzle-options { grid-column: 2; grid-row: 2 / 5; align-self: center; }
+  .vote-layout > aside { display: block; }
+  .puzzle-intro { padding: 17px; }
+  .intro-number { display: none; }
+  .puzzle-board { padding: 22px 18px; }
+  .rule-panel { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .time-card { transition: none; }
+}

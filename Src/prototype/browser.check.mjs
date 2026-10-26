@@ -30,13 +30,25 @@ try {
   await go('draft');await shot('02-draft');
   await page.getByRole('button',{name:'发布并开始收集'}).click();
   await page.waitForURL('**/#vote');
+  assert.equal(await page.locator('.time-card').count(),3);
   await page.getByRole('button',{name:'保存我的全部答案'}).click();
   await page.getByRole('alert').filter({hasText:'请为每个候选时段'}).waitFor();
   for(const id of [1,2,3]) await page.locator(`input[name="slot-${id}"][value="yes"]`).check();
+  await page.locator('input[name="slot-2"][value="maybe"]').check();
+  await page.locator('input[name="slot-3"][value="no"]').check();
+  assert.equal(await page.locator('#vote-count').textContent(),'3 / 3 块已选');
+  await page.locator('input[name="slot-1"][value="yes"]').focus();
+  await page.keyboard.press('ArrowRight');
+  assert.equal(await page.locator('.time-card').first().getAttribute('data-answer'),'maybe');
+  await page.keyboard.press('ArrowLeft');
+  assert.equal(await page.locator('.time-card').first().getAttribute('data-answer'),'yes');
   await page.locator('#simulate-failure').check();await page.getByRole('button',{name:'保存我的全部答案'}).click();
   await page.getByRole('alert').filter({hasText:'模拟保存失败'}).waitFor();
   assert.equal(await page.locator('input[type=radio]:checked').count(),3);
+  assert.deepEqual(await page.locator('input[type=radio]:checked').evaluateAll(inputs=>inputs.map(input=>input.value)),['yes','maybe','no']);
   await shot('03-vote');
+  await page.locator('input[name="slot-2"][value="yes"]').check();
+  await page.locator('input[name="slot-3"][value="yes"]').check();
   await page.getByRole('button',{name:'保存我的全部答案'}).click();await page.waitForURL('**/#results');
   assert.equal(await page.locator('[data-confirm]').count(),0);
   // Fill the other three accounts without replacing the poll or the owner's answers.
@@ -46,6 +58,8 @@ try {
     await page.getByRole('button',{name:'保存我的全部答案'}).click();await page.waitForURL('**/#results');
   }
   await page.locator('#user').selectOption('ma');
+  assert.equal(await page.locator('.matrix-piece.yes').count(),12);
+  assert.equal(await page.locator('.puzzle-strip .puzzle-piece').count(),12);
   await page.getByRole('button',{name:'关闭收集',exact:true}).click();
   await page.locator('[data-confirm="1"]').click();await page.getByRole('button',{name:'确认并进入会议'}).click();
   await page.waitForURL('**/#meeting');
@@ -73,6 +87,8 @@ try {
   assert.equal(await page.evaluate(()=>window.injected),undefined);
   // Warning scenarios, non-first selection and the required confirmation fields.
   await page.locator('#scenario').selectOption('unknown');await page.waitForURL('**/#results');
+  assert.equal(await page.locator('.matrix-piece.unknown').count(),3);
+  assert.equal(await page.locator('.puzzle-strip .puzzle-piece.unknown').count(),3);
   await page.getByText('必到成员 陈明强 尚未填写。',{exact:true}).waitFor();await shot('04-required-unknown');
   await page.getByRole('button',{name:'关闭收集',exact:true}).click();await page.locator('[data-confirm="1"]').click();
   assert.equal(await page.locator('#confirm-form textarea[required]').count(),1);
@@ -88,7 +104,9 @@ try {
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
   // A narrow/resized window must not let positioned cards cover the fixed nav.
   for(const width of [1024,800,640]) {
-    await page.setViewportSize({width,height:width===640?520:720});await go('group');
+    await page.setViewportSize({width,height:width===640?520:720});
+    for(const view of ['group','vote','results']) {
+    await go(view);
     await page.evaluate(()=>window.scrollTo(220,180));
     const layout=await page.evaluate(()=>{
       const sidebar=document.querySelector('.sidebar'), rect=sidebar.getBoundingClientRect();
@@ -99,9 +117,23 @@ try {
     assert.equal(layout.navOnTop,true,`Sidebar hit targets covered at ${width}px`);
     assert.equal(layout.overflow,false,`Whole-page horizontal overflow at ${width}px`);
     await page.evaluate(()=>window.scrollTo(0,0));
+    }
   }
+  await go('group');
   await shot('09-compact-window');
+  // Fifteen candidates stay in a locally scrolling board, without squeezing labels.
+  await page.evaluate(()=>{
+    const key='meetflow-t02-prototype-v1', s=JSON.parse(localStorage.getItem(key));
+    const start=new Date(s.slots[0].start).getTime();
+    s.slots=Array.from({length:15},(_,i)=>({id:i+1,start:new Date(start+i*86400000).toISOString(),end:new Date(start+i*86400000+3600000).toISOString()}));
+    s.votes={};s.status='OPEN';s.meeting=null;s.tasks=[];
+    localStorage.setItem(key,JSON.stringify(s));
+  });
+  await page.reload();await go('results');
+  assert.equal(await page.locator('.matrix-piece').count(),60);
+  assert.ok(await page.locator('.matrix-wrap').evaluate(el=>el.scrollWidth>el.clientWidth));
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   assert.deepEqual(errors,[]);
-  console.log('PASS: four accounts, validation, failed save, close/confirm, minutes, two tasks, permissions, complete/reopen, persistence, unknown/conflict warnings, XSS text; 1280×720, 1024px, 800px, 640×520 nav stacking and overflow.');
+  console.log('PASS: four accounts, keyboard choices, mixed-answer failed-save retention, puzzle states, 15 slots, close/confirm, minutes, tasks, permissions, reopen, persistence, warnings, XSS text; 1280×720, 1024px, 800px, 640×520 nav stacking and overflow.');
   if(saveScreenshots)console.log('Saved 9 screenshots to Docs/images/prototype.');
 } finally { if(browser)await browser.close();await new Promise(resolve=>server.close(resolve)); }
