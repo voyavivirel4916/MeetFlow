@@ -1,6 +1,6 @@
 # MeetFlow 源代码目录
 
-本目录用于存放项目源代码。开始编码后建议结构如下：
+本目录存放原型、正式前后端与验证工具：
 
 ```text
 Src/
@@ -20,7 +20,7 @@ Src/
 
 当前已形成需求V1.2、设计V1.0、文档整理基线B1和T02交互原型P0.3，暂未生成正式业务代码。完整需求和设计分别见[09](../Docs/09-需求分析文档.md)、[12](../Docs/12-系统设计文档.md)，版本关系见[13](../Docs/13-版本与变更记录.md)。
 
-T05后端基础已实现，可按[backend/README](backend/README.md)启动并执行基础测试；当前`/livez`只表示应用启动，数据库与业务模块尚未接入。T04正式表单反馈依据见[16](../Docs/16-表单与状态展示规范.md)，T05实际结果见[17](../Docs/17-后端基础工程记录.md)。
+T05～T07工程基础已实现，可按[backend/README](backend/README.md)迁移、启动后端，按[frontend/README](frontend/README.md)启动正式前端与开发代理；当前`/livez`只表示进程存活，数据库健康接口及同源静态托管在T08接入。T04表单依据见[16](../Docs/16-表单与状态展示规范.md)，T05历史结果见[17](../Docs/17-后端基础工程记录.md)，T06/T07结果见[18](../Docs/18-前端与数据库工程记录.md)。
 
 预览原型：在仓库根目录执行 `python Src/scripts/preview_prototype.py`。原型说明见[这里](prototype/README.md)，截图与本轮结果见[14](../Docs/14-交互原型与验证记录.md)。原型规则测试：`node --test Src/prototype/model.test.mjs`。
 

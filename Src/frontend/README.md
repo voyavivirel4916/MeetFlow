@@ -1,0 +1,54 @@
+# MeetFlow 正式前端
+
+T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端。沿用已确认的暖白、靛蓝、珊瑚橙风格。当前业务页面为明确的待接入状态，登录和业务交互按后续任务实现；[T02原型](../prototype/README.md)继续单独保留。
+
+## 安装与开发
+
+本轮使用 Node 22.20.0、npm 10.9.3。依赖精确版本和完整性保存在 `package.json`、`package-lock.json`；后续安装用 `npm ci`。
+
+```powershell
+cd D:\软件工程\Src\frontend
+npm ci
+npm run dev
+```
+
+访问 [本机前端](http://127.0.0.1:5173/)。开发服务只绑定127.0.0.1，端口被占用时直接报错。另开终端按[后端说明](../backend/README.md)启动8000端口的服务，再访问[连接检查](http://127.0.0.1:5173/connection)。Vite把 `/api` 和 `/livez` 代理到本机后端，无需开放跨域权限。
+
+| 页面 | 路径 |
+| --- | --- |
+| 小组列表、详情 | `/groups`、`/groups/:groupId` |
+| 发起、编辑排期 | `/groups/:groupId/polls/new`、`/polls/:pollId/edit` |
+| 填写、结果 | `/polls/:pollId/vote`、`/polls/:pollId/results` |
+| 会议、个人待办 | `/meetings/:meetingId`、`/tasks/mine` |
+| 登录、注册 | `/login`、`/register` |
+| 临时工程检查页 | `/connection` |
+
+ID只接受正整数字面量，无效地址显示找不到页面。此阶段不添加模拟身份、业务数据或登录守卫；认证守卫在T10接入。`safeReturnPath`只保留已知页面路径，拒绝外部地址、查询参数和片段，后续用于登录后返回。
+
+## API与状态约定
+
+`src/api/client.ts`统一调用同源 `/api/v1/`，携带同源Cookie；处理服务端错误、参数详情和请求编号，默认10秒超时并支持调用者取消，不自动重试。请求编号须与响应头一致。泛型只声明业务数据类型，具体DTO仍须由后续业务模块校验。
+
+提交遇到断连、超时、异常响应或5xx时返回 `uncertain=true`，页面应先读取现状核对，不直接宣称未保存或重新发送。401、403、409、422供后续页面分别处理。共享状态组件以文本、状态区域和警告区域呈现反馈；接口消息通过Vue文本插值显示，不作为HTML执行。
+
+不在localStorage、sessionStorage或URL中保存凭据、答案和表单输入。刷新后重取服务端数据；后续表单的失败保留、离开确认等交互按[16号规范](../../Docs/16-表单与状态展示规范.md)实现。
+
+## 检查
+
+```powershell
+npm test
+npm run build
+npm audit
+```
+
+构建输出在被Git忽略的 `dist/`。生产同源静态托管与数据库健康接口属于T08，当前构建成功不代表已完成该任务。
+
+浏览器检查额外需要Playwright和本机Chrome/Edge、已安装依赖的后端。默认从Node环境查找Playwright；可把已安装模块的绝对路径设为 `PLAYWRIGHT_MODULE_PATH`。默认使用后端Windows虚拟环境，其他环境通过 `MEETFLOW_TEST_PYTHON` 指定Python可执行文件：
+
+```powershell
+npm run check:browser
+$env:PROTOTYPE_BROWSER='msedge'
+npm run check:browser
+```
+
+检查脚本启动独立临时后端和空闲端口的Vite，结束后清理，不使用开发数据库或占用5173；加 `-- --screenshots` 可更新[验证截图](../../Docs/images/t06)。本轮结果见[18号记录](../../Docs/18-前端与数据库工程记录.md)。
