@@ -22,7 +22,7 @@ Src/
 
 T05～T08工程基础已实现：按[frontend/README](frontend/README.md)构建前端，再按[backend/README](backend/README.md)显式迁移并启动后端，即可从8000端口访问页面和API。`/api/v1/health`检查数据库可读性与结构版本，`/livez`只表示进程存活；开发仍可用Vite代理。规范见[16](../Docs/16-表单与状态展示规范.md)，历史结果见[17](../Docs/17-后端基础工程记录.md)、[18](../Docs/18-前端与数据库工程记录.md)，当前运行验证见[19](../Docs/19-本机同源运行与健康检查.md)。
 
-T09注册、登录、本人查询和退出接口，以及Cookie会话与来源检查见[20号记录](../Docs/20-认证与会话接口记录.md)。登录表单和路由守卫尚待T10接入，当前界面没有自动登录演示账号。
+T09认证接口见[20号记录](../Docs/20-认证与会话接口记录.md)，T10登录表单和路由守卫见[21号记录](../Docs/21-注册登录页面与守卫.md)。正式工程需要自行注册账号，无自动登录演示账号。
 
 预览原型：在仓库根目录执行 `python Src/scripts/preview_prototype.py`。原型说明见[这里](prototype/README.md)，截图与本轮结果见[14](../Docs/14-交互原型与验证记录.md)。原型规则测试：`node --test Src/prototype/model.test.mjs`。
 

@@ -2,7 +2,7 @@
 
 T05已建立应用工厂、配置、启动检查、统一响应/错误和请求日志。运行基准为Windows、Python 3.11.9，依赖版本与哈希锁定在`requirements.txt`及`requirements-dev.txt`。
 
-T07已加入SQLite连接、显式Alembic迁移和独立测试库，当前迁移建立账户、会话、小组和成员四张基础表。T09已实现注册、登录、当前用户与撤销会话接口；注册登录页面、小组和排期等业务按后续任务接入，不导入演示数据。
+T07建立账户、会话、小组和成员四张基础表及显式Alembic迁移。T09认证接口和T10注册登录页面已实现；小组和排期等业务按后续任务接入，不导入演示数据。
 
 T08已将构建后的前端与API接入同一本机服务。平时查看页面只需运行后端，无需同时运行Vite；修改前端后重新构建。
 
@@ -69,7 +69,7 @@ Invoke-RestMethod http://127.0.0.1:8000/api/v1/health
 
 用户名和邮箱trim后转小写；密码不trim，注册要求8～128字符且非纯空白。密码采用随机盐scrypt哈希；会话为32随机字节令牌，数据库仅保存SHA-256摘要，有效期固定8小时，不续期。成功登录替换当前浏览器会话，其他浏览器会话保留。无需配置签名密钥，没有默认密码或演示账号。
 
-Cookie名为 `meetflow_session`，HttpOnly、SameSite=Strict、Path=/，本机HTTP不设Secure。需要保存Cookie的命令行请求可用PowerShell的WebSession，或其他支持Cookie容器的HTTP客户端；不要把密码和令牌放入URL或提交到仓库。注册登录页面与路由守卫在T10接入，当前登录页仍为占位状态。
+Cookie名为 `meetflow_session`，HttpOnly、SameSite=Strict、Path=/，本机HTTP不设Secure。需要保存Cookie的命令行请求可用PowerShell的WebSession，或其他支持Cookie容器的HTTP客户端；不要把密码和令牌放入URL或提交到仓库。注册登录页面与路由守卫见[21号记录](../../Docs/21-注册登录页面与守卫.md)。
 
 API检查Origin及Sec-Fetch-Site，写请求要求application/json，正文上限256KiB（含流式内容）。本机命令行可省略浏览器来源头；浏览器开发代理须保留Host。数据库忙返回503 DB_BUSY，存储故障返回503 STORAGE_UNAVAILABLE，事务失败不下发成功Cookie。
 

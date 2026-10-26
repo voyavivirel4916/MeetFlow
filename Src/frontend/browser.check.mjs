@@ -65,6 +65,9 @@ try {
   }
   browser = await chromium.launch({ channel: process.env.PROTOTYPE_BROWSER || 'chrome', headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const bootstrap = { username: 'bootstrap_user', password: 'bootstrap-only-password' };
+  assert.equal((await context.request.post(origin + '/api/v1/auth/register', { data: { ...bootstrap, email: 'bootstrap@example.com' } })).status(), 201);
+  assert.equal((await context.request.post(origin + '/api/v1/auth/login', { data: bootstrap })).status(), 200);
   const page = await context.newPage();
   const errors = [], requests = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -76,14 +79,14 @@ try {
   for (const [path, title] of [
     ['/groups/1', '小组空间'], ['/groups/1/polls/new', '发起排期'], ['/polls/1/edit', '编辑排期'],
     ['/polls/1/vote', '填写时间'], ['/polls/1/results', '排期结果'], ['/meetings/1', '会议与行动'],
-    ['/tasks/mine', '我的待办'], ['/login', '登录'], ['/register', '注册'],
+    ['/tasks/mine', '我的待办'],
     ['/groups/0', '找不到这个页面'], ['/missing', '找不到这个页面'],
   ]) {
     await page.goto(origin + path);
     await page.getByRole('heading', { name: title, exact: true }).waitFor();
     assert.equal(await page.title(), `${title} · MeetFlow`);
   }
-  assert.equal(requests.filter(url => new URL(url).pathname.startsWith('/api/')).length, 0);
+  assert.equal(requests.filter(url => new URL(url).pathname.startsWith('/api/') && new URL(url).pathname !== '/api/v1/users/me').length, 0);
   await page.goto(origin + '/polls/1/results');
   await page.reload();
   await page.getByRole('heading', { name: '排期结果', exact: true }).waitFor();
@@ -101,7 +104,7 @@ try {
   }
   const screenshot = async name => {
     if (!process.argv.includes('--screenshots')) return;
-    const dir = resolve(root, built ? 'Docs/images/t08' : 'Docs/images/t06');
+    const dir = resolve(root, process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
     await mkdir(dir, { recursive: true });
     await page.screenshot({ path: resolve(dir, name + '.png'), fullPage: true });
   };
@@ -151,6 +154,7 @@ try {
     if (width === 800) await screenshot('02-error-800');
   }
   await page.goto(origin + '/groups');
+  await page.getByRole('heading', { name: '我的小组', exact: true }).waitFor();
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.activeElement.textContent), '跳到主要内容');
   await page.keyboard.press('Enter');
@@ -160,8 +164,14 @@ try {
   if (built) assert.ok(requests.every(url => new URL(url).origin === origin), 'Built UI must use one origin');
   assert.deepEqual(errors, []);
   if (process.argv.includes('--auth')) {
+    await context.request.post(origin + '/api/v1/auth/logout', { data: {} });
+    await page.goto(origin + '/connection');
     const { verifyAuth } = await import('./auth.browser.mjs');
     await verifyAuth(browser, page, origin);
+  }
+  if (process.argv.includes('--auth-ui')) {
+    const { verifyAuthUI } = await import('./auth-ui.browser.mjs');
+    await verifyAuthUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
 } finally {

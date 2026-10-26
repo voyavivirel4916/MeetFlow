@@ -1,6 +1,6 @@
 # MeetFlow 正式前端
 
-T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端，沿用暖白、靛蓝、珊瑚橙风格。T09后端认证接口已可用，注册登录页面与路由守卫在T10实现；其他业务页面继续待接入。[T02原型](../prototype/README.md)单独保留。
+T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端，沿用暖白、靛蓝、珊瑚橙风格。T10已接入真实注册登录表单和路由守卫；其他业务页面继续待接入。[T02原型](../prototype/README.md)单独保留。
 
 ## 本机运行与开发
 
@@ -25,7 +25,7 @@ npm run build
 | 登录、注册 | `/login`、`/register` |
 | 临时工程检查页 | `/connection` |
 
-ID只接受正整数字面量，无效地址显示找不到页面。此阶段不添加模拟身份、业务数据或登录守卫；认证守卫在T10接入。`safeReturnPath`只保留已知页面路径，拒绝外部地址、查询参数和片段，后续用于登录后返回。
+ID只接受正整数字面量，无效地址显示找不到页面。业务路径每次进入前核对服务端会话；未登录转登录页，连接失败转 `/session-check`，不展示受保护内容。`safeReturnPath`只允许已知受保护路径，拒绝外部地址、查询参数和片段。连接检查与404可直接访问。
 
 ## API与状态约定
 
@@ -51,10 +51,11 @@ npm audit
 npm run check:browser
 npm run check:delivery
 npm run check:auth
+npm run check:auth-ui
 $env:PROTOTYPE_BROWSER='msedge'
 npm run check:auth
 ```
 
 先运行 `npm run build`。检查脚本显式迁移独立临时数据库；`check:browser`验证Vite开发代理，`check:delivery`只启动后端并验证正式构建的同源页面。使用空闲端口，结束后清理，不使用开发数据库或占用8000/5173。加 `-- --screenshots` 更新对应截图。本轮结果与截图见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，T06/T07历史结果见[18号记录](../../Docs/18-前端与数据库工程记录.md)。
 
-`check:auth`在独立库中验证真实浏览器注册、登录、退出、HttpOnly Cookie、跨来源表单和多会话隔离，不使用尚待T10开发的登录表单。开发代理认证检查可用 `node browser.check.mjs --auth`，会沿用仓库真实代理策略。认证结果见[20号记录](../../Docs/20-认证与会话接口记录.md)。
+`check:auth`验证真实Cookie、跨来源表单和多会话隔离；`check:auth-ui`通过页面操作验证注册、登录、守卫、失败保留和不确定结果恢复。开发代理可用 `node browser.check.mjs --auth --auth-ui`。结果见[20号](../../Docs/20-认证与会话接口记录.md)和[21号记录](../../Docs/21-注册登录页面与守卫.md)。

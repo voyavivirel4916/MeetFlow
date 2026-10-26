@@ -2,6 +2,8 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { createWebHistory } from 'vue-router'
 import { createApplicationRouter } from './router'
+import { createSession, sessionKey } from './auth/session'
 import './style.css'
 
-createApp(App).use(createApplicationRouter(createWebHistory())).mount('#app')
+const session = createSession()
+createApp(App).provide(sessionKey, session).use(createApplicationRouter(createWebHistory(), session)).mount('#app')

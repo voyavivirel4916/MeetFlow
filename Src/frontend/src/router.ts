@@ -1,9 +1,15 @@
-import { createRouter, type Router, type RouterHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, type RouterHistory, type RouteRecordRaw } from 'vue-router'
 import StagePage from './views/StagePage.vue'
 import ConnectionPage from './views/ConnectionPage.vue'
+import AuthPage from './views/AuthPage.vue'
+import SessionCheckPage from './views/SessionCheckPage.vue'
+import { onUnauthorized } from './api/client'
+import type { Session } from './auth/session'
+import { safeReturnPath } from './navigation'
+export { safeReturnPath } from './navigation'
 
 const page = (path: string, title: string, description: string): RouteRecordRaw => ({
-  path, component: StagePage, meta: { title, description },
+  path, component: StagePage, meta: { title, description, requiresAuth: !path.includes('pathMatch') },
 })
 
 export const routes: RouteRecordRaw[] = [
@@ -16,24 +22,32 @@ export const routes: RouteRecordRaw[] = [
   page('/polls/:pollId([1-9]\\d*)/results', '排期结果', '这里将展示时间矩阵、推荐理由和会议确认。'),
   page('/meetings/:meetingId([1-9]\\d*)', '会议与行动', '这里将维护议程、纪要和后续任务。'),
   page('/tasks/mine', '我的待办', '这里将汇总分配给你的会议任务。'),
-  page('/login', '登录', '注册登录页面将在下一步开放。'),
-  page('/register', '注册', '注册登录页面将在下一步开放。'),
+  { path: '/login', name: 'login', component: AuthPage, props: { registering: false }, meta: { title: '登录', authPage: true } },
+  { path: '/register', name: 'register', component: AuthPage, props: { registering: true }, meta: { title: '注册', authPage: true } },
+  { path: '/session-check', name: 'session-check', component: SessionCheckPage, meta: { title: '确认登录状态' } },
   { path: '/connection', component: ConnectionPage, meta: { title: '连接检查' } },
   page('/:pathMatch(.*)*', '找不到这个页面', '请检查地址，或返回我的小组。'),
 ]
 
-export function createApplicationRouter(history: RouterHistory) {
+export function createApplicationRouter(history: RouterHistory, session: Session) {
   const router = createRouter({ history, routes })
+  router.beforeEach(async to => {
+    if (!to.meta.requiresAuth && !to.meta.authPage) return true
+    const phase = await session.check()
+    if (to.meta.authPage) {
+      return phase === 'authenticated' ? safeReturnPath(to.query.returnTo, router) : true
+    }
+    if (phase === 'authenticated') return true
+    return { name: phase === 'anonymous' ? 'login' : 'session-check',
+      query: { returnTo: safeReturnPath(to.path, router), ...(session.state.expired ? { expired: '1' } : {}) }, replace: true }
+  })
+  const dispose = onUnauthorized(() => {
+    session.expire()
+    const to = router.currentRoute.value
+    if (to.meta.requiresAuth) void router.replace({ name: 'login', query: { returnTo: safeReturnPath(to.path, router), expired: '1' } })
+  })
   router.afterEach(to => {
     if (typeof document !== 'undefined') document.title = `${String(to.meta.title || 'MeetFlow')} · MeetFlow`
   })
-  return router
-}
-
-// Login return targets carry only a known page path, never queries or form values.
-export function safeReturnPath(value: unknown, router: Router): string {
-  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\?#\s\u0000-\u001f%]/u.test(value)) return '/groups'
-  const target = router.resolve(value)
-  if (target.matched.length === 0 || target.matched[0]?.path.includes('pathMatch') || ['/login', '/register', '/connection'].includes(target.path)) return '/groups'
-  return target.path
+  return Object.assign(router, { disposeSessionListener: dispose })
 }

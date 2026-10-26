@@ -9,6 +9,13 @@ type RequestOptions = { method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'; bo
   signal?: AbortSignal; timeoutMs?: number }
 type Envelope<T> = { data: T; request_id: string }
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value)
+let authEpoch = 0
+const unauthorizedListeners = new Set<() => void>()
+export function advanceAuthEpoch() { authEpoch++ }
+export function onUnauthorized(listener: () => void) {
+  unauthorizedListeners.add(listener)
+  return () => unauthorizedListeners.delete(listener)
+}
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<Envelope<T>> {
   if (!/^\/api\/v1\/(?!.*(?:\.\.|[\\#]))[a-zA-Z0-9/_?=&%.-]+$/.test(path) || /%(?:2e|2f|5c)/i.test(path)) throw new TypeError('Expected a local /api/v1/ path')
@@ -20,6 +27,7 @@ export function checkHealth() { return request<{ status: 'ok' }>('/api/v1/health
 
 async function send<T>(path: string, options: RequestOptions): Promise<Envelope<T>> {
   const method = options.method || 'GET'
+  const startedEpoch = authEpoch
   const writing = method !== 'GET'
   const serialized = options.body === undefined ? undefined : JSON.stringify(options.body)
   const controller = new AbortController()
@@ -43,6 +51,11 @@ async function send<T>(path: string, options: RequestOptions): Promise<Envelope<
     if (!object(body) || typeof body.request_id !== 'string' || !id || id !== body.request_id) throw protocol()
     if (!response.ok) {
       if (!object(body.error) || typeof body.error.code !== 'string' || typeof body.error.message !== 'string') throw protocol()
+      if (response.status === 401 && startedEpoch === authEpoch && !/^\/api\/v1\/(auth\/|users\/me(?:\?|$)|health(?:\?|$))/.test(path)) {
+        for (const listener of unauthorizedListeners) {
+          try { listener() } catch { /* Preserve the original HTTP failure. */ }
+        }
+      }
       // An unexpected server failure can happen after a write has committed.
       throw new ApiFailure('http', body.error.message, response.status, body.error.code, id, body.error.details, writing && response.status >= 500)
     }
