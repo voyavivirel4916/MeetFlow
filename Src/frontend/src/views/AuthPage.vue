@@ -137,7 +137,12 @@ async function submit() {
             <p v-if="errors.email" id="email-error" class="field-error">{{ errors.email }}</p>
           </div>
           <div class="form-field"><label for="password">密码</label>
-            <div class="password-row"><input id="password" ref="passwordInput" v-model="fields.password" name="password" :type="showPassword ? 'text' : 'password'" :autocomplete="registering ? 'new-password' : 'current-password'" maxlength="256" required :aria-invalid="!!errors.password" aria-describedby="password-help password-error" @blur="blur('password')"><button class="secondary" type="button" :aria-pressed="showPassword" @click="showPassword = !showPassword">{{ showPassword ? '隐藏密码' : '显示密码' }}</button></div>
+            <div class="password-row"><input id="password" ref="passwordInput" v-model="fields.password" name="password" :type="showPassword ? 'text' : 'password'" :autocomplete="registering ? 'new-password' : 'current-password'" maxlength="256" required :aria-invalid="!!errors.password" aria-describedby="password-help password-error" @blur="blur('password')">
+              <button class="password-toggle" type="button" :aria-label="showPassword ? '隐藏密码' : '显示密码'" :title="showPassword ? '隐藏密码' : '显示密码'" aria-controls="password" :aria-pressed="showPassword" @click="showPassword = !showPassword">
+                <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A12 12 0 0 1 12 5c6.5 0 10 7 10 7a19 19 0 0 1-3 3.8M6.2 6.2A20 20 0 0 0 2 12s3.5 7 10 7a12 12 0 0 0 5.8-1.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+              </button>
+            </div>
             <small id="password-help">{{ registering ? '8～128个字符，不能全为空白；首尾空格会保留。' : '密码首尾空格会保留。' }}</small><p v-if="errors.password" id="password-error" class="field-error">{{ errors.password }}</p>
           </div>
           <button class="auth-submit" type="submit" :disabled="uncertain">{{ pending ? '正在提交…' : registering ? '注册账号' : '登录' }}</button>

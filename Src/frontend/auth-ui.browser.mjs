@@ -56,6 +56,15 @@ export async function verifyAuthUI(browser, origin, { root, screenshots }) {
     assert.equal(await page.locator('#password').inputValue(), 'wrong-password');
     await page.getByRole('button', { name: '显示密码', exact: true }).click();
     assert.equal(await page.locator('#password').getAttribute('type'), 'text');
+    const toggle = page.getByRole('button', { name: '隐藏密码', exact: true });
+    assert.equal(await toggle.getAttribute('aria-pressed'), 'true');
+    assert.equal(await toggle.locator('svg[aria-hidden="true"]').count(), 1);
+    assert.equal((await toggle.textContent()).trim(), '');
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    assert.equal(await page.locator('#password').getAttribute('type'), 'password');
+    assert.equal(await page.locator('#password').inputValue(), 'wrong-password');
+    assert.equal(await page.getByRole('button', { name: '显示密码', exact: true }).getAttribute('aria-controls'), 'password');
     await page.locator('#password').fill(password);
     await submit().click();
     await page.waitForURL(origin + '/polls/2/vote');
