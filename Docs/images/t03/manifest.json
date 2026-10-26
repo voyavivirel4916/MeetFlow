@@ -21,11 +21,11 @@
         "MF-13"
       ],
       "source": "../../diagrams/t03/01-use-cases.mmd",
-      "sha256": "65506ca7ce8977af2150b163338829168d0233e6be22394e9bba12dbe1329e93",
-      "svg_sha256": "4e059927252044d12b56d9b166069964e0a951aefda4536f137863391be4169a",
-      "png_sha256": "486e97d99f4fc215e8aa6e30cf1873d0688fcf204127f5c94ba67aab8d1d9107",
-      "width": 861,
-      "height": 1683
+      "sha256": "9c754b8f7c6adbd8b21d7305a266fa4a92d591addaee768b419c2aa036e568f9",
+      "svg_sha256": "f6b70d262ed3a33b87376ac045d6c397646bec0d09bdf37a763770d6681e6bc6",
+      "png_sha256": "5875a75bb1ce9fdef20f6a35e5fc8f6975017abf685593797b89066a450db44a",
+      "width": 821,
+      "height": 1798
     },
     {
       "id": "02-poll-state",
@@ -38,7 +38,7 @@
       ],
       "source": "../../diagrams/t03/02-poll-state.mmd",
       "sha256": "c46b6c37457f5b204c647ca7ebd2745a72c1462d9bb0a424ef795f4b045a7a48",
-      "svg_sha256": "b6f3aa02b7fd93397d676d2ffec91c58c51e3b6129882d512d67750d96f503b1",
+      "svg_sha256": "2f7d876ba2c6c47e36e69006bb0248edb6cc9a62282e3652e5bd6d359e7d92ec",
       "png_sha256": "f910059ccff809f559d6f7bdab23f56736354b3c9ee1e4225bcc5f4afe8f5a2a",
       "width": 1328,
       "height": 1477
@@ -52,7 +52,7 @@
       ],
       "source": "../../diagrams/t03/03-task-state.mmd",
       "sha256": "a4137f838ca8c6b8a06e8f9471c99f5b0c557e32d44658e5265f8c39e5a12af5",
-      "svg_sha256": "fedf8800a6ee7ef5988f6c3d9a799a6f1194e1b05d165339c0e9df63451e20a0",
+      "svg_sha256": "db3b35d700704afb6be203d2852a2bdeb186e6e113ff2fa88e7292fa9947f15b",
       "png_sha256": "fe9b34a26d9430e65733cd2da0820deeee5c37487799bc111a674c9bc8cac1a3",
       "width": 607,
       "height": 1125
@@ -74,7 +74,7 @@
       ],
       "source": "../../diagrams/t03/04-data-er.mmd",
       "sha256": "5b8f0f84e7bc11d9d5f62790c1867ba48e2e0c6d9bab16ac4e6b8c47e9ddc3c1",
-      "svg_sha256": "617df80383ac6de9257447e2476346cc0d53e089ff6da9a14c6d950ebb7e316b",
+      "svg_sha256": "2261cbd30406049d6668bc87fdfc415ed616c6540f456f7a0a53ee684bb89c25",
       "png_sha256": "ad21b922e7f0313c2ac35cb2ce003edaf1bc4abcb8cb6ca948f96a147e351204",
       "width": 1256,
       "height": 2158

@@ -8,6 +8,7 @@ flowchart LR
         C01(["注册 / 登录<br/>MF-01"])
         C13(["退出当前会话<br/>MF-01"])
         C02(["创建 / 加入小组<br/>MF-02"])
+        C14(["重置小组邀请码<br/>MF-02"])
         C03(["编辑排期草稿<br/>MF-03 / MF-04"])
         C04(["发布 / 关闭 / 取消收集<br/>MF-05"])
         C05(["填写或覆盖本人答案<br/>MF-06 · UC-01"])
@@ -28,6 +29,7 @@ flowchart LR
     MEMBER ---|仅本人执行的任务| C11
     MEMBER --- C12
     OWNER --- C03
+    OWNER --- C14
     OWNER --- C04
     OWNER --- C07
     OWNER --- C09
@@ -36,4 +38,4 @@ flowchart LR
     classDef actor fill:#eeedf6,stroke:#989bc0,color:#303759
     classDef goal fill:#fffdf7,stroke:#c6bfce,color:#444967
     class GUEST,USER,MEMBER,OWNER actor
-    class C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13 goal
+    class C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14 goal

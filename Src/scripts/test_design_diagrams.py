@@ -59,6 +59,12 @@ class DesignDiagramTests(unittest.TestCase):
         for phrase in ('到期请求判定', '无需后台定时器', '存储状态可能仍为OPEN'):
             self.assertIn(phrase, source)
 
+    def test_invite_reset_is_explicitly_owner_only(self):
+        source = read(SOURCES / '01-use-cases.mmd')
+        node = re.search(r'(C\d+)\(\["重置小组邀请码', source).group(1)
+        associations = re.findall(rf'^\s*(GUEST|USER|MEMBER|OWNER) --- {node}$', source, re.M)
+        self.assertEqual(associations, ['OWNER'])
+
     def test_task_done_is_reopenable_and_not_a_terminal_state(self):
         source = read(SOURCES / '03-task-state.mmd')
         states = {'TODO', 'IN_PROGRESS', 'DONE'}
