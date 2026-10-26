@@ -10,6 +10,7 @@ const date = s => s ? new Date(s).toLocaleDateString('zh-CN',{timeZone:'Asia/Sha
 const time = s => s ? new Date(s).toLocaleTimeString('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false}) : '';
 const when = slot => `${date(slot.start)} · ${time(slot.start)}–${time(slot.end)}`;
 const names={group:'我的小组',draft:'发起排期',vote:'填写时间',results:'时间与推荐',meeting:'会议与任务',tasks:'我的待办'};
+document.querySelectorAll('[data-nav]').forEach(el=>{el.title=names[el.dataset.nav];});
 const statuses={DRAFT:'草稿',OPEN:'收集中',CLOSED:'已关闭',CONFIRMED:'已确认',CANCELLED:'已取消'};
 const taskNames={TODO:'待办',IN_PROGRESS:'进行中',DONE:'已完成'};
 const me=()=>state.user==='ma';

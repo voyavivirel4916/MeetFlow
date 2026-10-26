@@ -86,7 +86,22 @@ try {
   // Desktop minimum viewport: the page itself should not scroll horizontally.
   await page.setViewportSize({width:1280,height:720});await go('results');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+  // A narrow/resized window must not let positioned cards cover the fixed nav.
+  for(const width of [1024,800,640]) {
+    await page.setViewportSize({width,height:width===640?520:720});await go('group');
+    await page.evaluate(()=>window.scrollTo(220,180));
+    const layout=await page.evaluate(()=>{
+      const sidebar=document.querySelector('.sidebar'), rect=sidebar.getBoundingClientRect();
+      const points=[120,300,500].filter(y=>y<innerHeight);
+      return { overflow:document.documentElement.scrollWidth>innerWidth,
+        navOnTop:points.every(y=>sidebar.contains(document.elementFromPoint(rect.width/2,y))) };
+    });
+    assert.equal(layout.navOnTop,true,`Sidebar hit targets covered at ${width}px`);
+    assert.equal(layout.overflow,false,`Whole-page horizontal overflow at ${width}px`);
+    await page.evaluate(()=>window.scrollTo(0,0));
+  }
+  await shot('09-compact-window');
   assert.deepEqual(errors,[]);
-  console.log('PASS: four accounts, validation, failed save, close/confirm, minutes, two tasks, permissions, complete/reopen, persistence, unknown/conflict warnings, XSS text, 1280×720.');
-  if(saveScreenshots)console.log('Saved 8 screenshots to Docs/images/prototype.');
+  console.log('PASS: four accounts, validation, failed save, close/confirm, minutes, two tasks, permissions, complete/reopen, persistence, unknown/conflict warnings, XSS text; 1280×720, 1024px, 800px, 640×520 nav stacking and overflow.');
+  if(saveScreenshots)console.log('Saved 9 screenshots to Docs/images/prototype.');
 } finally { if(browser)await browser.close();await new Promise(resolve=>server.close(resolve)); }
