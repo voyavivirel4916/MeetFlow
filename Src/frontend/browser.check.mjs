@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer as createNetServer } from 'node:net';
-import { createServer } from 'vite';
+import { createServer, loadConfigFromFile } from 'vite';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
@@ -51,13 +51,21 @@ try {
     await new Promise(done => frontendProbe.listen(0, '127.0.0.1', done));
     const frontendPort = frontendProbe.address().port;
     await new Promise(done => frontendProbe.close(done));
+    const loaded = await loadConfigFromFile({ command: 'serve', mode: 'development' }, resolve(here, 'vite.config.ts'));
+    const proxyFor = key => {
+      const rule = loaded.config.server.proxy[key];
+      return typeof rule === 'string' ? target : { ...rule, target };
+    };
     server = await createServer({ configFile: resolve(here, 'vite.config.ts'), root: here,
-      server: { host: '127.0.0.1', port: frontendPort, proxy: { '/api': target, '/livez': target } } });
+      server: { host: '127.0.0.1', port: frontendPort, proxy: {
+        '/api': proxyFor('/api'), '/livez': proxyFor('/livez'),
+      } } });
     await server.listen();
     origin = `http://127.0.0.1:${server.httpServer.address().port}`;
   }
   browser = await chromium.launch({ channel: process.env.PROTOTYPE_BROWSER || 'chrome', headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
   const errors = [], requests = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => requests.push(request.url()));
@@ -151,6 +159,10 @@ try {
   assert.ok(requests.every(url => new URL(url).hostname === '127.0.0.1'));
   if (built) assert.ok(requests.every(url => new URL(url).origin === origin), 'Built UI must use one origin');
   assert.deepEqual(errors, []);
+  if (process.argv.includes('--auth')) {
+    const { verifyAuth } = await import('./auth.browser.mjs');
+    await verifyAuth(browser, page, origin);
+  }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
 } finally {
   if (browser) await browser.close();

@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-26",
+  "python": "3.11.9",
+  "os_reported_by_platform": "Windows-10-10.0.26200-SP0",
+  "cpu": "AMD Ryzen 7 8845H w/ Radeon 780M Graphics",
+  "operation": "verify_password, one warmup, 30 sequential samples",
+  "note": "Other validation tasks were running on the same computer; initial parameter reference only.",
+  "N": 16384, "r": 8, "p": 1, "salt_bytes": 16, "dklen": 64,
+  "samples_ms": [100.128, 104.064, 94.097, 93.684, 93.528, 93.498, 87.041, 92.027, 88.342, 98.369, 88.62, 88.626, 93.566, 92.199, 92.369, 88.055, 90.311, 90.361, 86.162, 92.717, 86.414, 83.384, 87.656, 95.403, 94.251, 88.153, 94.64, 98.015, 89.832, 85.818],
+  "median_ms": 92.113,
+  "p95_ms_nearest_rank": 100.128
+}

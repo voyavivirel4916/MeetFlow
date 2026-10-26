@@ -92,7 +92,7 @@ def test_unhandled_failure_is_generic_in_response_and_logs(app, client, caplog):
 def test_openapi_is_local_and_interactive_cdn_docs_are_disabled(client):
     schema = client.get('/openapi.json').json()
     assert '/livez' in schema['paths']
-    assert '/auth/login' not in schema['paths']
+    assert '/api/v1/auth/login' in schema['paths']
     assert client.get('/docs').status_code == 404
     assert client.get('/redoc').status_code == 404
 

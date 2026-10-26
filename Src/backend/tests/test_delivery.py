@@ -62,7 +62,7 @@ def test_health_is_public_read_only_uncached_and_has_no_private_metadata(client,
     assert response.headers['cache-control'] == 'no-store'
     assert str(path) not in response.text
     assert path.read_bytes() == before
-    assert client.post('/api/v1/health').status_code == 405
+    assert client.post('/api/v1/health', json={}).status_code == 405
 
 
 def test_missing_database_after_startup_is_not_recreated_and_liveness_stays_independent(client, settings):

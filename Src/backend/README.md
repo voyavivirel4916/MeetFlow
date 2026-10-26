@@ -2,7 +2,7 @@
 
 T05已建立应用工厂、配置、启动检查、统一响应/错误和请求日志。运行基准为Windows、Python 3.11.9，依赖版本与哈希锁定在`requirements.txt`及`requirements-dev.txt`。
 
-T07已加入SQLite连接、显式Alembic迁移和独立测试库；当前迁移建立账户、会话、小组和成员四张基础表。认证、小组、排期等业务按T09之后的任务逐步接入，不导入演示数据，也不宣称业务已经就绪。
+T07已加入SQLite连接、显式Alembic迁移和独立测试库，当前迁移建立账户、会话、小组和成员四张基础表。T09已实现注册、登录、当前用户与撤销会话接口；注册登录页面、小组和排期等业务按后续任务接入，不导入演示数据。
 
 T08已将构建后的前端与API接入同一本机服务。平时查看页面只需运行后端，无需同时运行Vite；修改前端后重新构建。
 
@@ -29,7 +29,7 @@ python -m venv .venv
 Invoke-RestMethod http://127.0.0.1:8000/api/v1/health
 ```
 
-`/api/v1/health`无需登录，数据库可读且结构版本正确时返回`data.status=ok`及本次`request_id`，存储异常时返回503和`STORAGE_UNAVAILABLE`；不返回文件路径或账号信息，不缓存结果。`/livez`仅表示进程存活，数据库暂时不可读时仍可返回ok；两者都不代表账户和会议业务已实现。
+`/api/v1/health`无需登录，数据库可读且结构版本正确时返回`data.status=ok`及本次`request_id`，存储异常时返回503和`STORAGE_UNAVAILABLE`；不返回文件路径或账号信息，不缓存结果。`/livez`仅表示进程存活，数据库暂时不可读时仍可返回ok；两者都不代表完整业务已就绪。
 
 页面深链接可直接打开和刷新。`/assets`提供构建资源；未知API、缺失资源和保留路径保持JSON错误，不回退成HTML。未知页面由Vue显示找不到页面。`/openapi.json`提供本机接口描述；依赖公网CDN的交互文档页未启用。
 
@@ -56,7 +56,24 @@ Invoke-RestMethod http://127.0.0.1:8000/api/v1/health
 
 后续表通过新迁移逐步增加，不自动建表或导入演示账号，不提供破坏性降级命令。完整备份恢复流程在T33验证。
 
-会话与凭据配置随T09加入，不放置可复用的默认密钥。当前请求日志只记录服务端生成的request_id、方法、匹配路由模板、状态及耗时，不记录正文、查询字符串、Cookie、令牌或异常原文；后续认证完成再加入经验证的用户ID。
+## 账户接口
+
+接口前缀为 `/api/v1`：
+
+| 请求 | 说明 |
+| --- | --- |
+| POST /auth/register | `{username,email,password}`；201返回本人信息，不自动登录；重复用户名/邮箱409 |
+| POST /auth/login | `{username,password}`；200设置HttpOnly会话Cookie；错误凭据统一401 |
+| GET /users/me | Cookie有效时返回本人`{id,username,email}`；否则401 |
+| POST /auth/logout | 正文`{}`；撤销会话并删除Cookie；已撤销令牌重复退出仍200 |
+
+用户名和邮箱trim后转小写；密码不trim，注册要求8～128字符且非纯空白。密码采用随机盐scrypt哈希；会话为32随机字节令牌，数据库仅保存SHA-256摘要，有效期固定8小时，不续期。成功登录替换当前浏览器会话，其他浏览器会话保留。无需配置签名密钥，没有默认密码或演示账号。
+
+Cookie名为 `meetflow_session`，HttpOnly、SameSite=Strict、Path=/，本机HTTP不设Secure。需要保存Cookie的命令行请求可用PowerShell的WebSession，或其他支持Cookie容器的HTTP客户端；不要把密码和令牌放入URL或提交到仓库。注册登录页面与路由守卫在T10接入，当前登录页仍为占位状态。
+
+API检查Origin及Sec-Fetch-Site，写请求要求application/json，正文上限256KiB（含流式内容）。本机命令行可省略浏览器来源头；浏览器开发代理须保留Host。数据库忙返回503 DB_BUSY，存储故障返回503 STORAGE_UNAVAILABLE，事务失败不下发成功Cookie。
+
+日志只记录服务端生成的request_id、已验证用户ID、方法、路由模板、状态及耗时，不记录邮箱、正文、查询字符串、Cookie、密码、令牌或异常原文。完整边界与实际结果见[20号记录](../../Docs/20-认证与会话接口记录.md)。
 
 ## 目录和验证
 
@@ -65,6 +82,8 @@ app/
   __main__.py       # python -m app，使用经过校验的本机配置
   main.py           # create_app与生命周期
   api/system.py     # /livez与/api/v1/health
+  api/auth.py       # 注册、登录、退出与当前用户
+  auth/             # 输入模型、密码、会话服务与认证依赖
   web.py            # 前端构建检查、静态资源与SPA回退边界
   common/           # 配置、统一响应、错误与请求上下文
   db/               # 连接、基础表、显式迁移入口和事务
@@ -79,7 +98,7 @@ tests/              # 独立临时目录、迁移、约束、接口和启动验�
 .\.venv\Scripts\python.exe -m pip check
 ```
 
-测试使用独立临时目录与最小前端文件，不依赖实际dist，也不改开发数据。覆盖配置、迁移、约束、写锁与回滚，以及同源页面、静态路径边界、健康检查、只读库和缺失构建文件。真实Vue构建的双浏览器检查见前端`npm run check:delivery`。测试专用路由只在测试内注册，不进入产品应用。
+测试使用独立临时目录与最小前端文件，不依赖实际dist，也不改开发数据。覆盖配置、迁移、静态托管、健康、认证与来源边界；验证8小时到期、撤销、重启保留、写锁和失败回滚。真实浏览器检查见前端`npm run check:auth`，复用同源运行检查。测试专用路由只在测试内注册，不进入产品应用。
 
 依赖调整时用本项目环境安装`pip-tools==7.6.2`，重新生成两份锁文件，再安装和测试：
 
@@ -89,3 +108,5 @@ tests/              # 独立临时目录、迁移、约束、接口和启动验�
 ```
 
 历史结果见[17号记录](../../Docs/17-后端基础工程记录.md)、[18号记录](../../Docs/18-前端与数据库工程记录.md)，当前同源运行结果见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，表单约定见[16号规范](../../Docs/16-表单与状态展示规范.md)。生命周期和配置分别参考[FastAPI官方说明](https://fastapi.tiangolo.com/advanced/events/)及[Pydantic Settings官方说明](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)。
+
+本轮Python下载连接出现TLS中断，锁文件通过从官方PyPI下载、校验SHA-256的本地wheel缓存生成，保留了原依赖版本；缓存不提交。正常安装仍直接使用上述哈希锁文件，不需要编译命令注释中的本机缓存。

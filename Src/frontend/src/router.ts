@@ -16,8 +16,8 @@ export const routes: RouteRecordRaw[] = [
   page('/polls/:pollId([1-9]\\d*)/results', '排期结果', '这里将展示时间矩阵、推荐理由和会议确认。'),
   page('/meetings/:meetingId([1-9]\\d*)', '会议与行动', '这里将维护议程、纪要和后续任务。'),
   page('/tasks/mine', '我的待办', '这里将汇总分配给你的会议任务。'),
-  page('/login', '登录', '注册登录将在认证接口完成后接入。'),
-  page('/register', '注册', '注册登录将在认证接口完成后接入。'),
+  page('/login', '登录', '注册登录页面将在下一步开放。'),
+  page('/register', '注册', '注册登录页面将在下一步开放。'),
   { path: '/connection', component: ConnectionPage, meta: { title: '连接检查' } },
   page('/:pathMatch(.*)*', '找不到这个页面', '请检查地址，或返回我的小组。'),
 ]

@@ -10,7 +10,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "test": "vitest run",
     "check:browser": "node browser.check.mjs",
-    "check:delivery": "node browser.check.mjs --built"
+    "check:delivery": "node browser.check.mjs --built",
+    "check:auth": "node browser.check.mjs --built --auth"
   },
   "dependencies": {
     "vue": "3.5.44",
