@@ -16,6 +16,7 @@ const success = ref(typeof history.state.groupNotice === 'string' ? history.stat
 if (history.state.groupNotice) history.replaceState({ ...history.state, groupNotice: undefined }, '')
 const live = useGroupLifetime(() => false, () => pending.value)
 const owner = computed(() => group.value?.owner_id === session.state.user?.id)
+const orderedMembers = computed(() => [...members.value].sort((a, b) => Number(b.role === 'OWNER') - Number(a.role === 'OWNER')))
 const ready = computed(() => !!group.value && !loading.value && !readError.value && !pending.value)
 let reader: AbortController | undefined
 async function load() {
@@ -76,8 +77,8 @@ async function copy() {
   <p v-if="group && (loading || readError)" class="muted">下方是上次读取的内容；邀请码操作需重新读取成功后使用。</p>
   <p v-if="message" :role="writeError ? 'alert' : 'status'" class="form-summary" :class="{ uncertain }">{{ message }}<small v-if="writeError?.requestId">请求编号：{{ writeError.requestId }}</small><button v-if="uncertain" class="secondary" :disabled="loading || pending" @click="load">核对当前邀请码</button></p>
   <div v-if="group" class="group-detail-layout">
-    <div><section class="group-about"><p class="eyebrow">OUR SHARED SPACE</p><h2>关于这个小组</h2><p class="plain-text">{{ group.description || '还没有填写说明，从一次共同讨论开始吧。' }}</p><div class="group-count"><strong>{{ members.length.toString().padStart(2, '0') }}</strong><span>/ 20 位伙伴<br>一起把事情推进</span></div></section>
-      <section class="members-card"><div class="section-heading"><h2>小组成员</h2><span>{{ members.length }} 人</span></div><ul class="member-list"><li v-for="member in members" :key="member.user_id"><span class="member-avatar" aria-hidden="true">{{ member.username.slice(0, 1).toUpperCase() }}</span><div><strong>{{ member.username }}</strong><small v-if="member.user_id === session.state.user?.id">这是你</small></div><span class="role-badge">{{ member.role === 'OWNER' ? '负责人' : '成员' }}</span></li></ul></section>
+    <div><section class="group-about"><p class="eyebrow">OUR SHARED SPACE</p><h2>关于这个小组</h2><p class="plain-text">{{ group.description || '还没有填写说明，从一次共同讨论开始吧。' }}</p><div class="group-count" :aria-label="`小组成员${members.length}人，上限20人`"><strong>{{ members.length.toString().padStart(2, '0') }}</strong><span>/20</span></div></section>
+      <section class="members-card"><div class="section-heading"><h2>小组成员</h2><span>{{ members.length }} 人</span></div><ul class="member-list"><li v-for="member in orderedMembers" :key="member.user_id" :class="{ 'current-member': member.user_id === session.state.user?.id }" :aria-label="member.user_id === session.state.user?.id ? `${member.username}，当前登录成员` : undefined"><span class="member-avatar" aria-hidden="true">{{ member.username.slice(0, 1).toUpperCase() }}</span><div><strong>{{ member.username }}</strong></div><span class="role-badge">{{ member.role === 'OWNER' ? '负责人' : '成员' }}</span></li></ul></section>
     </div>
     <div><section v-if="owner" class="invite-card"><p class="eyebrow">邀请伙伴，补齐拼图</p><h2>小组邀请码</h2><p class="muted">分享给同学，登录后即可加入。{{ group.member_count >= 20 ? '目前已满20人。' : `还可加入${20 - group.member_count}人。` }}</p>
       <label for="current-invite" class="form-help">{{ uncertain || readError || loading ? '上次读取的邀请码（待核对）' : '当前邀请码' }}</label><input id="current-invite" ref="selectedCode" class="invite-display" readonly :value="uncertain || readError || loading ? '' : group.invite_code" :placeholder="uncertain || readError || loading ? '请先重新读取' : ''" :aria-label="uncertain ? '邀请码待核对' : '当前邀请码'">

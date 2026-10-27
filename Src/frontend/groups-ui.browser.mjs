@@ -110,11 +110,28 @@ export async function verifyGroupsUI(browser, origin, { root, screenshots }) {
     await submit(memberPage).click();
     await heading(memberPage, '时间拼图 · 课程项目组');
     assert.equal(await memberPage.locator('.member-list li').count(), 2);
+    await memberPage.route(/\/api\/v1\/groups\/\d+\/members$/, async route => {
+      const response = await route.fetch();
+      const payload = await response.json();
+      payload.data.items.reverse();
+      await route.fulfill({ response, json: payload });
+    });
+    await memberPage.getByRole('button', { name: '刷新小组', exact: true }).click();
+    await memberPage.waitForFunction(() => document.querySelector('.group-heading button')?.textContent === '刷新小组');
+    assert.match(await memberPage.locator('.member-list li').first().textContent(), /ui_group_owner.*负责人/);
+    assert.equal(await memberPage.locator('.member-list .current-member').count(), 1);
+    assert.match(await memberPage.locator('.member-list .current-member').textContent(), /ui_group_member/);
+    assert.equal(await memberPage.locator('.member-list .current-member').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(241, 239, 248)');
+    assert.equal(await memberPage.getByText('这是你', { exact: true }).count(), 0);
+    assert.equal(await memberPage.locator('.group-count').textContent(), '02/20');
+    assert.equal(await memberPage.locator('.group-count').getByText('一起把事情推进', { exact: true }).count(), 0);
+    await memberPage.unroute(/\/api\/v1\/groups\/\d+\/members$/);
     assert.equal(await memberPage.getByRole('button', { name: '重置邀请码', exact: true }).count(), 0);
     assert.equal(await memberPage.locator('#current-invite').count(), 0);
     await shot(memberPage, '04-member');
     await page.getByRole('button', { name: '刷新小组', exact: true }).click();
     await page.waitForFunction(() => document.querySelectorAll('.member-list li').length === 2);
+    assert.match(await page.locator('.member-list .current-member').textContent(), /ui_group_owner/);
     await shot(page, '05-owner');
     for (const width of [1440, 1024, 800, 640, 400]) {
       await page.setViewportSize({ width, height: 1000 });
