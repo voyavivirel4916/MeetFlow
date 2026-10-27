@@ -87,7 +87,7 @@ try {
     assert.equal(await page.title(), `${title} · MeetFlow`);
   }
   assert.ok(requests.filter(url => new URL(url).pathname.startsWith('/api/')).every(url =>
-    /^\/api\/v1\/(users\/me|groups(?:\/1(?:\/members)?)?)$/.test(new URL(url).pathname)));
+    /^\/api\/v1\/(users\/me|groups(?:\/1(?:\/members|\/polls)?)?|polls\/1)$/.test(new URL(url).pathname)));
   await page.goto(origin + '/polls/1/results');
   await page.reload();
   await page.getByRole('heading', { name: '排期结果', exact: true }).waitFor();
@@ -105,7 +105,7 @@ try {
   }
   const screenshot = async name => {
     if (!process.argv.includes('--screenshots')) return;
-    const dir = resolve(root, process.argv.includes('--groups-ui') ? 'Docs/images/t13' : process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
+    const dir = resolve(root, process.argv.includes('--poll-editor') ? 'Docs/images/t16' : process.argv.includes('--groups-ui') ? 'Docs/images/t13' : process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
     await mkdir(dir, { recursive: true });
     await page.screenshot({ path: resolve(dir, name + '.png'), fullPage: true });
   };
@@ -185,6 +185,10 @@ try {
   if (process.argv.includes('--polls')) {
     const { verifyPolls } = await import('./polls.browser.mjs');
     await verifyPolls(browser, origin);
+  }
+  if (process.argv.includes('--poll-editor')) {
+    const { verifyPollEditor } = await import('./poll-editor.browser.mjs');
+    await verifyPollEditor(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
 } finally {

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { ApiFailure } from '../api/client'
 import { useSession } from '../auth/session'
 import StateNotice from '../components/StateNotice.vue'
+import PollList from '../components/PollList.vue'
 import { groupsApi, type Group, type Member } from '../groups/api'
 import { failure, useGroupLifetime } from '../groups/forms'
 
@@ -11,6 +12,7 @@ const route = useRoute(), session = useSession(), id = String(route.params.group
 const group = ref<Group>(), members = ref<Member[]>([]), loading = ref(false), readError = ref<ApiFailure>()
 const pending = ref(false), copying = ref(false), uncertain = ref(false), message = ref(''), writeError = ref<ApiFailure>()
 const selectedCode = ref<HTMLInputElement>(), manualCopy = ref(false)
+const pollList = ref<InstanceType<typeof PollList>>()
 const success = ref(typeof history.state.groupNotice === 'string' ? history.state.groupNotice : '')
 // Consume navigation feedback once; a reload is a fresh read, not a repeated save.
 if (history.state.groupNotice) history.replaceState({ ...history.state, groupNotice: undefined }, '')
@@ -28,6 +30,7 @@ async function load() {
     if (!live()) return
     if (roster.find(member => member.role === 'OWNER')?.user_id !== value.owner_id) throw new ApiFailure('protocol', '成员信息需要重新核对，请刷新。')
     group.value = value; members.value = roster
+    void pollList.value?.refresh()
     if (uncertain.value) { uncertain.value = false; message.value = '已重新读取当前邀请码，请使用下方最新代码。'; writeError.value = undefined }
   } catch (error) {
     if (!live()) return
@@ -79,11 +82,12 @@ async function copy() {
   <div v-if="group" class="group-detail-layout">
     <div><section class="group-about"><p class="eyebrow">OUR SHARED SPACE</p><h2>关于这个小组</h2><p class="plain-text">{{ group.description || '还没有填写说明，从一次共同讨论开始吧。' }}</p></section>
       <section class="members-card"><div class="section-heading"><h2>小组成员</h2><span class="member-capacity" :aria-label="`小组成员${members.length}人，上限20人`">{{ members.length.toString().padStart(2, '0') }}/20</span></div><ul class="member-list"><li v-for="member in orderedMembers" :key="member.user_id" :class="{ 'current-member': member.user_id === session.state.user?.id }" :aria-label="member.user_id === session.state.user?.id ? `${member.username}，当前登录成员` : undefined"><span class="member-avatar" aria-hidden="true">{{ member.username.slice(0, 1).toUpperCase() }}</span><div><strong>{{ member.username }}</strong></div><span class="role-badge">{{ member.role === 'OWNER' ? '负责人' : '成员' }}</span></li></ul></section>
+      <PollList ref="pollList" :group-id="group.id" :can-create="!!owner && ready" />
     </div>
     <div><section v-if="owner" class="invite-card"><p class="eyebrow">邀请伙伴，补齐拼图</p><h2>小组邀请码</h2><p class="muted">分享给同学，登录后即可加入。{{ group.member_count >= 20 ? '目前已满20人。' : `还可加入${20 - group.member_count}人。` }}</p>
       <label for="current-invite" class="form-help">{{ uncertain || readError || loading ? '上次读取的邀请码（待核对）' : '当前邀请码' }}</label><input id="current-invite" ref="selectedCode" class="invite-display" readonly :value="uncertain || readError || loading ? '' : group.invite_code" :placeholder="uncertain || readError || loading ? '请先重新读取' : ''" :aria-label="uncertain ? '邀请码待核对' : '当前邀请码'">
       <p v-if="group.invite_enabled === false" class="field-error">当前邀请已停用，负责人可重置后重新邀请。</p><div class="invite-actions"><button :disabled="!ready || uncertain || copying || !group.invite_enabled" @click="copy">{{ copying ? '正在复制…' : '复制邀请码' }}</button><button class="text-button" :disabled="!ready || uncertain || copying" @click="reset">{{ pending ? '正在重置…' : '重置邀请码' }}</button></div><small v-if="manualCopy" class="muted">选中代码后按 Ctrl+C 复制。</small><p class="form-help">重置会立即使旧码失效，已加入的成员保留。</p>
     </section><section v-else class="member-guide"><p class="eyebrow">一起参与</p><h2>你已在小组中</h2><p class="muted">想邀请新的伙伴？请联系小组负责人分享邀请码。</p></section>
-    <section class="next-step-card"><span class="puzzle-label" aria-hidden="true">↗</span><h2>接下来，找到共同时间</h2><p class="muted">排期、会议和任务功能正在准备中。这里会成为小组持续协作的空间。</p></section></div>
+    <section class="next-step-card"><span class="puzzle-label" aria-hidden="true">↗</span><h2>接下来，找到共同时间</h2><p class="muted">负责人可以先设置候选时间并发布收集。填写、推荐和会议任务将逐步接入。</p></section></div>
   </div>
 </template>
