@@ -17,7 +17,8 @@
     "check:groups-ui": "node browser.check.mjs --built --groups-ui",
     "check:polls": "node browser.check.mjs --built --polls",
     "check:poll-editor": "node browser.check.mjs --built --poll-editor",
-    "check:votes-ui": "node browser.check.mjs --built --votes-ui"
+    "check:votes-ui": "node browser.check.mjs --built --votes-ui",
+    "check:matrix-ui": "node browser.check.mjs --built --matrix-ui"
   },
   "dependencies": {
     "vue": "3.5.44",

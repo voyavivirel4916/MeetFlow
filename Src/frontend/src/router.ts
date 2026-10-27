@@ -7,6 +7,7 @@ import GroupsPage from './views/GroupsPage.vue'
 import GroupDetailPage from './views/GroupDetailPage.vue'
 import PollEditorPage from './views/PollEditorPage.vue'
 import VotePage from './views/VotePage.vue'
+import MatrixPage from './views/MatrixPage.vue'
 import { onUnauthorized } from './api/client'
 import type { Session } from './auth/session'
 import { safeReturnPath } from './navigation'
@@ -23,7 +24,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/groups/:groupId([1-9]\\d*)/polls/new', component: PollEditorPage, meta: { title: '发起排期', requiresAuth: true } },
   { path: '/polls/:pollId([1-9]\\d*)/edit', component: PollEditorPage, meta: { title: '编辑排期', requiresAuth: true } },
   { path: '/polls/:pollId([1-9]\\d*)/vote', component: VotePage, meta: { title: '填写时间', requiresAuth: true } },
-  page('/polls/:pollId([1-9]\\d*)/results', '排期结果', '这里将展示时间矩阵、推荐理由和会议确认。'),
+  { path: '/polls/:pollId([1-9]\\d*)/results', component: MatrixPage, meta: { title: '排期结果', requiresAuth: true } },
   page('/meetings/:meetingId([1-9]\\d*)', '会议与行动', '这里将维护议程、纪要和后续任务。'),
   page('/tasks/mine', '我的待办', '这里将汇总分配给你的会议任务。'),
   { path: '/login', name: 'login', component: AuthPage, props: { registering: false }, meta: { title: '登录', authPage: true } },
