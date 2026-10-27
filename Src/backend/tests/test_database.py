@@ -32,13 +32,13 @@ def add_group(connection, **changes):
     connection.execute(insert(groups).values(**values))
 
 
-def test_fresh_migration_has_only_core_tables_and_matches_model(engine, settings):
+def test_fresh_migration_has_implemented_tables_and_matches_model(engine, settings):
     require_current_schema(settings)
     with engine.connect() as connection:
-        assert set(inspect(connection).get_table_names()) == {'users', 'sessions', 'groups', 'group_members', 'alembic_version'}
+        assert set(inspect(connection).get_table_names()) == {'users', 'sessions', 'groups', 'group_members', 'polls', 'participants', 'slots', 'alembic_version'}
         context = MigrationContext.configure(connection, opts={'compare_type': True, 'compare_server_default': True})
         assert compare_metadata(context, metadata) == []
-        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0001_core'
+        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0002_poll_structure'
         assert connection.execute(select(users)).all() == []
 
 

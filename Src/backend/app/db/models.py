@@ -1,7 +1,7 @@
-from sqlalchemy import (Boolean, CheckConstraint, Column, ForeignKey, Index,
-                        Integer, MetaData, Table, Text, text)
+from sqlalchemy import (Boolean, CheckConstraint, Column, ForeignKey, ForeignKeyConstraint, Index,
+                        Integer, MetaData, Table, Text, UniqueConstraint, text)
 
-# Core tables only. Poll/meeting/task schemas arrive with their implementation tasks.
+# Implemented schemas only. Votes, meetings and tasks arrive with later tasks.
 metadata = MetaData()
 users = Table('users', metadata,
     Column('id', Integer, primary_key=True),
@@ -41,3 +41,44 @@ group_members = Table('group_members', metadata,
     Column('user_id', Integer, ForeignKey('users.id', ondelete='RESTRICT'), primary_key=True),
     Column('joined_at', Integer, nullable=False))
 Index('ix_group_members_user_id', group_members.c.user_id)
+
+polls = Table('polls', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('group_id', Integer, ForeignKey('groups.id', ondelete='RESTRICT'), nullable=False),
+    Column('title', Text, nullable=False),
+    Column('description', Text, nullable=False, server_default=text("''")),
+    Column('location', Text, nullable=False, server_default=text("''")),
+    Column('response_deadline', Integer, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'DRAFT'")),
+    Column('created_at', Integer, nullable=False),
+    Column('updated_at', Integer, nullable=False),
+    CheckConstraint('id > 0', name='ck_polls_id'),
+    CheckConstraint('length(title) BETWEEN 1 AND 100', name='ck_polls_title'),
+    CheckConstraint('length(description) <= 10000', name='ck_polls_description'),
+    CheckConstraint('length(location) <= 200', name='ck_polls_location'),
+    CheckConstraint("status IN ('DRAFT','OPEN','CLOSED','CONFIRMED','CANCELLED')", name='ck_polls_status'),
+    CheckConstraint("typeof(response_deadline) = 'integer' AND typeof(created_at) = 'integer' AND typeof(updated_at) = 'integer'", name='ck_polls_times'),
+    UniqueConstraint('id', 'group_id', name='uq_polls_id_group'))
+Index('ix_polls_group_status', polls.c.group_id, polls.c.status)
+
+participants = Table('participants', metadata,
+    Column('poll_id', Integer, primary_key=True),
+    Column('group_id', Integer, nullable=False),
+    Column('user_id', Integer, primary_key=True),
+    Column('importance', Text, nullable=False),
+    Column('submitted_at', Integer),
+    ForeignKeyConstraint(['poll_id', 'group_id'], ['polls.id', 'polls.group_id'], ondelete='RESTRICT', name='fk_participants_poll_group'),
+    ForeignKeyConstraint(['group_id', 'user_id'], ['group_members.group_id', 'group_members.user_id'], ondelete='RESTRICT', name='fk_participants_group_member'),
+    CheckConstraint("importance IN ('REQUIRED','NORMAL')", name='ck_participants_importance'),
+    CheckConstraint("submitted_at IS NULL OR typeof(submitted_at) = 'integer'", name='ck_participants_submitted_at'))
+
+slots = Table('slots', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('poll_id', Integer, ForeignKey('polls.id', ondelete='RESTRICT'), nullable=False),
+    Column('start_at', Integer, nullable=False),
+    Column('end_at', Integer, nullable=False),
+    CheckConstraint('id > 0', name='ck_slots_id'),
+    CheckConstraint('start_at < end_at', name='ck_slots_order'),
+    CheckConstraint("typeof(start_at) = 'integer' AND typeof(end_at) = 'integer'", name='ck_slots_times'),
+    UniqueConstraint('poll_id', 'start_at', 'end_at', name='uq_slots_poll_time'),
+    UniqueConstraint('poll_id', 'id', name='uq_slots_poll_id'))
