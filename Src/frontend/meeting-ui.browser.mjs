@@ -15,7 +15,7 @@ export async function verifyMeetingUI(browser,origin,{root,screenshots}){
  for(const action of['open','close'])assert.equal((await owner.context.request.post(origin+`/api/v1/polls/${poll.id}/${action}`,{data:{}})).status(),200);
  const confirmation=await owner.context.request.post(origin+`/api/v1/polls/${poll.id}/confirm`,{data:{slot_id:poll.slots[0].id,acknowledged:true,selection_reason:'已协调确认'}});assert.equal(confirmation.status(),201);const meeting=(await confirmation.json()).data;
  const page=owner.page,url=origin+`/meetings/${meeting.id}`,endpoint=`**/api/v1/meetings/${meeting.id}`;
- await page.goto(origin+`/polls/${poll.id}/results`);await page.getByRole('link',{name:'查看会议 →',exact:true}).click();await ready(page);assert.equal(page.url(),url);
+ await page.goto(origin+`/polls/${poll.id}/results`);await page.getByRole('link',{name:'查看会议 →',exact:true}).click();await ready(page);assert.equal(page.url(),url);assert.equal(await page.getByRole('link',{name:'查看排期结果 →',exact:true}).getAttribute('class'),'button-link');
  await page.getByText('尚未填写议程。',{exact:true}).waitFor();await page.getByText('尚未填写纪要，讨论结束后在这里留下决定。',{exact:true}).waitFor();await shot(page,'03-empty');
  await page.getByRole('button',{name:'编辑议程与纪要',exact:true}).click();const agenda=page.getByLabel('会议议程',{exact:true}),minutes=page.getByLabel('会议纪要',{exact:true}),save=page.getByRole('button',{name:'保存议程与纪要',exact:true});
  assert.equal(await save.isDisabled(),true);
