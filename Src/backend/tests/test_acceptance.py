@@ -65,10 +65,10 @@ def test_four_account_cross_module_workflow_and_outsider(settings):
             task=data(lead.post(f"/api/v1/meetings/{confirmed['id']}/tasks",json=request),201)
             assert data(lead.post(f"/api/v1/meetings/{confirmed['id']}/tasks",json=request))==task
             tasks.append(task)
-        assert_error(actors[3].patch(f"/api/v1/tasks/{tasks[0]['id']}/status",json={'status':'DONE'}),403,'FORBIDDEN')
-        assert_error(actors[4].patch(f"/api/v1/tasks/{tasks[0]['id']}/status",json={'status':'DONE'}),404,'NOT_FOUND')
+        assert_error(actors[3].patch(f"/api/v1/tasks/{tasks[0]['id']}/status",json={'status':'DONE','expected_version':1}),403,'FORBIDDEN')
+        assert_error(actors[4].patch(f"/api/v1/tasks/{tasks[0]['id']}/status",json={'status':'DONE','expected_version':1}),404,'NOT_FOUND')
         for index,task in enumerate(tasks,1):
-            completed=data(actors[index].patch(f"/api/v1/tasks/{task['id']}/status",json={'status':'DONE'}))
+            completed=data(actors[index].patch(f"/api/v1/tasks/{task['id']}/status",json={'status':'DONE','expected_version':1}))
             assert data(actors[index].get('/api/v1/tasks/mine'))['items']==[]
             assert data(actors[index].get('/api/v1/tasks/mine?status=DONE'))['items']==[completed]
         assert data(actors[3].get(f"/api/v1/groups/{group['id']}/tasks?status=DONE"))['total']==2

@@ -71,16 +71,17 @@ def test_permissions_and_complete_reopen_repeat(owner, other, meeting):
     assert_error(create_task(other, row, body(now)), 403, 'FORBIDDEN')
     task = data(create_task(owner, row, body(now, assignee_id=1)), 201)
     path = f"/api/v1/tasks/{task['id']}/status"
-    assert_error(other.patch(path, json={'status':'DONE'}), 403, 'FORBIDDEN')
+    assert_error(other.patch(path, json={'status':'DONE','expected_version':1}), 403, 'FORBIDDEN')
     for state in ['IN_PROGRESS','DONE','TODO','DONE','IN_PROGRESS']:
         now[0] += 1000
-        value = data(owner.patch(path, json={'status':state}))
+        value = data(owner.patch(path, json={'status':state,'expected_version':task['version']}))
+        task = value
         assert value['status'] == state
         assert (value['completed_at'] is not None) == (state == 'DONE')
         now[0] += 1000
-        assert data(owner.patch(path, json={'status':state})) == value
-    assert_error(owner.patch(path, json={'status':'CANCELLED'}), 422, 'VALIDATION_ERROR')
-    assert_error(owner.patch('/api/v1/tasks/999/status',json={'status':'DONE'}),404,'NOT_FOUND')
+        assert data(owner.patch(path, json={'status':state,'expected_version':value['version']})) == value
+    assert data(owner.patch(path,json={'status':'CANCELLED','expected_version':task['version']}))['status']=='CANCELLED'
+    assert_error(owner.patch('/api/v1/tasks/999/status',json={'status':'DONE','expected_version':1}),404,'NOT_FOUND')
 
 
 def test_assignee_can_change_and_mine_default_excludes_done(owner, other, meeting):
@@ -88,10 +89,10 @@ def test_assignee_can_change_and_mine_default_excludes_done(owner, other, meetin
     first = data(create_task(owner, row, body(now)), 201)
     second = data(create_task(owner, row, body(now, due_at=format_ms(now[0]+120000))), 201)
     data(create_task(owner, row, body(now, assignee_id=1)), 201)
-    data(other.patch(f"/api/v1/tasks/{first['id']}/status",json={'status':'DONE'}))
+    data(other.patch(f"/api/v1/tasks/{first['id']}/status",json={'status':'DONE','expected_version':1}))
     assert [item['id'] for item in data(other.get('/api/v1/tasks/mine'))['items']] == [second['id']]
     assert data(other.get('/api/v1/tasks/mine?status=DONE'))['items'][0]['id'] == first['id']
-    data(other.patch(f"/api/v1/tasks/{first['id']}/status",json={'status':'TODO'}))
+    data(other.patch(f"/api/v1/tasks/{first['id']}/status",json={'status':'TODO','expected_version':2}))
     assert [item['id'] for item in data(other.get('/api/v1/tasks/mine'))['items']] == [first['id'], second['id']]
     path=f"/api/v1/groups/{row['group_id']}/tasks"
     assert data(other.get(path))['total'] == 3
@@ -135,6 +136,6 @@ def test_failed_write_or_commit_preserves_previous_state(owner,meeting,settings,
         return engine
     with monkeypatch.context() as patch:
         patch.setattr(dependencies,'make_engine',faulty)
-        response=create_task(owner,row,body(now)) if operation=='create' else owner.patch(f"/api/v1/tasks/{task['id']}/status",json={'status':'DONE'})
+        response=create_task(owner,row,body(now)) if operation=='create' else owner.patch(f"/api/v1/tasks/{task['id']}/status",json={'status':'DONE','expected_version':1})
         assert_error(response,503,'STORAGE_UNAVAILABLE')
     assert saved(settings)==before

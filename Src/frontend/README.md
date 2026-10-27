@@ -82,3 +82,5 @@ npm run check:auth
 `check:recommendations-ui`验证T23真实排名、分数组成、必到风险、全时段冲突及失败保留；开发代理用`node browser.check.mjs --recommendations-ui`。说明与截图见[34号记录](../../Docs/34-推荐结果与冲突提示页面.md)。
 
 第二版排期分类与删除归档页面：`node browser.check.mjs --built --poll-lifecycle`，使用隔离临时库验证。当前前端285项测试通过，界面确认见[47号记录](../../Docs/47-排期删除归档与恢复验证.md)。
+
+任务增强：`node browser.check.mjs --built --task-updates`。当前294项前端测试通过，新建版本化任务接口与页面须一起部署，排版确认见[48号记录](../../Docs/48-任务编辑取消与完成验证.md)。

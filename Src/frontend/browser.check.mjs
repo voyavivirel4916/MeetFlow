@@ -210,6 +210,10 @@ try {
     const {verifyPollLifecycle}=await import('./poll-lifecycle.browser.mjs');
     await verifyPollLifecycle(browser,origin,{root});
   }
+  if(process.argv.includes('--task-updates')){
+    const {verifyTaskUpdates}=await import('./task-updates.browser.mjs');
+    await verifyTaskUpdates(browser,origin,{root});
+  }
   if (process.argv.includes('--tasks-ui')) {
     const { verifyTasksUI } = await import('./tasks-ui.browser.mjs');
     await verifyTasksUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });

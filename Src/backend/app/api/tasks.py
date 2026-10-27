@@ -7,7 +7,7 @@ from app.auth.dependencies import current_user, database
 from app.auth.models import UserOut
 from app.common.responses import Success, request_id
 from app.tasks import service
-from app.tasks.models import Status, TaskIn, TaskOut, TaskPage, TaskStatusIn
+from app.tasks.models import Status, TaskIn, TaskOut, TaskPage, TaskStatusIn, TaskUpdate
 
 router = APIRouter(prefix='/api/v1', tags=['tasks'], dependencies=[Depends(no_store)])
 Page = Annotated[int, Query(ge=1)]
@@ -25,7 +25,13 @@ def create(meeting_id: Identifier, body: TaskIn, request: Request, response: Res
 @router.patch('/tasks/{task_id}/status', response_model=Success[TaskOut])
 def change(task_id: Identifier, body: TaskStatusIn, request: Request,
            account: UserOut = Depends(current_user), engine=Depends(database)):
-    return Success(data=service.change_status(engine, account.id, task_id, body.status), request_id=request_id(request))
+    return Success(data=service.change_status(engine, account.id, task_id, body.status,body.expected_version), request_id=request_id(request))
+
+
+@router.patch('/tasks/{task_id}',response_model=Success[TaskOut])
+def edit(task_id:Identifier,body:TaskUpdate,request:Request,
+         account:UserOut=Depends(current_user),engine=Depends(database)):
+    return Success(data=service.edit_task(engine,account.id,task_id,body),request_id=request_id(request))
 
 
 @router.get('/tasks/mine', response_model=Success[TaskPage])

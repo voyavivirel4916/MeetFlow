@@ -15,6 +15,8 @@ from app.db.models import groups, group_members, metadata, sessions, users
 def original_rows(connection, table):
     # Historical upgrade tests compare every pre-V2 field, not added nullable markers.
     fields = 'id,group_id,title,description,location,response_deadline,status,created_at,updated_at' if table == 'polls' else '*'
+    if table == 'tasks':
+        fields = 'id,meeting_id,group_id,creator_id,assignee_id,title,description,due_at,status,completed_at,client_request_id,created_at,updated_at'
     return connection.execute(f'SELECT {fields} FROM {table}').fetchall()
 
 
@@ -44,7 +46,7 @@ def test_fresh_migration_has_implemented_tables_and_matches_model(engine, settin
         assert set(inspect(connection).get_table_names()) == {'users', 'sessions', 'groups', 'group_members', 'polls', 'participants', 'slots', 'votes', 'meetings', 'tasks', 'alembic_version'}
         context = MigrationContext.configure(connection, opts={'compare_type': True, 'compare_server_default': True})
         assert compare_metadata(context, metadata) == []
-        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0006_poll_lifecycle'
+        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0007_task_updates'
         assert connection.execute(select(users)).all() == []
 
 
