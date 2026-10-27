@@ -1,7 +1,7 @@
 from sqlalchemy import (Boolean, CheckConstraint, Column, ForeignKey, ForeignKeyConstraint, Index,
                         Integer, MetaData, Table, Text, UniqueConstraint, text)
 
-# Implemented schemas only. Meetings and tasks arrive with later tasks.
+# Implemented schemas only. Tasks arrive with later tasks.
 metadata = MetaData()
 users = Table('users', metadata,
     Column('id', Integer, primary_key=True),
@@ -94,3 +94,28 @@ votes = Table('votes', metadata,
     CheckConstraint("availability IN ('AVAILABLE','MAYBE','UNAVAILABLE')", name='ck_votes_availability'),
     CheckConstraint("typeof(updated_at) = 'integer'", name='ck_votes_updated_at'))
 Index('ix_votes_poll_user', votes.c.poll_id, votes.c.user_id)
+
+meetings = Table('meetings', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('poll_id', Integer, nullable=False, unique=True),
+    Column('group_id', Integer, nullable=False),
+    Column('selected_slot_id', Integer, nullable=False),
+    Column('title', Text, nullable=False),
+    Column('location', Text, nullable=False),
+    Column('start_at', Integer, nullable=False),
+    Column('end_at', Integer, nullable=False),
+    Column('selection_reason', Text, nullable=False, server_default=text("''")),
+    Column('agenda', Text, nullable=False, server_default=text("''")),
+    Column('minutes', Text, nullable=False, server_default=text("''")),
+    Column('created_at', Integer, nullable=False),
+    Column('updated_at', Integer, nullable=False),
+    ForeignKeyConstraint(['poll_id', 'group_id'], ['polls.id', 'polls.group_id'], ondelete='RESTRICT', name='fk_meetings_poll_group'),
+    ForeignKeyConstraint(['poll_id', 'selected_slot_id'], ['slots.poll_id', 'slots.id'], ondelete='RESTRICT', name='fk_meetings_poll_slot'),
+    CheckConstraint('id > 0', name='ck_meetings_id'),
+    CheckConstraint('length(title) BETWEEN 1 AND 100', name='ck_meetings_title'),
+    CheckConstraint('length(location) <= 200', name='ck_meetings_location'),
+    CheckConstraint('start_at < end_at', name='ck_meetings_order'),
+    CheckConstraint('length(selection_reason) <= 500', name='ck_meetings_selection_reason'),
+    CheckConstraint('length(agenda) <= 10000 AND length(minutes) <= 10000', name='ck_meetings_notes'),
+    CheckConstraint("typeof(start_at) = 'integer' AND typeof(end_at) = 'integer' AND typeof(created_at) = 'integer' AND typeof(updated_at) = 'integer'", name='ck_meetings_times'))
+Index('ix_meetings_group_id', meetings.c.group_id)

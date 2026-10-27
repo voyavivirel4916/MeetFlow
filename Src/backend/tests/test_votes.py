@@ -306,7 +306,7 @@ def test_upgrade_from_poll_schema_preserves_records_and_is_repeatable(settings):
         upgrade(settings)
         require_current_schema(settings)
         with sqlite3.connect(database_path(settings)) as connection:
-            assert connection.execute('SELECT version_num FROM alembic_version').fetchone()[0] == '0003_votes'
+            assert connection.execute('SELECT version_num FROM alembic_version').fetchone()[0] == '0004_meetings'
             assert connection.execute('SELECT * FROM votes').fetchall() == []
             assert {table: connection.execute(f'SELECT * FROM {table}').fetchall() for table in before} == before
     finally:
