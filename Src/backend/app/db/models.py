@@ -119,3 +119,32 @@ meetings = Table('meetings', metadata,
     CheckConstraint('length(agenda) <= 10000 AND length(minutes) <= 10000', name='ck_meetings_notes'),
     CheckConstraint("typeof(start_at) = 'integer' AND typeof(end_at) = 'integer' AND typeof(created_at) = 'integer' AND typeof(updated_at) = 'integer'", name='ck_meetings_times'))
 Index('ix_meetings_group_id', meetings.c.group_id)
+Index('uq_meetings_id_group', meetings.c.id, meetings.c.group_id, unique=True)
+
+tasks = Table('tasks', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('meeting_id', Integer, nullable=False),
+    Column('group_id', Integer, nullable=False),
+    Column('creator_id', Integer, ForeignKey('users.id', ondelete='RESTRICT'), nullable=False),
+    Column('assignee_id', Integer, nullable=False),
+    Column('title', Text, nullable=False),
+    Column('description', Text, nullable=False, server_default=text("''")),
+    Column('due_at', Integer, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'TODO'")),
+    Column('completed_at', Integer),
+    Column('client_request_id', Text, nullable=False),
+    Column('created_at', Integer, nullable=False),
+    Column('updated_at', Integer, nullable=False),
+    UniqueConstraint('creator_id', 'client_request_id', name='uq_tasks_creator_request'),
+    ForeignKeyConstraint(['meeting_id', 'group_id'], ['meetings.id', 'meetings.group_id'], ondelete='RESTRICT', name='fk_tasks_meeting_group'),
+    ForeignKeyConstraint(['group_id', 'assignee_id'], ['group_members.group_id', 'group_members.user_id'], ondelete='RESTRICT', name='fk_tasks_assignee_member'),
+    CheckConstraint('id > 0', name='ck_tasks_id'),
+    CheckConstraint('length(title) BETWEEN 1 AND 100', name='ck_tasks_title'),
+    CheckConstraint('length(description) <= 10000', name='ck_tasks_description'),
+    CheckConstraint("status IN ('TODO','IN_PROGRESS','DONE')", name='ck_tasks_status'),
+    CheckConstraint("(status = 'DONE' AND completed_at IS NOT NULL) OR (status != 'DONE' AND completed_at IS NULL)", name='ck_tasks_completion'),
+    CheckConstraint('due_at > created_at', name='ck_tasks_deadline'),
+    CheckConstraint("typeof(due_at) = 'integer' AND typeof(created_at) = 'integer' AND typeof(updated_at) = 'integer' AND (completed_at IS NULL OR typeof(completed_at) = 'integer')", name='ck_tasks_times'),
+    CheckConstraint("length(client_request_id) = 36 AND substr(client_request_id,9,1) = '-' AND substr(client_request_id,14,1) = '-' AND substr(client_request_id,19,1) = '-' AND substr(client_request_id,24,1) = '-' AND length(replace(client_request_id,'-','')) = 32 AND replace(client_request_id,'-','') NOT GLOB '*[^0-9a-f]*'", name='ck_tasks_request_id'))
+Index('ix_tasks_assignee_status_due', tasks.c.assignee_id, tasks.c.status, tasks.c.due_at)
+Index('ix_tasks_group_created', tasks.c.group_id, tasks.c.created_at)

@@ -1,0 +1,82 @@
+from sqlalchemy import and_, func, insert, select, update
+
+from app.common import clock
+from app.common.responses import ApiError
+from app.common.times import format_ms, to_ms
+from app.db.connection import write_transaction
+from app.db.models import group_members, tasks
+from app.groups.service import require_member
+from app.meetings.service import _require_meeting
+from app.polls.service import _invalid
+from app.tasks.models import TaskOut, TaskPage
+
+
+def _out(row):
+    fields = {key: row[key] for key in ['id', 'group_id', 'meeting_id', 'creator_id', 'assignee_id', 'title', 'description', 'status']}
+    return TaskOut(**fields, **{key: format_ms(row[key]) for key in ['due_at', 'created_at', 'updated_at']},
+                   completed_at=None if row['completed_at'] is None else format_ms(row['completed_at']))
+
+
+def create_task(engine, actor, meeting_id, data):
+    # The immediate transaction serializes competing creation requests before lookup.
+    with write_transaction(engine) as connection:
+        meeting = _require_meeting(connection, actor, meeting_id, owner=True)
+        existing = connection.execute(select(tasks).where(tasks.c.creator_id == actor, tasks.c.client_request_id == data.client_request_id)).mappings().first()
+        fields = dict(meeting_id=meeting_id, assignee_id=data.assignee_id, title=data.title, description=data.description, due_at=to_ms(data.due_at))
+        if existing is not None:
+            if any(existing[key] != value for key, value in fields.items()):
+                raise ApiError(409, 'STATE_CONFLICT', '同一次创建标识对应不同任务，请先核对原提交。')
+            return _out(existing), False
+        member = connection.execute(select(group_members.c.user_id).where(group_members.c.group_id == meeting['group_id'], group_members.c.user_id == data.assignee_id)).first()
+        if member is None:
+            raise _invalid('assignee_id', '执行人须为本小组成员。')
+        now = clock.now_ms()
+        if fields['due_at'] <= now:
+            raise _invalid('due_at', '截止时间须晚于当前服务端时间。')
+        identifier = connection.execute(insert(tasks).values(**fields, group_id=meeting['group_id'], creator_id=actor,
+            status='TODO', completed_at=None, client_request_id=data.client_request_id, created_at=now, updated_at=now)).inserted_primary_key[0]
+        return _out(connection.execute(select(tasks).where(tasks.c.id == identifier)).mappings().one()), True
+
+
+def change_status(engine, actor, task_id, status):
+    with write_transaction(engine) as connection:
+        row = connection.execute(select(tasks).where(tasks.c.id == task_id)).mappings().first()
+        if row is None:
+            raise ApiError(404, 'NOT_FOUND', '未找到可访问的任务。')
+        try:
+            group = require_member(connection, actor, row['group_id'])
+        except ApiError:
+            raise ApiError(404, 'NOT_FOUND', '未找到可访问的任务。') from None
+        if actor not in {group['owner_id'], row['assignee_id']}:
+            raise ApiError(403, 'FORBIDDEN', '只有负责人或执行人可以修改任务状态。')
+        if row['status'] != status:
+            now = max(clock.now_ms(), row['updated_at'])
+            connection.execute(update(tasks).where(tasks.c.id == task_id).values(status=status,
+                completed_at=now if status == 'DONE' else None, updated_at=now))
+        return _out(connection.execute(select(tasks).where(tasks.c.id == task_id)).mappings().one())
+
+
+def list_tasks(engine, actor, page, page_size, status=None, *, group_id=None, meeting_id=None):
+    with engine.connect() as connection:
+        connection.exec_driver_sql('BEGIN')
+        if group_id is not None:
+            require_member(connection, actor, group_id)
+            condition = tasks.c.group_id == group_id
+        else:
+            # Membership remains mandatory even for the personal view.
+            condition = and_(tasks.c.assignee_id == actor, select(group_members.c.user_id).where(
+                group_members.c.group_id == tasks.c.group_id, group_members.c.user_id == actor).exists())
+            if status is None:
+                condition = and_(condition, tasks.c.status != 'DONE')
+        if meeting_id is not None:
+            meeting = _require_meeting(connection, actor, meeting_id)
+            if meeting['group_id'] != group_id:
+                raise _invalid('meeting_id', '会议须属于当前小组。')
+            condition = and_(condition, tasks.c.meeting_id == meeting_id)
+        if status is not None:
+            condition = and_(condition, tasks.c.status == status)
+        total = connection.execute(select(func.count()).select_from(tasks).where(condition)).scalar_one()
+        offset = (page - 1) * page_size
+        rows = [] if offset >= total else connection.execute(select(tasks).where(condition)
+            .order_by(tasks.c.due_at, tasks.c.id).offset(offset).limit(page_size)).mappings().all()
+        return TaskPage(items=[_out(row) for row in rows], page=page, page_size=page_size, total=total)
