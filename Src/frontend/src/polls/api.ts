@@ -76,4 +76,10 @@ export const pollsApi = {
     if (String(poll.id) !== String(id)) invalid(result.request_id, true)
     return poll
   },
+  async close(id: number | string) {
+    const result = await request<unknown>(`/api/v1/polls/${identifier(id)}/close`, { method: 'POST', body: {} })
+    const poll = decode(result.data, result.request_id, true)
+    if (String(poll.id) !== String(id)) invalid(result.request_id, true)
+    return poll
+  },
 }

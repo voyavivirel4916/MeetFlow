@@ -19,7 +19,8 @@
     "check:poll-editor": "node browser.check.mjs --built --poll-editor",
     "check:votes-ui": "node browser.check.mjs --built --votes-ui",
     "check:matrix-ui": "node browser.check.mjs --built --matrix-ui",
-    "check:recommendations-ui": "node browser.check.mjs --built --recommendations-ui"
+    "check:recommendations-ui": "node browser.check.mjs --built --recommendations-ui",
+    "check:confirmation-ui": "node browser.check.mjs --built --confirmation-ui"
   },
   "dependencies": {
     "vue": "3.5.44",
