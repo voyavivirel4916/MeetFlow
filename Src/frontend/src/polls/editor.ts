@@ -5,13 +5,14 @@ export type Fields = { title: string; description: string; location: string; dea
   participants: Draft['participants']; slots: Candidate[] }
 export type Errors = Record<string, string>
 export const emptyFields = (): Fields => ({ title: '', description: '', location: '', deadline: '', participants: [], slots: [] })
-export function beijing(value: string) { return new Date(Date.parse(value) + 8 * 3600_000).toISOString().slice(0, 23) }
+function preciseBeijing(value: string) { return new Date(Date.parse(value) + 8 * 3600_000).toISOString().slice(0, 23) }
+export function beijing(value: string) { return preciseBeijing(value).slice(0, 16) }
 export function localMs(value: string) {
   const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/.exec(value)
   if (!match) return NaN
   const canonical = `${match[1]}:${match[2] || '00'}.${(match[3] || '').padEnd(3, '0')}`
   const milliseconds = Date.parse(canonical + '+08:00')
-  return Number.isFinite(milliseconds) && beijing(new Date(milliseconds).toISOString()) === canonical ? milliseconds : NaN
+  return Number.isFinite(milliseconds) && preciseBeijing(new Date(milliseconds).toISOString()) === canonical ? milliseconds : NaN
 }
 export function fromPoll(poll: Poll): Fields {
   return { title: poll.title, description: poll.description, location: poll.location, deadline: beijing(poll.response_deadline),
@@ -45,6 +46,22 @@ export function validate(fields: Fields, publishing = false, now = Date.now()): 
     seen.add(pair)
   }
   return errors
+}
+export const isTimeField = (key: string) => key === 'deadline' || key === 'slots' || /^(start|end)-\d+$/.test(key)
+// Empty, untouched fields stay quiet; populated fields also check their dependencies.
+export function timeFeedback(fields: Fields, touched: ReadonlySet<string>, now = Date.now()): Errors {
+  const all = validate(fields, true, now), result: Errors = {}
+  const active = new Set(touched)
+  if (fields.deadline) active.add('deadline')
+  if (fields.slots.length > 15) active.add('slots')
+  for (const item of fields.slots) {
+    if (item.start) active.add(`start-${item.key}`)
+    if (item.end) active.add(`end-${item.key}`)
+  }
+  for (const key of active) if (isTimeField(key) && all[key]) result[key] = all[key]
+  const deadline = localMs(fields.deadline)
+  if (!result.deadline && fields.slots.some(item => localMs(item.start) <= deadline)) result.deadline = '填写截止须早于每个候选开始时间。'
+  return result
 }
 export function equivalent(draft: Draft, poll: Poll) {
   const normalized = (value: Draft) => JSON.stringify({ title: value.title.trim(), description: value.description, location: value.location,

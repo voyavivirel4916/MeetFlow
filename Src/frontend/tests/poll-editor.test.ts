@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { pollsApi, type Poll } from '../src/polls/api'
-import { beijing, emptyFields, equivalent, fromPoll, localMs, payload, validate } from '../src/polls/editor'
+import { beijing, emptyFields, equivalent, fromPoll, localMs, payload, validate, timeFeedback } from '../src/polls/editor'
 
 const id = 'c07e357967c148068a4f9aa539c759e2'
 const poll: Poll = { id: 1, group_id: 2, title: '课程评审', description: '', location: '', response_deadline: '2026-10-28T00:00:00.000Z', status: 'DRAFT', effective_status: 'DRAFT', updated_at: '2026-10-27T00:00:00.000Z',
@@ -15,11 +15,42 @@ function mock(data: unknown) {
 }
 afterEach(() => vi.unstubAllGlobals())
 
-it('round trips UTC milliseconds through Beijing including cross-day', () => {
-  expect(beijing('2026-10-27T20:30:00.123Z')).toBe('2026-10-28T04:30:00.123')
+it('displays Beijing minutes across days while parsing legacy precise timestamps strictly', () => {
+  expect(beijing('2026-10-27T20:30:59.123Z')).toBe('2026-10-28T04:30')
   expect(localMs('2026-10-28T04:30:00.123')).toBe(Date.parse('2026-10-27T20:30:00.123Z'))
   expect(localMs('2026-10-28T08:00')).toBe(Date.parse(poll.response_deadline))
   expect(localMs('2026-10-28T08:00:00.1')).toBe(Date.parse('2026-10-28T00:00:00.100Z'))
+})
+it('hydrates legacy seconds to minute inputs without mutating the saved poll or weakening reconciliation', () => {
+  const legacy = { ...poll, response_deadline: '2026-10-28T00:00:59.600Z' }
+  const fields = fromPoll(legacy)
+  expect(fields.deadline).toBe('2026-10-28T08:00')
+  expect(payload(fields).response_deadline).toBe('2026-10-28T00:00:00.000Z')
+  expect(legacy.response_deadline).toBe('2026-10-28T00:00:59.600Z')
+  expect(equivalent(payload(fields), legacy)).toBe(false)
+})
+it('keeps untouched empty times quiet and validates a cleared field after interaction', () => {
+  expect(timeFeedback(emptyFields(), new Set(), 0)).toEqual({})
+  expect(timeFeedback(emptyFields(), new Set(['deadline']), 0)).toHaveProperty('deadline')
+  const fields = fromPoll(poll)
+  fields.slots.push({ key: 4, start: '', end: '' })
+  expect(timeFeedback(fields, new Set(), 0)).toEqual({})
+  expect(timeFeedback(fields, new Set(['end-4']), 0)).toHaveProperty('end-4')
+})
+it('automatically checks past cutoff, dependency changes, inverted times and duplicates without requiring publication', () => {
+  const fields = fromPoll(poll)
+  expect(timeFeedback(fields, new Set(), Date.parse(poll.response_deadline))).toHaveProperty('deadline')
+  fields.deadline = fields.slots[0]!.start
+  expect(timeFeedback(fields, new Set(), 0)).toHaveProperty('deadline', '填写截止须早于每个候选开始时间。')
+  expect(timeFeedback(fields, new Set(), 0)).toHaveProperty('start-0')
+  fields.deadline = '2026-10-28T08:00'
+  fields.slots[0]!.end = fields.slots[0]!.start
+  expect(timeFeedback(fields, new Set(), 0)).toHaveProperty('end-0')
+  fields.slots[0]!.end = '2026-10-28T10:00'
+  fields.slots.push({ ...fields.slots[0]!, key: 7 })
+  expect(timeFeedback(fields, new Set(), 0)).toHaveProperty('start-7', '候选时段不能重复。')
+  fields.slots.pop()
+  expect(timeFeedback(fields, new Set(), 0)).toEqual({})
 })
 it.each(['', '2026-02-30T08:00', '2026-13-01T08:00', '2026-10-28T24:00', '2026-10-28T08:00Z', '2026-10-28 08:00', '2026-10-28T08:00:00.1234'])('rejects invalid local date %s', value => {
   expect(Number.isNaN(localMs(value))).toBe(true)

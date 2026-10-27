@@ -7,7 +7,7 @@ import { useSession } from '../auth/session'
 import { groupsApi, type Group, type Member } from '../groups/api'
 import { failure, useGroupLifetime } from '../groups/forms'
 import { pollsApi, statusLabel, type Draft, type Poll, type PollPage } from '../polls/api'
-import { beijing, emptyFields, equivalent, fromPoll, payload, validate, type Errors } from '../polls/editor'
+import { beijing, emptyFields, equivalent, fromPoll, payload, validate, timeFeedback, isTimeField, type Errors } from '../polls/editor'
 
 const route = useRoute(), router = useRouter(), session = useSession()
 const pollId = route.params.pollId ? String(route.params.pollId) : undefined
@@ -18,6 +18,24 @@ const message = ref(''), success = ref(typeof history.state.pollNotice === 'stri
 if (history.state.pollNotice) history.replaceState({ ...history.state, pollNotice: undefined }, '')
 const uncertain = ref(false), needsAck = ref(false), acknowledged = ref(false), checks = ref<PollPage>()
 let controller: AbortController | undefined, nextKey = 0, sent: Draft | undefined
+let timeCheck: ReturnType<typeof setTimeout> | undefined
+const touchedTimes = new Set<string>()
+function resetTimeCheck() { clearTimeout(timeCheck); touchedTimes.clear() }
+function checkTimes() {
+  clearTimeout(timeCheck)
+  if (!editable.value || !ready.value || uncertain.value || needsAck.value) return
+  const feedback = timeFeedback(fields, touchedTimes)
+  for (const key of Object.keys(errors.value)) if (isTimeField(key)) delete errors.value[key]
+  Object.assign(errors.value, feedback)
+}
+function timeEvent(event?: Event, immediate = false) {
+  const key = (event?.target as HTMLInputElement | undefined)?.dataset?.field
+  if (event && (!key || !isTimeField(key))) return
+  if (key && isTimeField(key)) touchedTimes.add(key)
+  clearTimeout(timeCheck)
+  if (immediate) checkTimes()
+  else timeCheck = setTimeout(checkTimes, 450)
+}
 const lastAction = ref<'save' | 'publish'>('save')
 const live = useGroupLifetime(() => dirty.value, () => pending.value)
 const isOwner = computed(() => group.value?.owner_id === session.state.user?.id)
@@ -30,7 +48,7 @@ const readonlyMessage = computed(() => !isOwner.value ? '你可以查看排期�
   : poll.value?.effective_status === 'CONFIRMED' ? '排期已确认，当前只能查看。' : '排期已发布，结构已冻结，当前只能查看。')
 const checkedRetry = computed(() => !uncertain.value && (!needsAck.value || acknowledged.value))
 const selected = (id: number) => fields.participants.find(person => person.user_id === id)
-function hydrate(value: Poll) { Object.assign(fields, fromPoll(value)); nextKey = fields.slots.length; dirty.value = false; errors.value = {} }
+function hydrate(value: Poll) { resetTimeCheck(); Object.assign(fields, fromPoll(value)); nextKey = fields.slots.length; dirty.value = false; errors.value = {} }
 function clearRecovery() { uncertain.value = needsAck.value = acknowledged.value = false; checks.value = undefined }
 async function load(preserve = false) {
   if (loading.value || pending.value) return
@@ -62,14 +80,15 @@ async function load(preserve = false) {
   } finally { if (controller === current) loading.value = false }
 }
 onMounted(() => load())
-onBeforeUnmount(() => controller?.abort())
+onBeforeUnmount(() => { controller?.abort(); resetTimeCheck() })
 async function reload() {
   if (dirty.value && !window.confirm('重新读取会替换本页未保存的输入，确定继续吗？')) return
   await load(false)
   if (!pollId && !readError.value) { Object.assign(fields, emptyFields()); dirty.value = false; clearRecovery() }
   if (!readError.value) { message.value = ''; writeError.value = undefined; success.value = '' }
 }
-function edited() {
+function edited(event?: Event) {
+  timeEvent(event)
   dirty.value = true; success.value = ''
   const current = validate(fields)
   for (const key of Object.keys(errors.value)) if (!current[key]) delete errors.value[key]
@@ -110,6 +129,7 @@ async function checkResult(page = 1) {
 }
 async function save() {
   if (!ready.value || !editable.value || !checkedRetry.value || !group.value) return
+  clearTimeout(timeCheck)
   errors.value = validate(fields)
   if (Object.keys(errors.value).length) { message.value = '请检查以下填写内容。'; await focusSummary(); return }
   sent = payload(fields); lastAction.value = 'save'; pending.value = true; message.value = ''; writeError.value = undefined; success.value = ''
@@ -131,6 +151,7 @@ async function save() {
 }
 async function publish() {
   if (!ready.value || !editable.value || !pollId || dirty.value || !checkedRetry.value) return
+  clearTimeout(timeCheck)
   errors.value = validate(fields, true)
   if (Object.keys(errors.value).length) { message.value = '发布前请补全以下内容。'; await focusSummary(); return }
   if (!window.confirm('发布后，候选时间和参与者等排期内容将不能修改。确定开始收集吗？')) return
@@ -164,11 +185,11 @@ async function publish() {
   </section>
   <template v-if="group && (pollId || isOwner)">
     <section v-if="poll && !editable" class="poll-readonly"><div class="section-heading"><h2>{{ poll.title }}</h2><span class="role-badge">{{ statusLabel[poll.effective_status] }}</span></div><p class="muted">{{ readonlyMessage }} 读取后显示最新状态，不自动刷新。</p><p class="plain-text">{{ poll.description || '暂无说明。' }}</p><p>地点：{{ poll.location || '未填写' }}</p><p>填写截止：{{ beijing(poll.response_deadline).replace('T',' ') }}（北京时间）</p><h3>参与者</h3><ul><li v-for="person in poll.participants" :key="person.user_id">{{ person.username }} · {{ person.importance === 'REQUIRED' ? '必到' : '普通' }}</li></ul><p v-if="!poll.participants.length" class="muted">暂无参与者。</p><h3>候选时间（北京时间）</h3><ol><li v-for="item in poll.slots" :key="item.id">{{ beijing(item.start_at).replace('T',' ') }} ～ {{ beijing(item.end_at).replace('T',' ') }}</li></ol><p v-if="!poll.slots.length" class="muted">暂无候选时间。</p></section>
-    <form v-if="editable || dirty" ref="form" class="poll-editor" novalidate :aria-busy="pending" @submit.prevent="save" @input="edited"><p v-if="!editable" class="form-summary">下方为本页未保存输入，供你核对；上方才是服务端排期。</p>
+    <form v-if="editable || dirty" ref="form" class="poll-editor" novalidate :aria-busy="pending" @submit.prevent="save" @input="edited" @focusout="timeEvent($event, true)"><p v-if="!editable" class="form-summary">下方为本页未保存输入，供你核对；上方才是服务端排期。</p>
       <fieldset :disabled="!ready || !editable || uncertain"><section class="editor-section"><p class="eyebrow">01 / 这次想讨论什么</p><h2>基本信息</h2><div class="form-field"><label for="poll-title">主题（必填）</label><input id="poll-title" v-model="fields.title" data-field="title" maxlength="200" required :aria-invalid="!!errors.title" aria-describedby="title-error" placeholder="例如：课程方案评审"><p v-if="errors.title" id="title-error" class="field-error">{{ errors.title }}</p></div><div class="form-field"><label for="poll-description">说明（选填）</label><textarea id="poll-description" v-model="fields.description" data-field="description" rows="3" maxlength="20000" :aria-invalid="!!errors.description" aria-describedby="poll-description-error"/><small>{{ Array.from(fields.description).length }}/10000 字符</small><p v-if="errors.description" id="poll-description-error" class="field-error">{{ errors.description }}</p></div><div class="form-field"><label for="poll-location">地点（选填）</label><input id="poll-location" v-model="fields.location" data-field="location" maxlength="400" :aria-invalid="!!errors.location" aria-describedby="poll-location-error"><p v-if="errors.location" id="poll-location-error" class="field-error">{{ errors.location }}</p></div></section>
       <section class="editor-section"><p class="eyebrow">02 / 谁来一起参与</p><h2>参与者与必到成员</h2><p class="form-help">草稿可暂不选择；发布时至少1人。必到成员的冲突会影响后续推荐。</p><div data-field="participants" tabindex="-1" class="participant-options" :aria-invalid="!!errors.participants" aria-describedby="participants-error"><div v-for="person in members" :key="person.user_id" class="participant-option"><label><input type="checkbox" :checked="!!selected(person.user_id)" :aria-label="`选择 ${person.username}`" @change="selectMember(person, ($event.target as HTMLInputElement).checked)">{{ person.username }}<small v-if="person.role === 'OWNER'">负责人</small></label><label class="required-choice"><input type="checkbox" :checked="selected(person.user_id)?.importance === 'REQUIRED'" :disabled="!selected(person.user_id)" :aria-label="`${person.username} 必到`" @change="importance(person.user_id, ($event.target as HTMLInputElement).checked)">必到</label></div></div><p v-if="errors.participants" id="participants-error" class="field-error">{{ errors.participants }}</p></section>
-      <section class="editor-section"><p class="eyebrow">03 / 哪些时间可能合适</p><h2>候选时间</h2><p class="form-help">北京时间（UTC+8）。草稿可以为空，发布需1～15个；同一时段不能重复，开始须早于结束。</p><div data-field="slots" tabindex="-1" :aria-invalid="!!errors.slots" aria-describedby="slots-error"><section v-for="(item,index) in fields.slots" :key="item.key" class="candidate-row"><div class="section-heading"><h3>候选 {{ index+1 }}</h3><button class="text-button" type="button" :aria-label="`移除候选 ${index+1}`" @click="removeSlot(item.key)">移除</button></div><div class="candidate-times"><div class="form-field"><label :for="`start-${item.key}`">开始（北京时间）</label><input :id="`start-${item.key}`" v-model="item.start" type="datetime-local" step="0.001" :data-field="`start-${item.key}`" :aria-invalid="!!errors[`start-${item.key}`]" :aria-describedby="`start-error-${item.key}`"><p v-if="errors[`start-${item.key}`]" :id="`start-error-${item.key}`" class="field-error">{{ errors[`start-${item.key}`] }}</p></div><div class="form-field"><label :for="`end-${item.key}`">结束（北京时间）</label><input :id="`end-${item.key}`" v-model="item.end" type="datetime-local" step="0.001" :data-field="`end-${item.key}`" :aria-invalid="!!errors[`end-${item.key}`]" :aria-describedby="`end-error-${item.key}`"><p v-if="errors[`end-${item.key}`]" :id="`end-error-${item.key}`" class="field-error">{{ errors[`end-${item.key}`] }}</p></div></div></section></div><p v-if="!fields.slots.length" class="muted">还没有候选时间，可以先保存草稿。</p><p v-if="errors.slots" id="slots-error" class="field-error">{{ errors.slots }}</p><button type="button" class="secondary" @click="addSlot">＋ 添加候选时间</button><span class="form-help"> 已设置 {{ fields.slots.length }} 个</span></section>
-      <section class="editor-section"><p class="eyebrow">04 / 何时结束填写</p><h2>填写截止</h2><div class="form-field"><label for="poll-deadline">填写截止（北京时间，必填）</label><input id="poll-deadline" v-model="fields.deadline" data-field="deadline" type="datetime-local" step="0.001" required :aria-invalid="!!errors.deadline" aria-describedby="deadline-help deadline-error"><small id="deadline-help">发布时须在未来，且早于每个候选开始时间；最终以服务端时间为准。</small><p v-if="errors.deadline" id="deadline-error" class="field-error">{{ errors.deadline }}</p></div></section>
+      <section class="editor-section"><p class="eyebrow">03 / 哪些时间可能合适</p><h2>候选时间</h2><div data-field="slots" tabindex="-1" :aria-invalid="!!errors.slots" aria-describedby="slots-error"><section v-for="(item,index) in fields.slots" :key="item.key" class="candidate-row"><div class="section-heading"><h3>候选 {{ index+1 }}</h3><button class="text-button" type="button" :aria-label="`移除候选 ${index+1}`" @click="removeSlot(item.key)">移除</button></div><div class="candidate-times"><div class="form-field"><label :for="`start-${item.key}`">开始（北京时间）</label><input :id="`start-${item.key}`" v-model="item.start" type="datetime-local" step="60" :data-field="`start-${item.key}`" :aria-invalid="!!errors[`start-${item.key}`]" :aria-describedby="`start-error-${item.key}`"><p v-if="errors[`start-${item.key}`]" :id="`start-error-${item.key}`" class="field-error">{{ errors[`start-${item.key}`] }}</p></div><div class="form-field"><label :for="`end-${item.key}`">结束（北京时间）</label><input :id="`end-${item.key}`" v-model="item.end" type="datetime-local" step="60" :data-field="`end-${item.key}`" :aria-invalid="!!errors[`end-${item.key}`]" :aria-describedby="`end-error-${item.key}`"><p v-if="errors[`end-${item.key}`]" :id="`end-error-${item.key}`" class="field-error">{{ errors[`end-${item.key}`] }}</p></div></div></section></div><p v-if="!fields.slots.length" class="muted">还没有候选时间，可以先保存草稿。</p><p v-if="errors.slots" id="slots-error" class="field-error">{{ errors.slots }}</p><button type="button" class="secondary" @click="addSlot">＋ 添加候选时间</button><span class="form-help"> 已设置 {{ fields.slots.length }} 个</span></section>
+      <section class="editor-section"><p class="eyebrow">04 / 何时结束填写</p><h2>填写截止</h2><div class="form-field"><label for="poll-deadline">填写截止（北京时间，必填）</label><input id="poll-deadline" v-model="fields.deadline" data-field="deadline" type="datetime-local" step="60" required :aria-invalid="!!errors.deadline" aria-describedby="deadline-error"><p v-if="errors.deadline" id="deadline-error" class="field-error">{{ errors.deadline }}</p></div></section>
       <div class="editor-actions"><button type="submit" :disabled="!checkedRetry">{{ pending && lastAction === 'save' ? '正在保存…' : '保存草稿' }}</button><button type="button" class="secondary" :disabled="!pollId || dirty || !checkedRetry" @click="publish">{{ pending && lastAction === 'publish' ? '正在发布…' : '发布收集' }}</button><p class="form-help">{{ dirty ? '输入尚未保存，离开页面后会清空。请先保存，再发布。' : '发布后，主题、时间、参与者等排期结构将不能修改。' }}</p></div>
       </fieldset></form>
   </template>
