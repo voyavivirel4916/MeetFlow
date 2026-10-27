@@ -1,7 +1,7 @@
 from sqlalchemy import (Boolean, CheckConstraint, Column, ForeignKey, ForeignKeyConstraint, Index,
                         Integer, MetaData, Table, Text, UniqueConstraint, text)
 
-# Implemented schemas only. Votes, meetings and tasks arrive with later tasks.
+# Implemented schemas only. Meetings and tasks arrive with later tasks.
 metadata = MetaData()
 users = Table('users', metadata,
     Column('id', Integer, primary_key=True),
@@ -82,3 +82,15 @@ slots = Table('slots', metadata,
     CheckConstraint("typeof(start_at) = 'integer' AND typeof(end_at) = 'integer'", name='ck_slots_times'),
     UniqueConstraint('poll_id', 'start_at', 'end_at', name='uq_slots_poll_time'),
     UniqueConstraint('poll_id', 'id', name='uq_slots_poll_id'))
+
+votes = Table('votes', metadata,
+    Column('poll_id', Integer, nullable=False),
+    Column('slot_id', Integer, primary_key=True),
+    Column('user_id', Integer, primary_key=True),
+    Column('availability', Text, nullable=False),
+    Column('updated_at', Integer, nullable=False),
+    ForeignKeyConstraint(['poll_id', 'slot_id'], ['slots.poll_id', 'slots.id'], ondelete='RESTRICT', name='fk_votes_poll_slot'),
+    ForeignKeyConstraint(['poll_id', 'user_id'], ['participants.poll_id', 'participants.user_id'], ondelete='RESTRICT', name='fk_votes_poll_participant'),
+    CheckConstraint("availability IN ('AVAILABLE','MAYBE','UNAVAILABLE')", name='ck_votes_availability'),
+    CheckConstraint("typeof(updated_at) = 'integer'", name='ck_votes_updated_at'))
+Index('ix_votes_poll_user', votes.c.poll_id, votes.c.user_id)

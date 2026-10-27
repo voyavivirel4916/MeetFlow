@@ -8,6 +8,7 @@ from app.api.system import router
 from app.api.auth import router as auth_router
 from app.api.groups import router as groups_router
 from app.api.polls import router as polls_router
+from app.api.votes import router as votes_router
 from app.common.config import Settings, load_settings, prepare_runtime
 from app.common.middleware import RequestContextMiddleware
 from app.common.responses import ApiError, error_response, request_id
@@ -61,5 +62,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(groups_router)
     app.include_router(polls_router)
+    app.include_router(votes_router)
     install_frontend(app, config)
     return app

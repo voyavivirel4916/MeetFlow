@@ -1,4 +1,4 @@
-// T15 API flow with real browser sessions; editing UI remains a separate T16 task.
+// T15/T17 API flows with real browser sessions and an isolated database.
 import assert from 'node:assert/strict';
 
 export async function verifyPolls(browser, origin) {
@@ -51,15 +51,35 @@ export async function verifyPolls(browser, origin) {
     assert.equal((await api(owner.page, `/polls/${poll.id}`, 'PUT', complete)).status, 409);
     await member.page.reload();
     assert.equal(ok(await api(member.page, `/groups/${group.id}/polls`)).items[0].status, 'OPEN');
+    const votePath = `/polls/${poll.id}/votes/me`;
+    assert.deepEqual(ok(await api(member.page, votePath)), { poll_id: poll.id, submitted_at: null, votes: [] });
+    const choice = availability => ({ votes: [{ slot_id: saved.slots[0].id, availability }] });
+    let myVote;
+    for (const value of ['AVAILABLE', 'MAYBE', 'UNAVAILABLE']) {
+      myVote = ok(await api(member.page, votePath, 'PUT', choice(value)));
+      assert.deepEqual(myVote.votes, choice(value).votes);
+      assert.match(myVote.submitted_at, /^\d{4}-\d{2}-\d{2}T.*\.\d{3}Z$/);
+    }
+    assert.deepEqual(ok(await api(owner.page, votePath)).votes, []);
+    assert.equal((await api(member.page, votePath, 'PUT', { ...choice('MAYBE'), user_id: owner.userId })).status, 422);
+    assert.equal((await api(member.page, votePath, 'PUT', { votes: [] })).status, 422);
+    assert.equal((await api(member.page, votePath, 'PUT', { votes: [...choice('MAYBE').votes, ...choice('MAYBE').votes] })).status, 422);
+    assert.equal((await api(outside.page, votePath)).status, 404);
+    await member.page.reload();
+    assert.deepEqual(ok(await api(member.page, votePath)), myVote);
     const closed = ok(await api(owner.page, `/polls/${poll.id}/close`, 'POST', {}));
     assert.equal(closed.status, 'CLOSED');
     assert.deepEqual(ok(await api(owner.page, `/polls/${poll.id}/close`, 'POST', {})), closed);
+    assert.equal((await api(member.page, votePath, 'PUT', choice('MAYBE'))).body.error.code, 'POLL_CLOSED');
+    assert.deepEqual(ok(await api(member.page, votePath)), myVote);
     const cancelled = ok(await api(owner.page, `/polls/${poll.id}/cancel`, 'POST', {}));
     assert.equal(cancelled.status, 'CANCELLED');
     assert.deepEqual(ok(await api(owner.page, `/polls/${poll.id}/cancel`, 'POST', {})), cancelled);
     assert.equal((await api(owner.page, `/polls/${poll.id}/open`, 'POST', {})).status, 409);
     ok(await api(member.page, '/auth/logout', 'POST', {}));
     assert.equal((await api(member.page, `/polls/${poll.id}`)).status, 401);
+    assert.equal((await api(member.page, votePath)).status, 401);
     console.log('PASS T15: real browser draft/create/replace/read/list, owner/member/outside permissions, publish freeze, close/cancel idempotence, terminal state, refresh and logout.');
+    console.log('PASS T17: own answers, all three values, replace/reload, actor isolation, forged actor/empty/duplicate rejection, outside rights, closed read/write and expired session.');
   } finally { for (const context of contexts) await context.close(); }
 }
