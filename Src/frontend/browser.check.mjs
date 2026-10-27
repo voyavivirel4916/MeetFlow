@@ -182,6 +182,10 @@ try {
     const { verifyGroupsUI } = await import('./groups-ui.browser.mjs');
     await verifyGroupsUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
+  if (process.argv.includes('--polls')) {
+    const { verifyPolls } = await import('./polls.browser.mjs');
+    await verifyPolls(browser, origin);
+  }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
 } finally {
   if (browser) await browser.close();

@@ -54,10 +54,11 @@ npm run check:auth
 npm run check:auth-ui
 npm run check:groups
 npm run check:groups-ui
+npm run check:polls
 $env:PROTOTYPE_BROWSER='msedge'
 npm run check:auth
 ```
 
 先运行 `npm run build`。检查脚本显式迁移独立临时数据库；`check:browser`验证Vite开发代理，`check:delivery`只启动后端并验证正式构建的同源页面。使用空闲端口，结束后清理，不使用开发数据库或占用8000/5173。加 `-- --screenshots` 更新对应截图。本轮结果与截图见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，T06/T07历史结果见[18号记录](../../Docs/18-前端与数据库工程记录.md)。
 
-`check:auth`验证真实Cookie、跨来源表单和多会话隔离；`check:auth-ui`验证登录页面；`check:groups`验证四会话小组接口；`check:groups-ui`验证真实小组页面及失败恢复。开发代理可用 `node browser.check.mjs --auth --auth-ui --groups --groups-ui`。结果见[20号](../../Docs/20-认证与会话接口记录.md)、[21号](../../Docs/21-注册登录页面与守卫.md)、[23号](../../Docs/23-小组成员与邀请码接口.md)和[24号记录](../../Docs/24-小组页面与交互验证.md)。
+`check:auth`验证真实Cookie、跨来源表单和多会话隔离；`check:auth-ui`验证登录页面；`check:groups`验证四会话小组接口；`check:groups-ui`验证真实小组页面；`check:polls`验证T15排期接口，不表示T16编辑页已完成。开发代理可用 `node browser.check.mjs --polls`。结果见[20号](../../Docs/20-认证与会话接口记录.md)、[21号](../../Docs/21-注册登录页面与守卫.md)、[23号](../../Docs/23-小组成员与邀请码接口.md)、[24号](../../Docs/24-小组页面与交互验证.md)和[26号记录](../../Docs/26-草稿与排期状态接口.md)。
