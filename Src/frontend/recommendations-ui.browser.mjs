@@ -32,6 +32,8 @@ export async function verifyRecommendationsUI(browser,origin,{root,screenshots})
     const submit=async(user,values)=>assert.equal((await user.context.request.put(origin+`/api/v1/polls/${poll.id}/votes/me`,{data:{votes:poll.slots.map((slot,index)=>({slot_id:slot.id,availability:values[index%values.length]}))}})).status(),200);
     await submit(owner,['AVAILABLE']);await submit(no,['UNAVAILABLE']);await submit(maybe,['MAYBE']);
     await refresh(page).click();await ready(page);
+    assert.equal(await page.getByRole('link',{name:'排期详情 →',exact:true}).getAttribute('class'),'button-link');
+    assert.equal(await page.getByText('按已保存答案比较',{exact:true}).count(),0);
     await page.getByText('还有必到成员未填写，出席情况尚未确定。',{exact:true}).waitFor();
     await page.getByText('每个候选时间都有成员没空，请先查看冲突；排名不代表全员可参加。',{exact:true}).waitFor();
     assert.equal(await page.locator('.recommendation-item').count(),3);
