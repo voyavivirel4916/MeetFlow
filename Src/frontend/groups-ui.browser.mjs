@@ -124,6 +124,8 @@ export async function verifyGroupsUI(browser, origin, { root, screenshots }) {
     assert.equal(await memberPage.locator('.member-list .current-member').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(241, 239, 248)');
     assert.equal(await memberPage.getByText('这是你', { exact: true }).count(), 0);
     assert.equal(await memberPage.locator('.group-count').textContent(), '02/20');
+    assert.equal(await memberPage.locator('.group-count strong').evaluate(element => getComputedStyle(element).fontSize), '28px');
+    assert.equal(await memberPage.locator('.group-count span').evaluate(element => getComputedStyle(element).fontSize), '18px');
     assert.equal(await memberPage.locator('.group-count').getByText('一起把事情推进', { exact: true }).count(), 0);
     await memberPage.unroute(/\/api\/v1\/groups\/\d+\/members$/);
     assert.equal(await memberPage.getByRole('button', { name: '重置邀请码', exact: true }).count(), 0);
