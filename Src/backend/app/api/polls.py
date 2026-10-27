@@ -27,8 +27,9 @@ def create(group_id: Identifier, body: DraftIn, request: Request, account: UserO
 def listing(group_id: Identifier, request: Request, page: Annotated[int, Query(ge=1)] = 1,
             page_size: Annotated[int, Query(ge=1, le=50)] = 20,
             view: Literal['current', 'history', 'trash'] = 'current',
+            q: Annotated[str,Query(max_length=100)] = '',
             account: UserOut = Depends(current_user), engine=Depends(database)):
-    return Success(data=service.list_polls(engine, account.id, group_id, page, page_size, view), request_id=request_id(request))
+    return Success(data=service.list_polls(engine, account.id, group_id, page, page_size, view, q), request_id=request_id(request))
 
 
 @router.get('/polls/{poll_id}', response_model=Success[PollOut])

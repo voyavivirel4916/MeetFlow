@@ -60,7 +60,7 @@ onBeforeUnmount(()=>reader?.abort())
 </script>
 <template>
   <RouterLink class="back-link" :to="saved?`/groups/${saved.group_id}`:'/groups'">← 返回小组</RouterLink>
-  <section class="group-heading"><div><p class="eyebrow">MEETFLOW / 让讨论继续</p><h1>会议与行动</h1><p class="muted">记录要讨论的事，留下共同的决定。</p></div><button class="secondary" :disabled="loading||pending||uncertain" @click="load">{{loading?'正在读取…':'刷新'}}</button></section>
+  <section class="group-heading"><div><h1>会议与行动</h1><p class="muted">记录要讨论的事，留下共同的决定。</p></div><button class="secondary" :disabled="loading||pending||uncertain" @click="load">{{loading?'正在读取…':'刷新'}}</button></section>
   <StateNotice v-if="loading&&!saved" kind="loading" title="正在读取会议" message="请稍候。"/>
   <StateNotice v-if="readError" kind="error" :title="[403,404].includes(readError.status||0)?'未找到可访问的会议':'会议暂时无法读取'" :message="readError.message" :request-id="readError.requestId"><button :disabled="loading||pending||uncertain" @click="load">重新读取会议</button></StateNotice>
   <p v-if="notice" class="success-note" role="status">{{notice}}</p>

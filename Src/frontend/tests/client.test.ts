@@ -9,6 +9,18 @@ function json(body: unknown, status = 200) {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
 
+it('keeps encoded search characters in query data without allowing encoded paths',async()=>{
+  const fetch=vi.fn().mockResolvedValue(json({data:{items:[]}}));vi.stubGlobal('fetch',fetch)
+  const path='/api/v1/tasks/mine?'+new URLSearchParams({q:'设计 / 20%_..\\ 测试'})
+  await request(path)
+  expect(fetch).toHaveBeenCalledWith(path,expect.any(Object))
+  await expect(request('/api/v1/%2f/tasks')).rejects.toBeInstanceOf(TypeError)
+})
+it.each(['/api/v1/tasks/mine?q=%GG','/api/v1/tasks/mine?q=x#y','/api/v1/tasks/mine?q=x?y'])('rejects malformed API targets %s',async path=>{
+  const fetch=vi.fn();vi.stubGlobal('fetch',fetch)
+  await expect(request(path)).rejects.toBeInstanceOf(TypeError);expect(fetch).not.toHaveBeenCalled()
+})
+
 describe('API transport', () => {
   it('uses same-origin cookies, JSON and server request id', async () => {
     const fetch = vi.fn().mockResolvedValue(json({ data: { id: 3 } }, 201))

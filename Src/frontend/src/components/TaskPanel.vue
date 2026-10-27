@@ -14,6 +14,7 @@ const props=defineProps<{groupId?:number;meetingId?:number}>()
 const session=useSession(),page=ref<TaskPage>(),filter=ref<''|Status>(''),loading=ref(false),error=ref<ApiFailure>(),writeError=ref<ApiFailure>(),pending=ref(false),uncertain=ref(false)
 const ownerId=ref<number>(),members=ref<Member[]>([]),title=props.meetingId?'会议任务':props.groupId?'小组任务':'待办列表'
 const owners=ref<Record<number,number>>({}),editing=ref<Task>(),editMembers=ref<Member[]>([])
+const searchInput=ref(''),query=ref('')
 const operation=ref<{task:Task;status:Status}>(),actionDialog=ref<HTMLDialogElement>()
 const owner=computed(()=>ownerId.value===session.state.user?.id),pages=computed(()=>Math.max(1,Math.ceil((page.value?.total||0)/20)))
 const live=useGroupLifetime(()=>uncertain.value,()=>pending.value)
@@ -21,17 +22,17 @@ const canChange=(task:Task)=>owner.value||task.assignee_id===session.state.user?
 const canEdit=(task:Task)=>owners.value[task.group_id]===session.state.user?.id
 const assignee=(task:Task)=>members.value.find(person=>person.user_id===task.assignee_id)?.username||(task.assignee_id===session.state.user?.id?session.state.user.username:'小组成员')
 let reader:AbortController|undefined
-async function refresh(number=page.value?.page||1,nextFilter:typeof filter.value=filter.value){
+async function refresh(number=page.value?.page||1,nextFilter:typeof filter.value=filter.value,nextQuery=query.value){
  if(loading.value||pending.value)return
  loading.value=true;error.value=undefined;reader=new AbortController()
  try{
-  const [value,group,roster]=await Promise.all([tasksApi.list({...props,userId:session.state.user!.id},number,nextFilter,reader.signal),props.groupId?groupsApi.get(props.groupId,reader.signal):undefined,props.groupId?groupsApi.members(props.groupId,reader.signal):[]])
+  const [value,group,roster]=await Promise.all([tasksApi.list({...props,userId:session.state.user!.id},number,nextFilter,reader.signal,nextQuery),props.groupId?groupsApi.get(props.groupId,reader.signal):undefined,props.groupId?groupsApi.members(props.groupId,reader.signal):[]])
   if(!live())return
   const own:Record<number,number>={}
   if(group)own[group.id]=group.owner_id
   else {const groups=await Promise.all([...new Set(value.items.map(task=>task.group_id))].map(id=>groupsApi.get(id,reader!.signal)));for(const item of groups)own[item.id]=item.owner_id}
   if(!live())return
-  owners.value=own;page.value=value;filter.value=nextFilter;ownerId.value=group?.owner_id;members.value=roster;uncertain.value=false;writeError.value=undefined
+  owners.value=own;page.value=value;filter.value=nextFilter;query.value=nextQuery;ownerId.value=group?.owner_id;members.value=roster;uncertain.value=false;writeError.value=undefined
  }catch(value){if(live()){error.value=failure(value);if([403,404].includes(error.value.status||0)){page.value=undefined;members.value=[];ownerId.value=undefined;uncertain.value=false}}}
  finally{loading.value=false}
 }
@@ -66,11 +67,12 @@ onBeforeUnmount(()=>{reader?.abort();actionDialog.value?.close()})
 <template>
  <section class="task-panel" :aria-label="title"><div class="section-heading"><h2>{{title}}</h2><button class="secondary" :disabled="loading||pending" @click="refresh()">{{loading?'正在读取…':'刷新任务'}}</button></div>
   <div class="task-toolbar"><label>任务状态 <select aria-label="任务状态" :value="filter" :disabled="loading||pending||uncertain" @change="filterChanged"><option value="">{{groupId?'全部状态':'未完成任务'}}</option><option v-for="(label,value) in states" :key="value" :value="value">{{label}}</option></select></label><span v-if="page" class="form-help">{{page.total}} 项任务</span></div>
+  <form class="list-search task-search" role="search" aria-label="任务搜索" @submit.prevent="refresh(1,filter,searchInput.trim())"><input v-model="searchInput" type="search" aria-label="搜索任务" placeholder="搜索任务" maxlength="100" :disabled="loading||pending"><button class="secondary" :disabled="loading||pending">搜索</button><button v-if="query||searchInput" class="text-button" type="button" :disabled="loading||pending" @click="searchInput='';refresh(1,filter,'')">清除</button></form><p v-if="query" class="form-help">当前搜索：{{query}}</p>
   <StateNotice v-if="loading&&!page" kind="loading" title="正在读取任务" message="请稍候。"/>
   <StateNotice v-if="error" kind="error" title="任务列表暂时无法读取" :message="error.message" :request-id="error.requestId"><button :disabled="loading||pending" @click="refresh()">重新读取任务</button></StateNotice>
   <StateNotice v-if="writeError" kind="uncertain" title="任务状态需要核对" :message="writeError.message" :request-id="writeError.requestId"><button :disabled="loading||pending" @click="refresh()">核对最新任务</button></StateNotice>
   <p v-if="page&&(loading||error)" class="matrix-stale">保留上次读取的任务，请刷新成功后再操作。</p>
-  <p v-if="page&&!page.items.length&&!error&&!loading" class="task-empty">{{filter?'当前状态下没有任务。':groupId?'还没有任务，把会议决定拆成下一步行动吧。':'暂时没有未完成的任务。'}}</p>
+  <p v-if="page&&!page.items.length&&!error&&!loading" class="task-empty">{{filter?'当前状态下没有任务。':groupId?'暂无任务，负责人可在会议页添加。':'暂时没有未完成的任务。'}}</p>
   <ul v-if="page" class="task-list"><li v-for="task in page.items" :key="task.id" :data-task="task.id" :class="{completed:task.status==='DONE',cancelled:task.status==='CANCELLED'}"><button v-if="canChange(task)&&task.status!=='CANCELLED'" class="task-complete" role="checkbox" :aria-checked="task.status==='DONE'" :aria-label="`${task.status==='DONE'?'重新打开':'完成'}：${task.title}`" :disabled="loading||pending||uncertain||!!error" @click="setStatus(task,task.status==='DONE'?'TODO':'DONE')"><span aria-hidden="true">{{task.status==='DONE'?'✓':''}}</span></button><div class="task-main"><h3>{{task.title}}</h3><p class="task-meta">{{assignee(task)}} · 截止 {{beijing(task.due_at).replace('T',' ')}}（北京时间）<span v-if="!['DONE','CANCELLED'].includes(task.status)&&Date.parse(task.due_at)<Date.now()" class="task-overdue">已逾期</span></p><p v-if="task.description" class="plain-text">{{task.description}}</p><RouterLink v-if="!meetingId" :to="`/meetings/${task.meeting_id}`">查看会议 →</RouterLink><small v-if="task.completed_at" class="form-help">完成于 {{beijing(task.completed_at).replace('T',' ')}}</small></div><label v-if="canChange(task)&&task.status!=='CANCELLED'" class="task-status">状态<select :aria-label="`${task.title}的状态`" :value="task.status" :disabled="loading||pending||uncertain||!!error" @change="change(task,$event)"><option v-for="(label,value) in progressStates" :key="value" :value="value">{{label}}</option></select></label><span v-else class="role-badge">{{states[task.status]}}</span><div v-if="canEdit(task)" class="task-management"><button :disabled="loading||pending||uncertain||!!error" @click="edit(task)">编辑</button><button v-if="task.status==='CANCELLED'" :disabled="loading||pending||uncertain||!!error" @click="organize(task,'TODO')">恢复</button><button v-else-if="task.status!=='DONE'" class="cancel-action" :disabled="loading||pending||uncertain||!!error" @click="organize(task,'CANCELLED')">取消</button></div></li></ul>
   <nav v-if="page&&(pages>1||page.page>1)" class="pagination" aria-label="任务分页"><button class="secondary" :disabled="loading||pending||page.page<=1" @click="refresh(page.page-1)">上一页任务</button><span>第 {{page.page}}/{{pages}} 页</span><button class="secondary" :disabled="loading||pending||page.page>=pages" @click="refresh(page.page+1)">下一页任务</button></nav>
   <TaskCreator v-if="meetingId&&groupId&&owner" :meeting-id="meetingId" :group-id="groupId" :members="members" :disabled="loading||pending||uncertain||!!error" @created="created" @reconcile="refresh(1)"/>

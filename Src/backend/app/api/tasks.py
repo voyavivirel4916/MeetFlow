@@ -36,12 +36,14 @@ def edit(task_id:Identifier,body:TaskUpdate,request:Request,
 
 @router.get('/tasks/mine', response_model=Success[TaskPage])
 def mine(request: Request, page: Page = 1, page_size: Size = 20, status: Status | None = None,
+         q:Annotated[str,Query(max_length=100)]='',
          account: UserOut = Depends(current_user), engine=Depends(database)):
-    return Success(data=service.list_tasks(engine, account.id, page, page_size, status), request_id=request_id(request))
+    return Success(data=service.list_tasks(engine, account.id, page, page_size, status,q=q), request_id=request_id(request))
 
 
 @router.get('/groups/{group_id}/tasks', response_model=Success[TaskPage])
 def group_tasks(group_id: Identifier, request: Request, page: Page = 1, page_size: Size = 20, status: Status | None = None,
                 meeting_id: Annotated[int | None, Query(ge=1, le=9223372036854775807)] = None,
+                q:Annotated[str,Query(max_length=100)]='',
                 account: UserOut = Depends(current_user), engine=Depends(database)):
-    return Success(data=service.list_tasks(engine, account.id, page, page_size, status, group_id=group_id, meeting_id=meeting_id), request_id=request_id(request))
+    return Success(data=service.list_tasks(engine, account.id, page, page_size, status, group_id=group_id, meeting_id=meeting_id,q=q), request_id=request_id(request))

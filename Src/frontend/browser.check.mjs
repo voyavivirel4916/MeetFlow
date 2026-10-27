@@ -215,6 +215,10 @@ try {
     const {verifyTaskUpdates}=await import('./task-updates.browser.mjs');
     await verifyTaskUpdates(browser,origin,{root});
   }
+  if(process.argv.includes('--search-theme')){
+    const {verifySearchTheme}=await import('./search-theme.browser.mjs');
+    await verifySearchTheme(browser,origin,{root});
+  }
   if(process.argv.includes('--dashboard')){
     const {verifyDashboard}=await import('./dashboard.browser.mjs');
     await verifyDashboard(browser,origin,{root});
@@ -238,7 +242,7 @@ try {
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
   if(process.argv.includes('--acceptance')){
     const folder=resolve(root,'Docs/evidence');await mkdir(folder,{recursive:true});
-    await writeFile(resolve(folder,`t32-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
+    await writeFile(resolve(folder,`${process.argv.includes('--search-theme')?'v2-15-acceptance':'t32'}-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
   }
 } finally {
   if (browser) await browser.close();

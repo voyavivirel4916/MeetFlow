@@ -1,6 +1,7 @@
 from sqlalchemy import func, insert, select, update
 
 from app.common import clock
+from app.common.search import search_text
 from app.common.responses import ApiError
 from app.common.times import format_ms, to_ms
 from app.db.connection import write_transaction
@@ -102,11 +103,13 @@ def get_poll(engine, user_id, poll_id):
         return _outputs(connection, [_require_poll(connection, user_id, poll_id)])[0]
 
 
-def list_polls(engine, user_id, group_id, page, page_size, view='current'):
+def list_polls(engine, user_id, group_id, page, page_size, view='current', q=''):
     with engine.connect() as connection:
         connection.exec_driver_sql('BEGIN')
         (require_owner if view == 'trash' else require_member)(connection, user_id, group_id)
         condition = polls.c.group_id == group_id
+        query=search_text(q)
+        if query:condition=condition & polls.c.title.contains(query,autoescape=True)
         if view == 'trash':
             condition = condition & polls.c.deleted_at.is_not(None)
         else:

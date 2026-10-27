@@ -18,7 +18,9 @@ export function onUnauthorized(listener: () => void) {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<Envelope<T>> {
-  if (!/^\/api\/v1\/(?!.*(?:\.\.|[\\#]))[a-zA-Z0-9/_?=&%.-]+$/.test(path) || /%(?:2e|2f|5c)/i.test(path)) throw new TypeError('Expected a local /api/v1/ path')
+  const [pathname,query,extra]=path.split('?')
+  if (!pathname || !/^\/api\/v1\/(?!.*\.\.)[a-zA-Z0-9/_.-]+$/.test(pathname) || extra!==undefined ||
+      (query!==undefined&&(!/^[a-zA-Z0-9_%+&=.~-]*$/.test(query)||/%(?![0-9a-f]{2})/i.test(query)))) throw new TypeError('Expected a local /api/v1/ path')
   return send<T>(path, options)
 }
 

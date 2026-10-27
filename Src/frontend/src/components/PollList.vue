@@ -11,6 +11,7 @@ const session = useSession()
 const canVote = (poll: PollPage['items'][number]) => poll.effective_status !== 'DRAFT' && poll.participants.some(person => person.user_id === session.state.user?.id)
 const saved = ref<PollPage>(), loading = ref(false), error = ref<ApiFailure>()
 const view=ref<PollView>('current'),pending=ref(false),uncertain=ref(false),writeError=ref<ApiFailure>()
+const searchInput=ref(''),query=ref('')
 const dialog=ref<HTMLDialogElement>(),selected=ref<{poll:Poll;action:OrganizationAction}>()
 useGroupLifetime(()=>uncertain.value,()=>pending.value)
 const views=computed(()=>props.canCreate?['current','history','trash'] as const:['current','history'] as const)
@@ -41,10 +42,10 @@ async function confirm(){
 }
 const pages = computed(() => Math.max(1, Math.ceil((saved.value?.total || 0) / 20)))
 let controller: AbortController | undefined, alive = true
-async function refresh(page = saved.value?.page || 1, nextView:PollView=view.value) {
+async function refresh(page = saved.value?.page || 1, nextView:PollView=view.value, nextQuery=query.value) {
   if (loading.value||pending.value) return
   controller = new AbortController(); loading.value = true; error.value = undefined
-  try { const result = await pollsApi.list(props.groupId, page, controller.signal,nextView); if (alive) {saved.value = result;view.value=nextView;uncertain.value=false;writeError.value=undefined} }
+  try { const result = await pollsApi.list(props.groupId, page, controller.signal,nextView,nextQuery); if (alive) {saved.value = result;view.value=nextView;query.value=nextQuery;uncertain.value=false;writeError.value=undefined} }
   catch (value) { if (alive) { error.value = failure(value); if ([403,404].includes(error.value.status||0)) saved.value = undefined } }
   finally { loading.value = false }
 }
@@ -55,7 +56,8 @@ defineExpose({ refresh })
 <template>
   <section class="poll-list-card" :aria-busy="loading"><div class="section-heading"><div class="poll-heading-title"><h2>小组排期</h2><button class="refresh-icon" :disabled="loading||pending" :aria-label="loading ? '正在读取排期' : '刷新排期'" title="刷新排期" @click="refresh()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.35-5.65L20 7"/><path d="M20 3v4h-4"/></svg></button></div><RouterLink v-if="canCreate" class="button-link" :to="`/groups/${groupId}/polls/new`">＋ 发起排期</RouterLink></div>
     <StateNotice v-if="loading && !saved" kind="loading" title="正在读取排期" message="请稍候。" />
-    <nav class="poll-view-tabs" aria-label="排期分类"><button v-for="item in views" :key="item" :aria-pressed="view===item" :disabled="loading||pending" @click="refresh(1,item)">{{viewLabels[item]}}</button></nav>
+    <div class="list-toolbar"><nav class="poll-view-tabs" aria-label="排期分类"><button v-for="item in views" :key="item" :aria-pressed="view===item" :disabled="loading||pending" @click="refresh(1,item)">{{viewLabels[item]}}</button></nav><form class="list-search" role="search" aria-label="排期搜索" @submit.prevent="refresh(1,view,searchInput.trim())"><input v-model="searchInput" type="search" aria-label="搜索排期" placeholder="搜索排期" maxlength="100" :disabled="loading||pending"><button class="secondary" :disabled="loading||pending">搜索</button><button v-if="query||searchInput" class="text-button" type="button" :disabled="loading||pending" @click="searchInput='';refresh(1,view,'')">清除</button></form></div>
+    <p v-if="query" class="form-help">当前搜索：{{query}}</p>
     <StateNotice v-if="writeError" kind="uncertain" title="请核对排期状态" :message="writeError.message" :request-id="writeError.requestId"><button :disabled="loading||pending" @click="refresh(1)">核对最新排期</button></StateNotice>
     <StateNotice v-if="error" kind="error" title="排期列表暂时无法读取" :message="error.message" :request-id="error.requestId"><button :disabled="loading||pending" @click="refresh()">重新读取排期</button></StateNotice>
     <p v-if="saved && (loading || error)" class="form-help">下方保留上次读取的排期，请刷新核对最新状态。</p>

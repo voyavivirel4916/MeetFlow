@@ -2,6 +2,7 @@ import json
 from sqlalchemy import and_, func, insert, select, update
 
 from app.common import clock
+from app.common.search import search_text
 from app.common.responses import ApiError
 from app.common.times import format_ms, to_ms
 from app.db.connection import write_transaction
@@ -101,7 +102,7 @@ def edit_task(engine,actor,task_id,data):
         return _out(connection.execute(select(tasks).where(tasks.c.id==task_id)).mappings().one())
 
 
-def list_tasks(engine, actor, page, page_size, status=None, *, group_id=None, meeting_id=None):
+def list_tasks(engine, actor, page, page_size, status=None, *, group_id=None, meeting_id=None, q=''):
     with engine.connect() as connection:
         connection.exec_driver_sql('BEGIN')
         if group_id is not None:
@@ -120,6 +121,8 @@ def list_tasks(engine, actor, page, page_size, status=None, *, group_id=None, me
             condition = and_(condition, tasks.c.meeting_id == meeting_id)
         if status is not None:
             condition = and_(condition, tasks.c.status == status)
+        query=search_text(q)
+        if query:condition=and_(condition,tasks.c.title.contains(query,autoescape=True))
         total = connection.execute(select(func.count()).select_from(tasks).where(condition)).scalar_one()
         offset = (page - 1) * page_size
         rows = [] if offset >= total else connection.execute(select(tasks).where(condition)

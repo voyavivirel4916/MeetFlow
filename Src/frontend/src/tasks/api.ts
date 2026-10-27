@@ -29,8 +29,9 @@ export function decodeTask(value:unknown,id:string,writing=false):Task{
 }
 const decode=decodeTask
 export const tasksApi={
- async list(scope:{groupId?:number;meetingId?:number;userId:number},page=1,status:''|Status='',signal?:AbortSignal):Promise<TaskPage>{
+ async list(scope:{groupId?:number;meetingId?:number;userId:number},page=1,status:''|Status='',signal?:AbortSignal,q=''):Promise<TaskPage>{
   const query=new URLSearchParams({page:String(page),page_size:'20'});if(status)query.set('status',status);if(scope.meetingId)query.set('meeting_id',String(scope.meetingId))
+  if(q)query.set('q',q)
   const result=await request<unknown>(`/api/v1/${scope.groupId?`groups/${identifier(scope.groupId)}/tasks`:'tasks/mine'}?${query}`,{signal}),value=result.data
   if(!object(value)||!Array.isArray(value.items)||value.page!==page||value.page_size!==20||!Number.isSafeInteger(value.total)||Number(value.total)<0||value.items.length!==Math.min(20,Math.max(0,Number(value.total)-(page-1)*20)))return invalid(result.request_id)
   const items=value.items.map(row=>decode(row,result.request_id))

@@ -59,8 +59,8 @@ export const pollsApi = {
     if (String(poll.id) !== String(id)) invalid(result.request_id, false)
     return poll
   },
-  async list(groupId: number | string, page = 1, signal?: AbortSignal, view: PollView = 'current'): Promise<PollPage> {
-    const result = await request<unknown>(`/api/v1/groups/${identifier(groupId)}/polls?page=${page}&page_size=20${view==='current'?'':`&view=${view}`}`, { signal })
+  async list(groupId: number | string, page = 1, signal?: AbortSignal, view: PollView = 'current',q=''): Promise<PollPage> {
+    const result = await request<unknown>(`/api/v1/groups/${identifier(groupId)}/polls?page=${page}&page_size=20${view==='current'?'':`&view=${view}`}${q?`&${new URLSearchParams({q})}`:''}`, { signal })
     const value = result.data
     if (!object(value) || !Array.isArray(value.items) || value.page !== page || value.page_size !== 20 || !Number.isSafeInteger(value.total) || Number(value.total) < 0) invalid(result.request_id, false)
     const items = value.items.map(item => decode(item, result.request_id))

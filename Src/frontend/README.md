@@ -86,3 +86,5 @@ npm run check:auth
 任务增强：`node browser.check.mjs --built --task-updates`。当前294项前端测试通过，新建版本化任务接口与页面须一起部署，排版确认见[48号记录](../../Docs/48-任务编辑取消与完成验证.md)。
 
 工作台验证：`node browser.check.mjs --built --dashboard`，当前306项前端测试通过。登录默认工作台，有效返回位置不变；见[49号记录](../../Docs/49-工作台汇总与页面验证.md)。
+
+全站紧凑紫色主题与搜索：`node browser.check.mjs --built --search-theme --acceptance`，当前310项前端测试通过。新主题在theme.css统一维护，结果见[50号记录](../../Docs/50-搜索筛选与全站界面整理.md)。

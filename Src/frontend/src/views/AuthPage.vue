@@ -109,15 +109,8 @@ async function submit() {
 
 <template>
   <div class="auth-layout">
-    <section class="auth-story" aria-label="MeetFlow介绍">
-      <p class="eyebrow">MEETFLOW / 时间拼图</p>
-      <h1>把大家的时间，<br>拼成下一步。</h1>
-      <p>从找到共同时间，到记下会议决定，再一起完成每一件事。</p>
-      <div class="time-pieces" aria-hidden="true"><span>找到时间</span><span>形成决定</span><span>继续行动</span></div>
-      <p class="story-foot">为课程小组准备的协作空间</p>
-    </section>
     <section class="auth-card" :aria-busy="pending">
-      <p class="eyebrow">{{ registering ? '开始一起协作' : '继续你的小组协作' }}</p>
+
       <h2>{{ title }}</h2>
       <p v-if="notice" class="auth-note" role="status">{{ notice }}</p>
       <p class="form-help">以下均为必填项。{{ registering ? '注册后需要登录。' : '使用用户名和密码登录。' }}</p>
