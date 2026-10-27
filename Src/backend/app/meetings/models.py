@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.common.responses import InputModel
 
@@ -38,3 +38,28 @@ class MeetingOut(BaseModel):
     agenda: str
     minutes: str
     updated_at: str
+
+
+class MeetingPage(BaseModel):
+    items: list[MeetingOut]
+    page: int
+    page_size: int
+    total: int
+
+
+class MeetingUpdate(InputModel):
+    agenda: str | None = Field(default=None, strict=True, max_length=10000)
+    minutes: str | None = Field(default=None, strict=True, max_length=10000)
+
+    @field_validator('agenda', 'minutes', mode='before')
+    @classmethod
+    def text_only(cls, value):
+        if not isinstance(value, str):
+            raise ValueError('Use plain text, not null.')
+        return ConfirmIn.valid_text(value)
+
+    @model_validator(mode='after')
+    def at_least_one_field(self):
+        if not self.model_fields_set:
+            raise ValueError('Provide agenda or minutes.')
+        return self

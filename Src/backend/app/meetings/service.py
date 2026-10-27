@@ -1,6 +1,6 @@
 import sqlite3
 
-from sqlalchemy import insert, select, update
+from sqlalchemy import func, insert, select, update
 from sqlalchemy.exc import IntegrityError
 
 from app.common import clock
@@ -8,7 +8,8 @@ from app.common.responses import ApiError
 from app.common.times import format_ms
 from app.db.connection import write_transaction
 from app.db.models import meetings, polls, slots
-from app.meetings.models import MeetingOut
+from app.meetings.models import MeetingOut, MeetingPage
+from app.groups.service import require_member, require_owner
 from app.polls.service import _invalid, _require_poll, materialize_expiry
 from app.recommendations.service import rank_matrix
 from app.votes.service import matrix_for_poll
@@ -35,6 +36,49 @@ def get_for_poll(engine, user_id, poll_id):
         _require_poll(connection, user_id, poll_id)
         row = _find(connection, poll_id)
         return None if row is None else _out(row)
+
+
+def _require_meeting(connection, user_id, meeting_id, *, owner=False):
+    row = connection.execute(select(meetings).where(meetings.c.id == meeting_id)).mappings().first()
+    not_found = ApiError(404, 'NOT_FOUND', '未找到可访问的会议。')
+    if row is None:
+        raise not_found
+    try:
+        (require_owner if owner else require_member)(connection, user_id, row['group_id'])
+    except ApiError as error:
+        if error.status == 404:
+            raise not_found from None
+        raise
+    return row
+
+
+def get_meeting(engine, user_id, meeting_id):
+    with engine.connect() as connection:
+        connection.exec_driver_sql('BEGIN')
+        return _out(_require_meeting(connection, user_id, meeting_id))
+
+
+def list_meetings(engine, user_id, group_id, page, page_size):
+    with engine.connect() as connection:
+        connection.exec_driver_sql('BEGIN')
+        require_member(connection, user_id, group_id)
+        condition = meetings.c.group_id == group_id
+        total = connection.execute(select(func.count()).select_from(meetings).where(condition)).scalar_one()
+        offset = (page - 1) * page_size
+        rows = [] if offset >= total else connection.execute(select(meetings).where(condition)
+            .order_by(meetings.c.start_at.desc(), meetings.c.id.desc()).offset(offset).limit(page_size)).mappings().all()
+        return MeetingPage(items=[_out(row) for row in rows], page=page, page_size=page_size, total=total)
+
+
+def update_meeting(engine, user_id, meeting_id, data):
+    with write_transaction(engine) as connection:
+        row = _require_meeting(connection, user_id, meeting_id, owner=True)
+        fields = data.model_dump(exclude_unset=True)
+        # Same content retries preserve the previous saved result and timestamp.
+        if any(row[key] != value for key, value in fields.items()):
+            connection.execute(update(meetings).where(meetings.c.id == meeting_id)
+                .values(**fields, updated_at=max(clock.now_ms(), row['updated_at'])))
+        return _out(_require_meeting(connection, user_id, meeting_id))
 
 
 def confirm(engine, user_id, poll_id, data):
