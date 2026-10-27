@@ -1,0 +1,10 @@
+{
+  "command": ".venv/Scripts/python.exe -m pytest -q",
+  "result": "passed",
+  "tests": 577,
+  "elapsed_seconds": 249.96,
+  "observed_pytest_summary": "577 passed in 249.96s (0:04:09)",
+  "environment": "Python 3.11.9; Windows x64",
+  "isolation": "temporary database per test",
+  "note": "Summary transcribed from the executed final full-suite command; not an additional test run."
+}

@@ -1,0 +1,11 @@
+{
+  "numTotalTests": 273,
+  "numPassedTests": 273,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "success": true,
+  "startTime": 1793087172176,
+  "command": "npm test -- --reporter=json",
+  "environment": "Node 22.20.0; Windows x64",
+  "database": "frontend protocol/input unit tests; no developer database access"
+}

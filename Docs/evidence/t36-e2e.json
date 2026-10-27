@@ -1,0 +1,29 @@
+{
+  "started_at": "2026-10-27T07:36:59.230Z",
+  "finished_at": "2026-10-27T07:37:06.192Z",
+  "browser": "156.0.8078.48",
+  "independent_browser_contexts": 4,
+  "registration_fixture": "API registration; all subsequent business operations use UI",
+  "group_members": 4,
+  "candidates": 3,
+  "submissions": 4,
+  "meetings": 1,
+  "tasks": 2,
+  "final_task_states": [
+    "DONE",
+    "IN_PROGRESS"
+  ],
+  "steps": [
+    "UI login",
+    "UI create/join group",
+    "UI draft and publish",
+    "UI four-person voting",
+    "UI matrix and recommendations",
+    "UI close and confirm",
+    "UI agenda and minutes",
+    "UI two-task creation",
+    "UI assignee updates and group readback"
+  ],
+  "result": "passed",
+  "human_usability": false
+}

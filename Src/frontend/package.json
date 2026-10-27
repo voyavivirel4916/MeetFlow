@@ -22,7 +22,10 @@
     "check:recommendations-ui": "node browser.check.mjs --built --recommendations-ui",
     "check:confirmation-ui": "node browser.check.mjs --built --confirmation-ui",
     "check:meeting-ui": "node browser.check.mjs --built --meeting-ui",
-    "check:tasks-ui": "node browser.check.mjs --built --tasks-ui"
+    "check:tasks-ui": "node browser.check.mjs --built --tasks-ui",
+    "check:scheduling": "node browser.check.mjs --built --votes-ui --matrix-ui --recommendations-ui --confirmation-ui",
+    "check:acceptance": "node browser.check.mjs --built --acceptance",
+    "check:e2e": "node browser.check.mjs --built --e2e"
   },
   "dependencies": {
     "vue": "3.5.44",

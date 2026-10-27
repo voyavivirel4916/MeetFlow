@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { mkdtemp, mkdir, rename, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +11,9 @@ import { createServer, loadConfigFromFile } from 'vite';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
+const acceptanceFlags=['--auth-ui','--groups-ui','--poll-editor','--votes-ui','--matrix-ui','--recommendations-ui','--confirmation-ui','--meeting-ui','--tasks-ui'];
+if(process.argv.includes('--acceptance'))process.argv.push(...acceptanceFlags);
+const startedAt=new Date().toISOString(),startedClock=performance.now();
 const built = process.argv.includes('--built');
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright');
@@ -64,6 +67,7 @@ try {
     origin = `http://127.0.0.1:${server.httpServer.address().port}`;
   }
   browser = await chromium.launch({ channel: process.env.PROTOTYPE_BROWSER || 'chrome', headless: true });
+  console.log(`Browser: ${process.env.PROTOTYPE_BROWSER||'chrome'} ${browser.version()}; platform ${process.platform}/${process.arch}`);
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const bootstrap = { username: 'bootstrap_user', password: 'bootstrap-only-password' };
   assert.equal((await context.request.post(origin + '/api/v1/auth/register', { data: { ...bootstrap, email: 'bootstrap@example.com' } })).status(), 201);
@@ -198,6 +202,10 @@ try {
     const { verifyMatrixUI } = await import('./matrix-ui.browser.mjs');
     await verifyMatrixUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
+  if (process.argv.includes('--e2e')) {
+    const { verifyE2E } = await import('./e2e.browser.mjs');
+    await verifyE2E(browser, origin, {root});
+  }
   if (process.argv.includes('--tasks-ui')) {
     const { verifyTasksUI } = await import('./tasks-ui.browser.mjs');
     await verifyTasksUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
@@ -215,6 +223,10 @@ try {
     await verifyRecommendationsUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
+  if(process.argv.includes('--acceptance')){
+    const folder=resolve(root,'Docs/evidence');await mkdir(folder,{recursive:true});
+    await writeFile(resolve(folder,`t32-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
+  }
 } finally {
   if (browser) await browser.close();
   if (server) await server.close();
