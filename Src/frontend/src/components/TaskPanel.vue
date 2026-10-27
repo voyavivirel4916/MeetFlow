@@ -35,7 +35,7 @@ async function change(task:Task,event:Event){
  finally{pending.value=false}
 }
 function filterChanged(event:Event){const select=event.target as HTMLSelectElement;const value=select.value as typeof filter.value;select.value=filter.value;void refresh(1,value)}
-function created(){notice.value='任务已创建。';void refresh(1)}
+function created(){notice.value='';void refresh(1)}
 onMounted(()=>refresh())
 onBeforeUnmount(()=>reader?.abort())
 </script>
