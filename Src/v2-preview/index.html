@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MeetFlow · 第二版样稿</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="preview-note">第二版交互样稿 · 示例数据，仅用于确认排版 <button id="reset">重置样稿</button></div>
+<div class="app">
+ <aside><a class="brand" href="#home"><span class="brand-icon">m</span>MeetFlow</a><nav aria-label="主导航"><a href="#home" data-nav="home">工作台</a><a href="#group" data-nav="group">我的小组 <span>2</span></a><a href="#tasks" data-nav="tasks">我的任务 <span id="nav-count">3</span></a></nav><div class="sidebar-bottom"><span class="avatar">马</span><div>马若曦<small>个人空间</small></div></div></aside>
+ <div class="workspace"><header><span id="breadcrumb">工作台</span><span class="header-date">2026年10月27日 · 星期二</span></header><main id="content" tabindex="-1"></main><footer>MeetFlow <span>样稿中的操作仅在当前页面生效</span></footer></div>
+</div>
+<dialog id="action-dialog" aria-labelledby="dialog-title"><form method="dialog"><h2 id="dialog-title"></h2><p id="dialog-message"></p><div class="dialog-actions"><button class="button" value="cancel">返回</button><button id="confirm-action" class="button primary" value="confirm">确认</button></div></form></dialog>
+<dialog id="edit-dialog" aria-labelledby="edit-title"><form id="edit-form"><h2 id="edit-title">编辑任务</h2><label>任务名称<input name="title" required maxlength="100"></label><label>执行人<select name="assignee"><option>马若曦</option><option>陈明强</option></select></label><label>截止时间<input name="due" type="datetime-local" step="60" required></label><div class="dialog-actions"><button class="button" type="button" id="edit-close">取消</button><button class="button primary">保存</button></div></form></dialog>
+<div id="announcement" role="status" class="sr-only"></div><script type="module" src="app.js"></script>
+</body></html>

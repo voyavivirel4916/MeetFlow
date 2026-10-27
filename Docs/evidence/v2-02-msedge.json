@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-27T12:39:58.953Z",
+  "browser": "msedge",
+  "version": "155.0.4283.62",
+  "viewports": [
+    1440,
+    975,
+    390
+  ],
+  "pages": [
+    "home",
+    "group",
+    "tasks"
+  ],
+  "screenshots": [
+    "home-1440.png",
+    "group-1440.png",
+    "tasks-1440.png",
+    "home-975.png",
+    "group-975.png",
+    "tasks-975.png",
+    "home-390.png",
+    "group-390.png",
+    "tasks-390.png"
+  ],
+  "checks": [
+    "no-page-overflow",
+    "complete-reopen",
+    "cancel-return-restore",
+    "edit-search",
+    "archive",
+    "delete-restore",
+    "no-external-requests",
+    "no-page-errors"
+  ],
+  "result": "passed",
+  "production": false,
+  "human_review": false
+}
