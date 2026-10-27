@@ -46,6 +46,7 @@ export async function verifyMatrixUI(browser, origin, { root, screenshots }) {
     const page = owner.page, groupUrl = origin+`/groups/${group.id}`, url = origin+`/polls/${poll.id}/results`, path = `**/api/v1/polls/${poll.id}/matrix`;
     await page.goto(groupUrl); await page.getByRole('link',{name:'查看矩阵 →',exact:true}).click(); await ready(page);
     await page.getByText('3/4 人已提交',{exact:true}).waitFor();
+    assert.equal(await page.locator('.matrix-card>.section-heading .form-help').innerText(),'北京时间');
     assert.match(await page.getByText(/^未提交：/).innerText(),/matrix_idle/);
     assert.equal((await cell(page,owner,poll.slots[0]).innerText()).replace(/\s+/g,' ').trim(),'✓ 有空');
     assert.equal((await cell(page,owner,poll.slots[1]).innerText()).replace(/\s+/g,' ').trim(),'~ 勉强');
