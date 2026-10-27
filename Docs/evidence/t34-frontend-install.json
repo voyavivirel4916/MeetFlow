@@ -1,0 +1,9 @@
+{
+  "lock_sha256": "98ED996E4D46F0986A290B6DBBC521036CE0007DFCDB8E4409628274D0339295",
+  "node_version": "v22.20.0",
+  "result": "passed",
+  "install_exit": 0,
+  "method": "fresh temporary frontend directory; npm ci --offline; npm run build",
+  "checked_at": "2026-10-27T07:38:48.5252617Z",
+  "build_exit": 0
+}

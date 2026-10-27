@@ -1,0 +1,133 @@
+{
+  "started_at": "2026-10-27T07:31:23.269378+00:00",
+  "environment": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "processor": "",
+    "logical_cpus": 16,
+    "python": "3.11.9",
+    "sqlite": "3.45.1",
+    "packages": {
+      "fastapi": "0.162.0",
+      "uvicorn": "0.54.0",
+      "SQLAlchemy": "2.1.6",
+      "pydantic": "2.14.1"
+    }
+  },
+  "dataset": {
+    "members": 20,
+    "slots": 15,
+    "tasks": 200
+  },
+  "method": "local HTTP sequential requests; 5 warmups then 30 samples; nearest-rank P95 = sorted sample 29",
+  "isolation": "new temporary database and unused local port; developer database untouched",
+  "source_commit": "6749b7e107093f579253f3d24ee449b33ad8fe39",
+  "verifier_sha256": "cf51b0dfddba56fd62b645b1858901faaa96a70c31ea7670d98a27eb0aafcb4f",
+  "measurements": {
+    "recommendations": {
+      "milliseconds": [
+        32.497,
+        21.8217,
+        40.4987,
+        47.9624,
+        44.7844,
+        20.4651,
+        41.1002,
+        19.4882,
+        20.1651,
+        19.5842,
+        36.7476,
+        18.6007,
+        38.4643,
+        35.3098,
+        46.9619,
+        21.245,
+        21.9926,
+        34.4943,
+        19.7774,
+        45.1209,
+        41.144,
+        22.4909,
+        46.1731,
+        44.8701,
+        31.063,
+        32.107,
+        19.2705,
+        41.0862,
+        32.2064,
+        21.0154
+      ],
+      "p95_ms": 46.9619,
+      "max_ms": 47.9624,
+      "http_errors": 0,
+      "target_ms": 1000,
+      "passed": true
+    },
+    "task_list": {
+      "milliseconds": [
+        14.4835,
+        14.6261,
+        32.8625,
+        12.9809,
+        14.7047,
+        14.3353,
+        31.6882,
+        32.5956,
+        35.101,
+        31.6084,
+        14.7307,
+        18.7069,
+        38.2339,
+        37.7935,
+        16.7924,
+        26.6112,
+        15.9404,
+        12.6678,
+        16.7903,
+        32.8251,
+        13.8961,
+        28.5512,
+        14.7922,
+        14.3449,
+        39.7194,
+        13.3355,
+        14.6994,
+        12.192,
+        15.8251,
+        15.5467
+      ],
+      "p95_ms": 38.2339,
+      "max_ms": 39.7194,
+      "http_errors": 0,
+      "target_ms": 1000,
+      "passed": true
+    }
+  },
+  "restart": {
+    "new_process": true,
+    "all_table_rows_equal": true,
+    "authenticated_reads_equal": true
+  },
+  "restore": {
+    "stopped_copy": true,
+    "fault_copy_preserved": true,
+    "all_table_rows_equal_before_session_revocation": true,
+    "foreign_keys_valid": true,
+    "old_session_rejected": true,
+    "reauthenticated_reads_equal": true,
+    "row_counts": {
+      "alembic_version": 1,
+      "users": 20,
+      "groups": 1,
+      "sessions": 1,
+      "group_members": 20,
+      "polls": 2,
+      "participants": 40,
+      "slots": 30,
+      "votes": 300,
+      "meetings": 1,
+      "tasks": 200
+    }
+  },
+  "result": "passed",
+  "finished_at": "2026-10-27T07:31:40.901885+00:00"
+}

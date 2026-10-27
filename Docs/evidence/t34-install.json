@@ -1,0 +1,17 @@
+{
+  "started_at": "2026-10-27T07:32:38.532224+00:00",
+  "method": "fresh virtual environment; local wheels; --require-hashes; pip check; new demo database; real HTTP startup",
+  "requirements_sha256": "eeb93ac61033fccdece36f12d389acc3584b70be78de8a8ef98e99c1728070f2",
+  "python": "3.11.9",
+  "wheel_count": 31,
+  "network_used": false,
+  "developer_database_modified": false,
+  "checks": {
+    "fresh_runtime": true,
+    "migration": true,
+    "demo_four_accounts": true,
+    "http_health": true
+  },
+  "result": "passed",
+  "finished_at": "2026-10-27T07:33:36.578483+00:00"
+}
