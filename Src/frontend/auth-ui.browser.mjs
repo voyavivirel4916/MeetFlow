@@ -78,7 +78,7 @@ export async function verifyAuthUI(browser, origin, { root, screenshots }) {
     await page.goto(origin + '/login?returnTo=https://evil.example/');
     await fill('ui_student');
     await submit().click();
-    await page.waitForURL(origin + '/groups');
+    await page.waitForURL(origin + '/dashboard');
     // Revocation by another tab must be recognized before entering a protected page.
     await context.request.post(origin + '/api/v1/auth/logout', { data: {} });
     await page.locator('aside a[href="/tasks/mine"]').click();

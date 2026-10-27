@@ -84,3 +84,5 @@ npm run check:auth
 第二版排期分类与删除归档页面：`node browser.check.mjs --built --poll-lifecycle`，使用隔离临时库验证。当前前端285项测试通过，界面确认见[47号记录](../../Docs/47-排期删除归档与恢复验证.md)。
 
 任务增强：`node browser.check.mjs --built --task-updates`。当前294项前端测试通过，新建版本化任务接口与页面须一起部署，排版确认见[48号记录](../../Docs/48-任务编辑取消与完成验证.md)。
+
+工作台验证：`node browser.check.mjs --built --dashboard`，当前306项前端测试通过。登录默认工作台，有效返回位置不变；见[49号记录](../../Docs/49-工作台汇总与页面验证.md)。

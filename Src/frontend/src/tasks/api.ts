@@ -20,13 +20,14 @@ export function validateTask(fields:TaskFields,members:number[],now=Date.now()){
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)
 const positive=(v:unknown):v is number=>Number.isSafeInteger(v)&&Number(v)>0
 function invalid(id:string,writing=false):never{throw new ApiFailure('protocol','任务结果需要重新读取核对。',undefined,undefined,id,undefined,writing)}
-function decode(value:unknown,id:string,writing=false):Task{
+export function decodeTask(value:unknown,id:string,writing=false):Task{
  if(!object(value)||!['id','group_id','meeting_id','creator_id','assignee_id','version'].every(key=>positive(value[key]))||
  typeof value.title!=='string'||!value.title.trim()||Array.from(value.title).length>100||typeof value.description!=='string'||Array.from(value.description).length>10000||
  typeof value.status!=='string'||!Object.hasOwn(states,value.status)||!utc(value.due_at)||!utc(value.created_at)||!utc(value.updated_at)||Date.parse(value.due_at)<=Date.parse(value.created_at)||
  (value.status==='DONE'?!utc(value.completed_at):value.completed_at!==null))return invalid(id,writing)
  return {id:Number(value.id),group_id:Number(value.group_id),meeting_id:Number(value.meeting_id),creator_id:Number(value.creator_id),assignee_id:Number(value.assignee_id),title:value.title,description:value.description,due_at:value.due_at,status:value.status as Status,completed_at:value.completed_at as string|null,created_at:value.created_at,updated_at:value.updated_at,version:Number(value.version)}
 }
+const decode=decodeTask
 export const tasksApi={
  async list(scope:{groupId?:number;meetingId?:number;userId:number},page=1,status:''|Status='',signal?:AbortSignal):Promise<TaskPage>{
   const query=new URLSearchParams({page:String(page),page_size:'20'});if(status)query.set('status',status);if(scope.meetingId)query.set('meeting_id',String(scope.meetingId))

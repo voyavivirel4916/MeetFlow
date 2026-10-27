@@ -77,9 +77,10 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => requests.push(request.url()));
   await page.goto(origin + '/');
-  await page.getByRole('heading', { name: '我的小组', exact: true }).waitFor();
-  assert.equal(new URL(page.url()).pathname, '/groups');
-  assert.equal(await page.getByRole('status').count(), 1);
+  await page.getByRole('heading', { name: '工作台', exact: true, level:1 }).waitFor();
+  assert.equal(new URL(page.url()).pathname, '/dashboard');
+  await page.locator('[data-count="tasks"]').waitFor();
+  assert.equal(await page.locator('[data-count="tasks"]').innerText(),'0');
   for (const [path, title] of [
     ['/groups/1', '小组空间'], ['/groups/1/polls/new', '发起排期'], ['/polls/1/edit', '编辑排期'],
     ['/polls/1/vote', '填写时间'], ['/polls/1/results', '排期结果'], ['/meetings/1', '会议与行动'],
@@ -91,7 +92,7 @@ try {
     assert.equal(await page.title(), `${title} · MeetFlow`);
   }
   assert.ok(requests.filter(url => new URL(url).pathname.startsWith('/api/')).every(url =>
-    /^\/api\/v1\/(users\/me|groups(?:\/1(?:\/members|\/polls|\/tasks)?)?|polls\/1(?:\/matrix)?|meetings\/1|tasks\/mine)$/.test(new URL(url).pathname)));
+    /^\/api\/v1\/(users\/me|dashboard|groups(?:\/1(?:\/members|\/polls|\/tasks)?)?|polls\/1(?:\/matrix)?|meetings\/1|tasks\/mine)$/.test(new URL(url).pathname)));
   await page.goto(origin + '/polls/1/results');
   await page.reload();
   await page.getByRole('heading', { name: '排期结果', exact: true }).waitFor();
@@ -213,6 +214,10 @@ try {
   if(process.argv.includes('--task-updates')){
     const {verifyTaskUpdates}=await import('./task-updates.browser.mjs');
     await verifyTaskUpdates(browser,origin,{root});
+  }
+  if(process.argv.includes('--dashboard')){
+    const {verifyDashboard}=await import('./dashboard.browser.mjs');
+    await verifyDashboard(browser,origin,{root});
   }
   if (process.argv.includes('--tasks-ui')) {
     const { verifyTasksUI } = await import('./tasks-ui.browser.mjs');

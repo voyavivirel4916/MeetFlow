@@ -10,6 +10,7 @@ import VotePage from './views/VotePage.vue'
 import MatrixPage from './views/MatrixPage.vue'
 import MeetingPage from './views/MeetingPage.vue'
 import TasksPage from './views/TasksPage.vue'
+import DashboardPage from './views/DashboardPage.vue'
 import { onUnauthorized } from './api/client'
 import type { Session } from './auth/session'
 import { safeReturnPath } from './navigation'
@@ -20,7 +21,8 @@ const page = (path: string, title: string, description: string): RouteRecordRaw 
 })
 
 export const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: '/groups' },
+  { path: '/', redirect: '/dashboard' },
+  { path: '/dashboard', component: DashboardPage, meta: { title: '工作台', requiresAuth: true } },
   { path: '/groups', component: GroupsPage, meta: { title: '我的小组', requiresAuth: true } },
   { path: '/groups/:groupId([1-9]\\d*)', component: GroupDetailPage, meta: { title: '小组空间', requiresAuth: true } },
   { path: '/groups/:groupId([1-9]\\d*)/polls/new', component: PollEditorPage, meta: { title: '发起排期', requiresAuth: true } },

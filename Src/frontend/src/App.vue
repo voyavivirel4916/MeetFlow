@@ -29,8 +29,9 @@ async function logout() {
   <a class="skip" href="#content">跳到主要内容</a>
   <div class="shell">
     <aside>
-      <RouterLink class="brand" to="/groups"><span class="mark" aria-hidden="true">m</span><span>MeetFlow<small>凑时 · 小组协作</small></span></RouterLink>
+      <RouterLink class="brand" to="/dashboard"><span class="mark" aria-hidden="true">m</span><span>MeetFlow<small>凑时 · 小组协作</small></span></RouterLink>
       <nav aria-label="主导航">
+        <RouterLink to="/dashboard">工作台</RouterLink>
         <RouterLink to="/groups">▦ 我的小组</RouterLink>
         <RouterLink to="/tasks/mine">✓ 我的待办</RouterLink>
         <RouterLink to="/connection">↗ 连接检查</RouterLink>

@@ -14,7 +14,7 @@ function setup(me = vi.fn().mockResolvedValue(user)) {
 afterEach(() => { for (const router of routers.splice(0)) router.disposeSessionListener(); vi.unstubAllGlobals() })
 
 it.each([
-  ['/groups', '我的小组'], ['/groups/1', '小组空间'], ['/groups/1/polls/new', '发起排期'],
+  ['/dashboard', '工作台'], ['/groups', '我的小组'], ['/groups/1', '小组空间'], ['/groups/1/polls/new', '发起排期'],
   ['/polls/2/edit', '编辑排期'], ['/polls/2/vote', '填写时间'], ['/polls/2/results', '排期结果'],
   ['/meetings/3', '会议与行动'], ['/tasks/mine', '我的待办'], ['/login', '登录'], ['/register', '注册'],
   ['/connection', '连接检查'], ['/groups/0', '找不到这个页面'], ['/groups/-1', '找不到这个页面'],
@@ -24,15 +24,15 @@ it.each([
   expect(router.resolve(path).meta.title).toBe(title)
 })
 
-it('redirects the root into groups', async () => {
+it('redirects the root into dashboard', async () => {
   const { router } = setup()
   await router.push('/')
-  expect(router.currentRoute.value.path).toBe('/groups')
+  expect(router.currentRoute.value.path).toBe('/dashboard')
 })
 
 it.each([undefined, '//evil.com', 'https://evil.com', '/\\evil.com', '/login', '/missing',
   '/groups?password=secret', '/groups#answer', '/groups%3fsecret', '/groups\n'])('rejects unsafe return path %s', path => {
-  expect(safeReturnPath(path, setup().router)).toBe('/groups')
+  expect(safeReturnPath(path, setup().router)).toBe('/dashboard')
 })
 
 it('preserves a known page path only', () => {
@@ -66,7 +66,7 @@ it('returns an authenticated user from login to a known page and rejects an exte
   await router.push('/login?returnTo=/polls/3/results')
   expect(router.currentRoute.value.path).toBe('/polls/3/results')
   await router.push('/register?returnTo=https://evil.example')
-  expect(router.currentRoute.value.path).toBe('/groups')
+  expect(router.currentRoute.value.path).toBe('/dashboard')
 })
 
 it('redirects protected API 401 to login and clears cached identity', async () => {
