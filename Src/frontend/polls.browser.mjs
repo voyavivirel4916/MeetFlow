@@ -37,6 +37,7 @@ export async function verifyPolls(browser, origin) {
       response_deadline: new Date(now + 600_000).toISOString(), participants: [], slots: [] };
     const poll = ok(await api(owner.page, `/groups/${group.id}/polls`, 'POST', draft), 201);
     assert.equal(poll.status, 'DRAFT');
+    assert.equal((await api(owner.page, `/polls/${poll.id}/recommendations`)).status, 409);
     assert.equal((await api(owner.page, `/polls/${poll.id}/open`, 'POST', {})).status, 422);
     const complete = { ...draft, participants: [{ user_id: owner.userId, importance: 'REQUIRED' }, { user_id: member.userId, importance: 'NORMAL' }],
       slots: [{ start_at: new Date(now+1_200_000).toISOString(), end_at: new Date(now+1_800_000).toISOString() }] };
@@ -75,22 +76,34 @@ export async function verifyPolls(browser, origin) {
     assert.equal(matrix.cells.find(cell => cell.user_id === member.userId).availability, 'UNAVAILABLE');
     assert.deepEqual([matrix.slots[0].available_count,matrix.slots[0].maybe_count,matrix.slots[0].unavailable_count,matrix.slots[0].unanswered_count], [0,0,1,1]);
     assert.equal((await api(outside.page, matrixPath)).status, 404);
+    const recommendationPath = `/polls/${poll.id}/recommendations`;
+    const recommendations = ok(await api(owner.page, recommendationPath));
+    assert.equal(recommendations.items.length, 1);
+    assert.equal(recommendations.items[0].score, -4);
+    assert.equal(recommendations.items[0].required_unsubmitted_count, 1);
+    assert.deepEqual(recommendations.items[0].conflict_user_ids, [member.userId]);
+    assert.match(recommendations.items[0].reason, /出席情况尚未确定/);
+    assert.equal((await api(outside.page, recommendationPath)).status, 404);
     const closed = ok(await api(owner.page, `/polls/${poll.id}/close`, 'POST', {}));
     assert.equal(closed.status, 'CLOSED');
     assert.deepEqual(ok(await api(owner.page, `/polls/${poll.id}/close`, 'POST', {})), closed);
     assert.equal((await api(member.page, votePath, 'PUT', choice('MAYBE'))).body.error.code, 'POLL_CLOSED');
     assert.deepEqual(ok(await api(member.page, votePath)), myVote);
     assert.equal(ok(await api(member.page, matrixPath)).effective_status, 'CLOSED');
+    assert.deepEqual(ok(await api(member.page, recommendationPath)), recommendations);
     const cancelled = ok(await api(owner.page, `/polls/${poll.id}/cancel`, 'POST', {}));
     assert.equal(cancelled.status, 'CANCELLED');
+    assert.equal((await api(member.page, recommendationPath)).status, 409);
     assert.deepEqual(ok(await api(owner.page, `/polls/${poll.id}/cancel`, 'POST', {})), cancelled);
     assert.equal((await api(owner.page, `/polls/${poll.id}/open`, 'POST', {})).status, 409);
     ok(await api(member.page, '/auth/logout', 'POST', {}));
     assert.equal((await api(member.page, `/polls/${poll.id}`)).status, 401);
     assert.equal((await api(member.page, votePath)).status, 401);
     assert.equal((await api(member.page, matrixPath)).status, 401);
+    assert.equal((await api(member.page, recommendationPath)).status, 401);
     console.log('PASS T15: real browser draft/create/replace/read/list, owner/member/outside permissions, publish freeze, close/cancel idempotence, terminal state, refresh and logout.');
     console.log('PASS T17: own answers, all three values, replace/reload, actor isolation, forged actor/empty/duplicate rejection, outside rights, closed read/write and expired session.');
     console.log('PASS T19: matrix/progress, explicit unknowns, three-state counts, owner/member access, outsider/anonymous rejection and closed readback.');
+    console.log('PASS T21: recommendations, server score/unknown warning/conflict IDs, owner/member reads, draft/cancel rejection, closed readback, outsider/anonymous rejection.');
   } finally { for (const context of contexts) await context.close(); }
 }
