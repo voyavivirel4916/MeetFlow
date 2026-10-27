@@ -6,8 +6,9 @@ from app.common.responses import ApiError
 from app.common.times import format_ms
 from app.db.connection import write_transaction
 from app.db.models import participants, slots, votes
-from app.polls.service import _invalid, _require_poll, materialize_expiry
-from app.votes.models import VoteOut, VotesIn, VotesOut
+from app.polls.service import _invalid, _require_poll, _outputs, effective_status, materialize_expiry
+from app.votes.models import (MatrixCell, MatrixOut, MatrixParticipant, MatrixSlot, Progress,
+                              VoteOut, VotesIn, VotesOut)
 
 
 def _participant(connection, user_id, poll_id):
@@ -31,6 +32,33 @@ def get_votes(engine, user_id, poll_id):
         _require_poll(connection, user_id, poll_id)
         person = _participant(connection, user_id, poll_id)
         return _output(connection, user_id, poll_id, person['submitted_at'])
+
+
+def get_matrix(engine, user_id, poll_id):
+    with engine.connect() as connection:
+        # Keep roster, times, answers and submitted timestamps in one SQLite read snapshot.
+        connection.exec_driver_sql('BEGIN')
+        row = _require_poll(connection, user_id, poll_id)
+        poll = _outputs(connection, [row])[0]
+        people = [MatrixParticipant(**person.model_dump()) for person in poll.participants]
+        candidates = [MatrixSlot(**slot.model_dump()) for slot in poll.slots]
+        answers = {(item['user_id'], item['slot_id']): item['availability'] for item in
+            connection.execute(select(votes.c.user_id, votes.c.slot_id, votes.c.availability)
+                .where(votes.c.poll_id == poll_id)).mappings()}
+        cells = []
+        count_field = {'AVAILABLE': 'available_count', 'MAYBE': 'maybe_count',
+                       'UNAVAILABLE': 'unavailable_count', None: 'unanswered_count'}
+        for person in people:
+            for slot in candidates:
+                value = answers.get((person.user_id, slot.id))
+                cells.append(MatrixCell(user_id=person.user_id, slot_id=slot.id, availability=value))
+                field = count_field[value]
+                setattr(person, field, getattr(person, field) + 1)
+                setattr(slot, field, getattr(slot, field) + 1)
+        submitted = sum(person.submitted_at is not None for person in people)
+        return MatrixOut(poll_id=poll_id, effective_status=effective_status(row, clock.now_ms()),
+            participants=people, slots=candidates, cells=cells,
+            progress=Progress(participant_count=len(people), submitted_count=submitted, unsubmitted_count=len(people)-submitted))
 
 
 def save_votes(engine, user_id, poll_id, data: VotesIn):

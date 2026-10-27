@@ -83,7 +83,7 @@ export async function verifyGroupsUI(browser, origin, { root, screenshots }) {
     assert.notEqual(code, initialCode);
     // A member-list read failure preserves the previous roster and disables invitation actions.
     await page.route(/\/api\/v1\/groups\/\d+\/members$/, route => route.abort());
-    await page.getByRole('button', { name: '刷新小组', exact: true }).click();
+    await page.getByRole('button', { name: '刷新', exact: true }).click();
     await heading(page, '小组信息暂时无法读取');
     assert.equal(await page.locator('.member-list li').count(), 1);
     assert.equal(await page.getByRole('button', { name: '重置邀请码', exact: true }).isDisabled(), true);
@@ -116,8 +116,8 @@ export async function verifyGroupsUI(browser, origin, { root, screenshots }) {
       payload.data.items.reverse();
       await route.fulfill({ response, json: payload });
     });
-    await memberPage.getByRole('button', { name: '刷新小组', exact: true }).click();
-    await memberPage.waitForFunction(() => document.querySelector('.group-heading button')?.textContent === '刷新小组');
+    await memberPage.getByRole('button', { name: '刷新', exact: true }).click();
+    await memberPage.waitForFunction(() => document.querySelector('.group-heading button')?.textContent === '刷新');
     assert.match(await memberPage.locator('.member-list li').first().textContent(), /ui_group_owner.*负责人/);
     assert.equal(await memberPage.locator('.member-list .current-member').count(), 1);
     assert.match(await memberPage.locator('.member-list .current-member').textContent(), /ui_group_member/);
@@ -131,7 +131,7 @@ export async function verifyGroupsUI(browser, origin, { root, screenshots }) {
     assert.equal(await memberPage.getByRole('button', { name: '重置邀请码', exact: true }).count(), 0);
     assert.equal(await memberPage.locator('#current-invite').count(), 0);
     await shot(memberPage, '04-member');
-    await page.getByRole('button', { name: '刷新小组', exact: true }).click();
+    await page.getByRole('button', { name: '刷新', exact: true }).click();
     await page.waitForFunction(() => document.querySelectorAll('.member-list li').length === 2);
     assert.match(await page.locator('.member-list .current-member').textContent(), /ui_group_owner/);
     await shot(page, '05-owner');

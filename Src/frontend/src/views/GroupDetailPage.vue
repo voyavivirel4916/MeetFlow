@@ -73,7 +73,7 @@ async function copy() {
 
 <template>
   <RouterLink class="back-link" to="/groups">← 我的小组</RouterLink>
-  <section class="group-heading"><div><p class="eyebrow">MEETFLOW / 把想法拼成行动</p><h1>{{ group?.name || '小组空间' }}</h1><p class="muted">{{ group ? `${members.length} 位伙伴 · ${owner ? '你是小组负责人' : '你是小组成员'}` : '一起找到时间，继续把事情推进。' }}</p></div><button class="secondary" :disabled="loading || pending" @click="load">{{ loading ? '正在读取…' : '刷新小组' }}</button></section>
+  <section class="group-heading"><div><p class="eyebrow">MEETFLOW / 把想法拼成行动</p><h1>{{ group?.name || '小组空间' }}</h1><p class="muted">{{ group ? `${members.length} 位伙伴 · ${owner ? '你是小组负责人' : '你是小组成员'}` : '一起找到时间，继续把事情推进。' }}</p></div><button class="secondary" :disabled="loading || pending" @click="load">{{ loading ? '正在读取…' : '刷新' }}</button></section>
   <p v-if="success" class="success-note" role="status">{{ success }}</p>
   <StateNotice v-if="loading && !group" kind="loading" title="正在读取小组" message="正在核对小组和成员信息。" />
   <StateNotice v-if="readError" kind="error" :title="readError.status === 404 ? '未找到可访问的小组' : '小组信息暂时无法读取'" :message="readError.status === 404 ? '请确认你已加入这个小组，或返回我的小组。' : readError.message" :request-id="readError.requestId"><button :disabled="loading" @click="load">重新读取</button></StateNotice>

@@ -67,11 +67,20 @@ export async function verifyPolls(browser, origin) {
     assert.equal((await api(outside.page, votePath)).status, 404);
     await member.page.reload();
     assert.deepEqual(ok(await api(member.page, votePath)), myVote);
+    const matrixPath = `/polls/${poll.id}/matrix`;
+    const matrix = ok(await api(owner.page, matrixPath));
+    assert.deepEqual(matrix.progress, { participant_count: 2, submitted_count: 1, unsubmitted_count: 1 });
+    assert.equal(matrix.cells.length, 2);
+    assert.equal(matrix.cells.find(cell => cell.user_id === owner.userId).availability, null);
+    assert.equal(matrix.cells.find(cell => cell.user_id === member.userId).availability, 'UNAVAILABLE');
+    assert.deepEqual([matrix.slots[0].available_count,matrix.slots[0].maybe_count,matrix.slots[0].unavailable_count,matrix.slots[0].unanswered_count], [0,0,1,1]);
+    assert.equal((await api(outside.page, matrixPath)).status, 404);
     const closed = ok(await api(owner.page, `/polls/${poll.id}/close`, 'POST', {}));
     assert.equal(closed.status, 'CLOSED');
     assert.deepEqual(ok(await api(owner.page, `/polls/${poll.id}/close`, 'POST', {})), closed);
     assert.equal((await api(member.page, votePath, 'PUT', choice('MAYBE'))).body.error.code, 'POLL_CLOSED');
     assert.deepEqual(ok(await api(member.page, votePath)), myVote);
+    assert.equal(ok(await api(member.page, matrixPath)).effective_status, 'CLOSED');
     const cancelled = ok(await api(owner.page, `/polls/${poll.id}/cancel`, 'POST', {}));
     assert.equal(cancelled.status, 'CANCELLED');
     assert.deepEqual(ok(await api(owner.page, `/polls/${poll.id}/cancel`, 'POST', {})), cancelled);
@@ -79,7 +88,9 @@ export async function verifyPolls(browser, origin) {
     ok(await api(member.page, '/auth/logout', 'POST', {}));
     assert.equal((await api(member.page, `/polls/${poll.id}`)).status, 401);
     assert.equal((await api(member.page, votePath)).status, 401);
+    assert.equal((await api(member.page, matrixPath)).status, 401);
     console.log('PASS T15: real browser draft/create/replace/read/list, owner/member/outside permissions, publish freeze, close/cancel idempotence, terminal state, refresh and logout.');
     console.log('PASS T17: own answers, all three values, replace/reload, actor isolation, forged actor/empty/duplicate rejection, outside rights, closed read/write and expired session.');
+    console.log('PASS T19: matrix/progress, explicit unknowns, three-state counts, owner/member access, outsider/anonymous rejection and closed readback.');
   } finally { for (const context of contexts) await context.close(); }
 }
