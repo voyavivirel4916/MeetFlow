@@ -71,7 +71,7 @@ async function reconcile(){
 defineExpose({open,canChoose})
 </script>
 <template>
-  <section v-if="meeting" class="meeting-confirmed" aria-label="已确认会议"><h3>会议时间已确认</h3><p class="confirmed-time">{{ beijing(meeting.start_at).replace('T',' ') }} — {{ beijing(meeting.end_at).replace('T',' ') }}</p><p class="muted">{{ meeting.title }} · {{ meeting.location||'地点待定' }}</p><details v-if="meeting.selection_reason"><summary>查看选择理由</summary><p class="plain-text">{{ meeting.selection_reason }}</p></details></section>
+  <section v-if="meeting" class="meeting-confirmed" aria-label="已确认会议"><h3>会议时间已确认</h3><p class="confirmed-time">{{ beijing(meeting.start_at).replace('T',' ') }} — {{ beijing(meeting.end_at).replace('T',' ') }}</p><p class="muted">{{ meeting.title }} · {{ meeting.location||'地点待定' }}</p><details v-if="meeting.selection_reason"><summary>查看选择理由</summary><p class="plain-text">{{ meeting.selection_reason }}</p></details><RouterLink class="button-link" :to="`/meetings/${meeting.id}`">查看会议 →</RouterLink></section>
   <div v-else-if="isOwner&&matrix.effective_status==='OPEN'" class="confirmation-entry"><p class="form-help">结束收集后，就可以确认会议时间。</p><button class="secondary" :disabled="disabled||pending||uncertain" @click="closeCollection">{{pending?'正在处理…':'结束收集'}}</button></div>
   <p v-if="success" class="success-note" role="status">{{success}}</p>
   <div v-if="message&&!dialog?.open" class="form-summary" :class="{uncertain}" role="alert"><p>{{message}}</p><small v-if="requestId">请求编号：{{requestId}}</small><button v-if="uncertain" class="secondary" :disabled="pending" @click="reconcile">核对服务端结果</button></div>

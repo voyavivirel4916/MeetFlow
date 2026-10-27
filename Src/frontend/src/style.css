@@ -85,3 +85,14 @@
 .dialog-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:.75rem; margin-top:1.5rem; }
 .plain-text { white-space:pre-wrap; overflow-wrap:anywhere; }
 @media(max-width:600px) { .confirm-dialog { padding:1.25rem; } .confirmation-entry { align-items:flex-start; flex-direction:column; } }
+.meeting-overview { background:#eeedf8; border:1px solid #d5d4e8; border-radius:22px; padding:28px; margin-bottom:24px; }
+.meeting-time { font-size:clamp(19px,2vw,25px); font-weight:650; line-height:1.6; }
+.meeting-overview .text-button { display:inline-flex; align-items:center; margin-top:12px; }
+.meeting-confirmed .button-link { margin-top:12px; }
+.meeting-content { padding:28px; border:1px solid #ded9dc; border-radius:22px; background:#fff; }
+.meeting-content .section-heading { flex-wrap:wrap; gap:12px; }
+.meeting-content fieldset { border:0; margin:0; padding:0; min-width:0; }
+.meeting-text { padding:18px 0; border-top:1px solid #eeebf1; }
+.meeting-text h3 { font-size:17px; margin:8px 0 14px; }
+.meeting-reconcile { padding:20px; border:1px solid #e2d4b6; border-radius:14px; background:#fffbf2; }
+@media(max-width:600px) { .meeting-overview,.meeting-content { padding:22px; } }

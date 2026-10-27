@@ -20,7 +20,8 @@
     "check:votes-ui": "node browser.check.mjs --built --votes-ui",
     "check:matrix-ui": "node browser.check.mjs --built --matrix-ui",
     "check:recommendations-ui": "node browser.check.mjs --built --recommendations-ui",
-    "check:confirmation-ui": "node browser.check.mjs --built --confirmation-ui"
+    "check:confirmation-ui": "node browser.check.mjs --built --confirmation-ui",
+    "check:meeting-ui": "node browser.check.mjs --built --meeting-ui"
   },
   "dependencies": {
     "vue": "3.5.44",
