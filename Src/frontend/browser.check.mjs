@@ -206,6 +206,10 @@ try {
     const { verifyE2E } = await import('./e2e.browser.mjs');
     await verifyE2E(browser, origin, {root});
   }
+  if (process.argv.includes('--poll-lifecycle')) {
+    const {verifyPollLifecycle}=await import('./poll-lifecycle.browser.mjs');
+    await verifyPollLifecycle(browser,origin,{root});
+  }
   if (process.argv.includes('--tasks-ui')) {
     const { verifyTasksUI } = await import('./tasks-ui.browser.mjs');
     await verifyTasksUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });

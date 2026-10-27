@@ -84,6 +84,8 @@ class PollOut(BaseModel):
     participants: list[ParticipantOut]
     slots: list[SlotOut]
     updated_at: str
+    deleted_at: str | None = None
+    archived_at: str | None = None
 
 
 class PollPage(BaseModel):

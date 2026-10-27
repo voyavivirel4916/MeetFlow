@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-27T13:23:31.455Z",
+  "browser": "msedge",
+  "version": "155.0.4283.62",
+  "result": "passed",
+  "temporary_database": true,
+  "human_review": false,
+  "checks": [
+    "delete-return-restore",
+    "archive-unarchive",
+    "meeting-preserved",
+    "lost-response-reconciliation",
+    "cancel-before-delete",
+    "member-management-hidden",
+    "three-viewports-column-alignment"
+  ]
+}

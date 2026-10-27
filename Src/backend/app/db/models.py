@@ -52,6 +52,10 @@ polls = Table('polls', metadata,
     Column('status', Text, nullable=False, server_default=text("'DRAFT'")),
     Column('created_at', Integer, nullable=False),
     Column('updated_at', Integer, nullable=False),
+    Column('archived_at', Integer),
+    Column('deleted_at', Integer),
+    CheckConstraint("archived_at IS NULL OR (typeof(archived_at) = 'integer' AND status = 'CONFIRMED')", name='ck_polls_archive'),
+    CheckConstraint("deleted_at IS NULL OR (typeof(deleted_at) = 'integer' AND status IN ('DRAFT','CLOSED','CANCELLED') AND archived_at IS NULL)", name='ck_polls_deletion'),
     CheckConstraint('id > 0', name='ck_polls_id'),
     CheckConstraint('length(title) BETWEEN 1 AND 100', name='ck_polls_title'),
     CheckConstraint('length(description) <= 10000', name='ck_polls_description'),
@@ -60,6 +64,7 @@ polls = Table('polls', metadata,
     CheckConstraint("typeof(response_deadline) = 'integer' AND typeof(created_at) = 'integer' AND typeof(updated_at) = 'integer'", name='ck_polls_times'),
     UniqueConstraint('id', 'group_id', name='uq_polls_id_group'))
 Index('ix_polls_group_status', polls.c.group_id, polls.c.status)
+Index('ix_polls_group_visibility', polls.c.group_id, polls.c.deleted_at, polls.c.archived_at)
 
 participants = Table('participants', metadata,
     Column('poll_id', Integer, primary_key=True),

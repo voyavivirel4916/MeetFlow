@@ -1,3 +1,4 @@
+from test_database import original_rows
 import sqlite3
 
 import pytest
@@ -36,7 +37,7 @@ def test_upgrade_preserves_old_meeting_and_rolls_back_failed_ddl(settings,monkey
             add_poll(connection);connection.exec_driver_sql('INSERT INTO slots VALUES (1,1,3000,4000)')
             connection.execute(insert(meetings).values(**values()))
         names=['users','sessions','groups','group_members','polls','participants','slots','votes','meetings']
-        with sqlite3.connect(database_path(settings)) as connection:before={name:connection.execute(f'SELECT * FROM {name}').fetchall() for name in names}
+        with sqlite3.connect(database_path(settings)) as connection:before={name:original_rows(connection, name) for name in names}
         if fail_first:
             original=migrate.make_engine
             def faulty(*args,**kwargs):
@@ -53,6 +54,6 @@ def test_upgrade_preserves_old_meeting_and_rolls_back_failed_ddl(settings,monkey
                 assert not connection.execute("SELECT name FROM sqlite_master WHERE name IN ('tasks','uq_meetings_id_group')").fetchall()
         migrate.upgrade(settings);migrate.upgrade(settings)
         with sqlite3.connect(database_path(settings)) as connection:
-            assert before=={name:connection.execute(f'SELECT * FROM {name}').fetchall() for name in names}
+            assert before=={name:original_rows(connection, name) for name in names}
             assert connection.execute('PRAGMA foreign_key_check').fetchall()==[]
     finally:engine.dispose()

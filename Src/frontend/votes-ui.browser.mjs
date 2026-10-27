@@ -58,7 +58,8 @@ export async function verifyVotesUI(browser, origin, { root, screenshots }) {
     assert.equal(await page.locator('.vote-card').count(), 3);
     assert.equal(await page.locator('.vote-card input:checked').count(), 0);
     await page.getByText('已选 0/3', { exact: true }).waitFor();
-    assert.match(await page.locator('.vote-date').first().innerText(), /\d{4}-\d{2}-\d{2} \d{2}:\d{2} — \d{2}:\d{2}/);
+    // A run near midnight can legitimately cross Beijing calendar dates.
+    assert.match(await page.locator('.vote-date').first().innerText(), /^\d{4}-\d{2}-\d{2} \d{2}:\d{2} — (?:\d{4}-\d{2}-\d{2} )?\d{2}:\d{2}$/);
     await save(page).click();
     assert.equal(await page.locator('.form-summary').evaluate(element => element === document.activeElement), true);
     assert.equal(await page.locator('.vote-card .field-error').count(), 3);

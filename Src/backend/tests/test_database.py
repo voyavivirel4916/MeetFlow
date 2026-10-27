@@ -12,6 +12,12 @@ from app.db.migrate import upgrade
 from app.db.models import groups, group_members, metadata, sessions, users
 
 
+def original_rows(connection, table):
+    # Historical upgrade tests compare every pre-V2 field, not added nullable markers.
+    fields = 'id,group_id,title,description,location,response_deadline,status,created_at,updated_at' if table == 'polls' else '*'
+    return connection.execute(f'SELECT {fields} FROM {table}').fetchall()
+
+
 @pytest.fixture
 def engine(settings):
     upgrade(settings)
@@ -38,7 +44,7 @@ def test_fresh_migration_has_implemented_tables_and_matches_model(engine, settin
         assert set(inspect(connection).get_table_names()) == {'users', 'sessions', 'groups', 'group_members', 'polls', 'participants', 'slots', 'votes', 'meetings', 'tasks', 'alembic_version'}
         context = MigrationContext.configure(connection, opts={'compare_type': True, 'compare_server_default': True})
         assert compare_metadata(context, metadata) == []
-        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0005_tasks'
+        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0006_poll_lifecycle'
         assert connection.execute(select(users)).all() == []
 
 

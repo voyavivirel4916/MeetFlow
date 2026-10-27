@@ -4,7 +4,10 @@ export type PollStatus = 'DRAFT' | 'OPEN' | 'CLOSED' | 'CONFIRMED' | 'CANCELLED'
 export type Participant = { user_id: number; username: string; importance: 'REQUIRED' | 'NORMAL'; submitted_at: string | null }
 export type Slot = { id: number; start_at: string; end_at: string }
 export type Poll = { id: number; group_id: number; title: string; description: string; location: string; response_deadline: string;
-  status: PollStatus; effective_status: PollStatus; participants: Participant[]; slots: Slot[]; updated_at: string }
+  status: PollStatus; effective_status: PollStatus; participants: Participant[]; slots: Slot[]; updated_at: string;
+  deleted_at?: string | null; archived_at?: string | null }
+export type PollView = 'current' | 'history' | 'trash'
+export type OrganizationAction = 'delete' | 'restore' | 'archive' | 'unarchive' | 'cancel'
 export type Draft = { title: string; description: string; location: string; response_deadline: string;
   participants: { user_id: number; importance: 'REQUIRED' | 'NORMAL' }[]; slots: { start_at: string; end_at: string }[] }
 export type PollPage = { items: Poll[]; page: number; page_size: number; total: number }
@@ -22,6 +25,11 @@ function decode(value: unknown, id: string, writing = false): Poll {
       typeof value.status !== 'string' || !Object.hasOwn(statusLabel, value.status) ||
       !(value.effective_status === value.status || (value.status === 'OPEN' && value.effective_status === 'CLOSED')) ||
       !Array.isArray(value.participants) || value.participants.length > 20 || !Array.isArray(value.slots)) invalid(id, writing)
+  for (const key of ['deleted_at','archived_at']) {
+    if (Object.hasOwn(value,key) && value[key] !== null && !utc(value[key])) invalid(id,writing)
+  }
+  if (value.deleted_at && (value.archived_at || !['DRAFT','CLOSED','CANCELLED'].includes(String(value.status)))) invalid(id,writing)
+  if (value.archived_at && value.status !== 'CONFIRMED') invalid(id,writing)
   const participants = value.participants.map(person => {
     if (!object(person) || !positive(person.user_id) || typeof person.username !== 'string' || !/^[a-z0-9_]{3,32}$/.test(person.username) ||
         (person.importance !== 'REQUIRED' && person.importance !== 'NORMAL') || !(person.submitted_at === null || utc(person.submitted_at))) invalid(id, writing)
@@ -35,7 +43,9 @@ function decode(value: unknown, id: string, writing = false): Poll {
       new Set(slots.map(item => `${item.start_at}/${item.end_at}`)).size !== slots.length) invalid(id, writing)
   return { id: value.id, group_id: value.group_id, title: value.title, description: value.description, location: value.location,
     response_deadline: value.response_deadline, updated_at: value.updated_at, status: value.status as PollStatus,
-    effective_status: value.effective_status as PollStatus, participants, slots }
+    effective_status: value.effective_status as PollStatus, participants, slots,
+    ...(Object.hasOwn(value,'deleted_at')?{deleted_at:value.deleted_at as string|null}:{}),
+    ...(Object.hasOwn(value,'archived_at')?{archived_at:value.archived_at as string|null}:{}) }
 }
 export function identifier(value: number | string) {
   const id = String(value)
@@ -49,11 +59,12 @@ export const pollsApi = {
     if (String(poll.id) !== String(id)) invalid(result.request_id, false)
     return poll
   },
-  async list(groupId: number | string, page = 1, signal?: AbortSignal): Promise<PollPage> {
-    const result = await request<unknown>(`/api/v1/groups/${identifier(groupId)}/polls?page=${page}&page_size=20`, { signal })
+  async list(groupId: number | string, page = 1, signal?: AbortSignal, view: PollView = 'current'): Promise<PollPage> {
+    const result = await request<unknown>(`/api/v1/groups/${identifier(groupId)}/polls?page=${page}&page_size=20${view==='current'?'':`&view=${view}`}`, { signal })
     const value = result.data
     if (!object(value) || !Array.isArray(value.items) || value.page !== page || value.page_size !== 20 || !Number.isSafeInteger(value.total) || Number(value.total) < 0) invalid(result.request_id, false)
     const items = value.items.map(item => decode(item, result.request_id))
+    if (items.some(item=>view==='trash'?!item.deleted_at:!!item.deleted_at||(view==='history'?!item.archived_at:!!item.archived_at))) invalid(result.request_id,false)
     if (items.some(item => String(item.group_id) !== String(groupId)) || new Set(items.map(item => item.id)).size !== items.length ||
         items.length !== Math.min(20, Math.max(Number(value.total) - (page - 1) * 20, 0))) invalid(result.request_id, false)
     return { items, page, page_size: 20, total: Number(value.total) }
@@ -80,6 +91,14 @@ export const pollsApi = {
     const result = await request<unknown>(`/api/v1/polls/${identifier(id)}/close`, { method: 'POST', body: {} })
     const poll = decode(result.data, result.request_id, true)
     if (String(poll.id) !== String(id)) invalid(result.request_id, true)
+    return poll
+  },
+  async organize(id: number | string, action: OrganizationAction) {
+    const result=await request<unknown>(`/api/v1/polls/${identifier(id)}/${action}`,{method:'POST',body:{}})
+    const poll=decode(result.data,result.request_id,true)
+    if(String(poll.id)!==String(id) || (action==='delete'&&!poll.deleted_at) ||
+      (action==='restore'&&poll.deleted_at) || (action==='archive'&&!poll.archived_at) ||
+      (action==='unarchive'&&poll.archived_at) || (action==='cancel'&&poll.status!=='CANCELLED')) invalid(result.request_id,true)
     return poll
   },
 }

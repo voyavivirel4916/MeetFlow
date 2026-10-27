@@ -1,3 +1,4 @@
+from test_database import original_rows
 """T17 real database/API checks: own complete answers, atomicity and lock ordering."""
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
@@ -300,14 +301,14 @@ def test_upgrade_from_poll_schema_preserves_records_and_is_repeatable(settings):
             connection.exec_driver_sql("INSERT INTO participants VALUES (1,1,1,'REQUIRED',NULL)")
             connection.exec_driver_sql('INSERT INTO slots VALUES (1,1,3000,4000)')
         with sqlite3.connect(database_path(settings)) as connection:
-            before = {table: connection.execute(f'SELECT * FROM {table}').fetchall()
+            before = {table: original_rows(connection, table)
                 for table in ['users', 'groups', 'group_members', 'polls', 'participants', 'slots']}
         upgrade(settings)
         upgrade(settings)
         require_current_schema(settings)
         with sqlite3.connect(database_path(settings)) as connection:
-            assert connection.execute('SELECT version_num FROM alembic_version').fetchone()[0] == '0005_tasks'
+            assert connection.execute('SELECT version_num FROM alembic_version').fetchone()[0] == '0006_poll_lifecycle'
             assert connection.execute('SELECT * FROM votes').fetchall() == []
-            assert {table: connection.execute(f'SELECT * FROM {table}').fetchall() for table in before} == before
+            assert {table: original_rows(connection, table) for table in before} == before
     finally:
         engine.dispose()

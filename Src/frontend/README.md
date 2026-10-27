@@ -80,3 +80,5 @@ npm run check:auth
 `check:matrix-ui`验证T20矩阵、进度、读取失败恢复、访问权限和20×15键盘滚动；开发代理用`node browser.check.mjs --matrix-ui`。说明与截图见[31号记录](../../Docs/31-矩阵与提交进度页面.md)。
 
 `check:recommendations-ui`验证T23真实排名、分数组成、必到风险、全时段冲突及失败保留；开发代理用`node browser.check.mjs --recommendations-ui`。说明与截图见[34号记录](../../Docs/34-推荐结果与冲突提示页面.md)。
+
+第二版排期分类与删除归档页面：`node browser.check.mjs --built --poll-lifecycle`，使用隔离临时库验证。当前前端285项测试通过，界面确认见[47号记录](../../Docs/47-排期删除归档与恢复验证.md)。

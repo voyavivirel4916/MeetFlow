@@ -126,3 +126,5 @@ tests/              # 独立临时目录、迁移、约束、接口和启动验�
 历史结果见[17号记录](../../Docs/17-后端基础工程记录.md)、[18号记录](../../Docs/18-前端与数据库工程记录.md)，当前同源运行结果见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，表单约定见[16号规范](../../Docs/16-表单与状态展示规范.md)。生命周期和配置分别参考[FastAPI官方说明](https://fastapi.tiangolo.com/advanced/events/)及[Pydantic Settings官方说明](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)。
 
 本轮Python下载连接出现TLS中断，锁文件通过从官方PyPI下载、校验SHA-256的本地wheel缓存生成，保留了原依赖版本；缓存不提交。正常安装仍直接使用上述哈希锁文件，不需要编译命令注释中的本机缓存。
+
+第二版新增0006_poll_lifecycle，十张业务表保留，当前592项后端测试通过。删除/恢复及归档规则见[47号记录](../../Docs/47-排期删除归档与恢复验证.md)，任务增强迁移仍待做；旧库必须停服备份再升级。

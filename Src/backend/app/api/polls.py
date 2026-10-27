@@ -1,4 +1,5 @@
 from typing import Annotated
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Path, Query, Request, Response
 
@@ -25,8 +26,9 @@ def create(group_id: Identifier, body: DraftIn, request: Request, account: UserO
 @router.get('/groups/{group_id}/polls', response_model=Success[PollPage])
 def listing(group_id: Identifier, request: Request, page: Annotated[int, Query(ge=1)] = 1,
             page_size: Annotated[int, Query(ge=1, le=50)] = 20,
+            view: Literal['current', 'history', 'trash'] = 'current',
             account: UserOut = Depends(current_user), engine=Depends(database)):
-    return Success(data=service.list_polls(engine, account.id, group_id, page, page_size), request_id=request_id(request))
+    return Success(data=service.list_polls(engine, account.id, group_id, page, page_size, view), request_id=request_id(request))
 
 
 @router.get('/polls/{poll_id}', response_model=Success[PollOut])
@@ -49,3 +51,15 @@ def register_action(action):
 
 for action in ['open', 'close', 'cancel']:
     register_action(action)
+
+
+def register_organization(action):
+    def organize(poll_id: Identifier, body: EmptyIn, request: Request,
+                 account: UserOut = Depends(current_user), engine=Depends(database)):
+        return Success(data=service.organize_poll(engine, account.id, poll_id, action), request_id=request_id(request))
+    organize.__name__ = f'{action}_poll'
+    router.add_api_route(f'/polls/{{poll_id}}/{action}', organize, methods=['POST'], response_model=Success[PollOut])
+
+
+for action in ['delete', 'restore', 'archive', 'unarchive']:
+    register_organization(action)

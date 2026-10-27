@@ -1,3 +1,4 @@
+from test_database import original_rows
 import sqlite3
 
 from alembic import command
@@ -60,7 +61,7 @@ def test_vote_database_upgrade_preserves_rows_and_rolls_back_failed_ddl(settings
             connection.exec_driver_sql("INSERT INTO votes VALUES (1,1,1,'AVAILABLE',1000)")
         with sqlite3.connect(database_path(settings)) as connection:
             names=['users','sessions','groups','group_members','polls','participants','slots','votes']
-            before={name:connection.execute(f'SELECT * FROM {name}').fetchall() for name in names}
+            before={name:original_rows(connection, name) for name in names}
         if fail_first:
             original=migrate.make_engine
             def faulty(*args,**kwargs):
@@ -77,7 +78,7 @@ def test_vote_database_upgrade_preserves_rows_and_rolls_back_failed_ddl(settings
                 assert not connection.execute("SELECT name FROM sqlite_master WHERE name='meetings'").fetchall()
         migrate.upgrade(settings);migrate.upgrade(settings);require_current_schema(settings)
         with sqlite3.connect(database_path(settings)) as connection:
-            assert {name:connection.execute(f'SELECT * FROM {name}').fetchall() for name in names}==before
+            assert {name:original_rows(connection, name) for name in names}==before
             assert connection.execute('SELECT COUNT(*) FROM meetings').fetchone()[0]==0
             assert connection.execute('PRAGMA foreign_key_check').fetchall()==[]
     finally:engine.dispose()

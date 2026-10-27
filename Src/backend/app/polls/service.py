@@ -4,7 +4,7 @@ from app.common import clock
 from app.common.responses import ApiError
 from app.common.times import format_ms, to_ms
 from app.db.connection import write_transaction
-from app.db.models import group_members, participants, polls, slots, users
+from app.db.models import group_members, meetings, participants, polls, slots, users
 from app.groups.service import require_member, require_owner
 from app.polls.models import DraftIn, ParticipantOut, PollOut, PollPage, SlotOut
 
@@ -28,9 +28,9 @@ def _not_found():
     return ApiError(404, 'NOT_FOUND', '未找到可访问的排期。')
 
 
-def _require_poll(connection, user_id, poll_id, *, owner=False):
+def _require_poll(connection, user_id, poll_id, *, owner=False, include_deleted=False):
     row = connection.execute(select(polls).where(polls.c.id == poll_id)).mappings().first()
-    if row is None:
+    if row is None or (row['deleted_at'] is not None and not include_deleted):
         raise _not_found()
     try:
         (require_owner if owner else require_member)(connection, user_id, row['group_id'])
@@ -78,7 +78,9 @@ def _outputs(connection, rows):
     now = clock.now_ms()  # Sample after any blocked read, once for the whole response.
     return [PollOut(**{key: row[key] for key in ['id', 'group_id', 'title', 'description', 'location', 'status']},
         response_deadline=format_ms(row['response_deadline']), effective_status=effective_status(row, now),
-        participants=rosters[row['id']], slots=candidates[row['id']], updated_at=format_ms(row['updated_at'])) for row in rows]
+        participants=rosters[row['id']], slots=candidates[row['id']], updated_at=format_ms(row['updated_at']),
+        deleted_at=None if row['deleted_at'] is None else format_ms(row['deleted_at']),
+        archived_at=None if row['archived_at'] is None else format_ms(row['archived_at'])) for row in rows]
 
 
 def create_draft(engine, user_id, group_id, data: DraftIn):
@@ -100,11 +102,16 @@ def get_poll(engine, user_id, poll_id):
         return _outputs(connection, [_require_poll(connection, user_id, poll_id)])[0]
 
 
-def list_polls(engine, user_id, group_id, page, page_size):
+def list_polls(engine, user_id, group_id, page, page_size, view='current'):
     with engine.connect() as connection:
         connection.exec_driver_sql('BEGIN')
-        require_member(connection, user_id, group_id)
+        (require_owner if view == 'trash' else require_member)(connection, user_id, group_id)
         condition = polls.c.group_id == group_id
+        if view == 'trash':
+            condition = condition & polls.c.deleted_at.is_not(None)
+        else:
+            condition = condition & polls.c.deleted_at.is_(None)
+            condition = condition & (polls.c.archived_at.is_not(None) if view == 'history' else polls.c.archived_at.is_(None))
         total = connection.execute(select(func.count()).select_from(polls).where(condition)).scalar_one()
         offset = (page - 1) * page_size
         rows = [] if offset >= total else connection.execute(select(polls).where(condition)
@@ -132,6 +139,39 @@ def replace_draft(engine, user_id, poll_id, data: DraftIn):
     if conflict:
         raise conflict
     return result
+
+
+def organize_poll(engine, user_id, poll_id, action):
+    """Serialize visibility changes with confirmation and every existing poll write."""
+    with write_transaction(engine) as connection:
+        row = _require_poll(connection, user_id, poll_id, owner=True,
+                            include_deleted=action in {'delete', 'restore'})
+        now = clock.now_ms()
+        row = materialize_expiry(connection, row, now)
+        changes = {}
+        if action == 'delete':
+            linked = connection.execute(select(meetings.c.id).where(meetings.c.poll_id == poll_id)).first()
+            if row['status'] not in {'DRAFT', 'CLOSED', 'CANCELLED'} or linked:
+                raise ApiError(409, 'STATE_CONFLICT', '收集中请先取消；已有会议的排期请归档。')
+            if row['deleted_at'] is None:
+                changes['deleted_at'] = now
+        elif action == 'restore':
+            if row['deleted_at'] is not None:
+                changes['deleted_at'] = None
+        elif action in {'archive', 'unarchive'}:
+            if row['status'] != 'CONFIRMED':
+                raise ApiError(409, 'STATE_CONFLICT', '只有已确认会议的排期可以归档或取消归档。')
+            if action == 'archive' and row['archived_at'] is None:
+                changes['archived_at'] = now
+            elif action == 'unarchive' and row['archived_at'] is not None:
+                changes['archived_at'] = None
+        else:
+            raise ValueError('Unknown organization action')
+        if changes:
+            changes['updated_at'] = max(now, row['updated_at'])
+            connection.execute(update(polls).where(polls.c.id == poll_id).values(**changes))
+            row = dict(row, **changes)
+        return _outputs(connection, [row])[0]
 
 
 def _check_publish(connection, row, now):
