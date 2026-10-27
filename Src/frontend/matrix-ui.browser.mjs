@@ -59,6 +59,8 @@ export async function verifyMatrixUI(browser, origin, { root, screenshots }) {
     assert.ok(badgeBox.x>nameBox.x,'Required badge is on the right');
     assert.equal(await page.locator('.time-matrix tbody .matrix-state').first().evaluate(element=>getComputedStyle(element).fontSize),'15px');
     assert.equal(await page.locator('.time-matrix tbody tr').count(),4);
+    assert.equal(await page.getByRole('columnheader',{name:'个人统计',exact:false}).count(),0);
+    assert.equal(await page.locator('.time-matrix tbody tr').first().locator('th,td').count(),4);
     assert.equal(await page.locator('.time-matrix tbody td[data-slot]').count(),12);
     assert.equal((await page.locator('.slot-counts').first().innerText()).replace(/\s+/g,' '),'有空 1 勉强 1 没空 1 未填 1');
     assert.match(await page.locator('.time-matrix thead').innerText(),/\d{4}-\d{2}-\d{2}/);
