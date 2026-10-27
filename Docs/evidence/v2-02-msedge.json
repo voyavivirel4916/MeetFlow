@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-27T12:39:58.953Z",
+  "date": "2026-10-27T12:56:05.465Z",
   "browser": "msedge",
   "version": "155.0.4283.62",
   "viewports": [
@@ -23,7 +23,14 @@
     "group-390.png",
     "tasks-390.png"
   ],
+  "theme": {
+    "contrast": 6.217455308390364,
+    "selected": "rgb(240, 234, 247)",
+    "avatar": "rgb(240, 234, 247)"
+  },
   "checks": [
+    "primary-text-contrast",
+    "consistent-highlight",
     "no-page-overflow",
     "complete-reopen",
     "cancel-return-restore",

@@ -23,6 +23,21 @@ try{
  page.on('pageerror',e=>errors.push(e.message));
  page.on('request',req=>assert.ok(req.url().startsWith(`http://127.0.0.1:${server.address().port}/`),'External request'));
  await page.goto(`http://127.0.0.1:${server.address().port}/`);
+ // Verify readable primary actions and consistent theme across selected surfaces.
+ const theme=await page.evaluate(()=>{
+  const luminance=color=>{
+   const rgb=color.match(/[\d.]+/g).slice(0,3).map(v=>Number(v)/255)
+    .map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+   return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+  };
+  const style=getComputedStyle(document.querySelector('.primary'));
+  const a=luminance(style.color),b=luminance(style.backgroundColor);
+  return {contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),
+   selected:getComputedStyle(document.querySelector('nav .active')).backgroundColor,
+   avatar:getComputedStyle(document.querySelector('.avatar')).backgroundColor};
+ });
+ assert.ok(theme.contrast>=4.5,`Primary button contrast ${theme.contrast}`);
+ assert.equal(theme.selected,theme.avatar);
  const screenshotDir=resolve(root,'Docs/images/v2-02');await mkdir(screenshotDir,{recursive:true});
  for(const width of [1440,975,390]){
   await page.setViewportSize({width,height:width===390?844:1000});
@@ -56,7 +71,7 @@ try{
  await tab('回收站').click();await page.locator('[data-poll="5"] [data-action="restore-poll"]').click();await page.locator('#confirm-action').click();await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
  await tab('当前').click();assert.equal(await page.locator('[data-poll="5"]').count(),1);
  assert.deepEqual(errors,[]);
- const evidence={date:new Date().toISOString(),browser:channel,version:browser.version(),viewports:[1440,975,390],pages:['home','group','tasks'],screenshots,checks:['no-page-overflow','complete-reopen','cancel-return-restore','edit-search','archive','delete-restore','no-external-requests','no-page-errors'],result:'passed',production:false,human_review:false};
+ const evidence={date:new Date().toISOString(),browser:channel,version:browser.version(),viewports:[1440,975,390],pages:['home','group','tasks'],screenshots,theme,checks:['primary-text-contrast','consistent-highlight','no-page-overflow','complete-reopen','cancel-return-restore','edit-search','archive','delete-restore','no-external-requests','no-page-errors'],result:'passed',production:false,human_review:false};
  await mkdir(resolve(root,'Docs/evidence'),{recursive:true});await writeFile(resolve(root,`Docs/evidence/v2-02-${channel}.json`),JSON.stringify(evidence,null,2)+'\n');
  console.log(`${channel}: V2-02 prototype checks passed; 9 screenshots.`);
 }finally{await browser?.close();await new Promise(done=>server.close(done))}
