@@ -85,7 +85,7 @@ export async function verifyMatrixUI(browser, origin, { root, screenshots }) {
     release(); await ready(page); await page.unroute(path); assert.equal(reads,1);
     // Server read error keeps the old snapshot, never pretends it is empty.
     await page.route(path,route=>reply(route,503,'STORAGE_UNAVAILABLE','暂时无法读取矩阵。'));
-    await refresh(page).click(); await page.getByRole('heading',{name:'时间矩阵暂时无法读取',exact:true}).waitFor();
+    await refresh(page).click(); await page.getByRole('heading',{name:'排期结果暂时无法读取',exact:true}).waitFor();
     assert.equal(await page.locator('.time-matrix tbody tr').count(),4);
     await shot(page,'04-stale');
     await page.unroute(path); await page.getByRole('button',{name:'重新读取矩阵',exact:true}).click(); await ready(page);
@@ -102,7 +102,7 @@ export async function verifyMatrixUI(browser, origin, { root, screenshots }) {
     await page.unroute(path); await page.getByRole('button',{name:'重新读取矩阵',exact:true}).click(); await ready(page);
     // Group members outside the participant roster can read; strangers cannot.
     await observer.page.route(path,route=>route.abort()); await observer.page.goto(url);
-    await observer.page.getByRole('heading',{name:'时间矩阵暂时无法读取',exact:true}).waitFor();
+    await observer.page.getByRole('heading',{name:'排期结果暂时无法读取',exact:true}).waitFor();
     assert.equal(await observer.page.locator('.matrix-progress').count(),0);
     await observer.page.unroute(path); await observer.page.getByRole('button',{name:'重新读取矩阵',exact:true}).click(); await ready(observer.page);
     assert.equal(await observer.page.getByRole('link',{name:'填写我的时间',exact:true}).count(),0);

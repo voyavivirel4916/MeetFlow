@@ -105,7 +105,7 @@ try {
   }
   const screenshot = async name => {
     if (!process.argv.includes('--screenshots')) return;
-    const dir = resolve(root, process.argv.includes('--matrix-ui') ? 'Docs/images/t20' : process.argv.includes('--votes-ui') ? 'Docs/images/t18' : process.argv.includes('--poll-editor') ? 'Docs/images/t16' : process.argv.includes('--groups-ui') ? 'Docs/images/t13' : process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
+    const dir = resolve(root, process.argv.includes('--recommendations-ui') ? 'Docs/images/t23' : process.argv.includes('--matrix-ui') ? 'Docs/images/t20' : process.argv.includes('--votes-ui') ? 'Docs/images/t18' : process.argv.includes('--poll-editor') ? 'Docs/images/t16' : process.argv.includes('--groups-ui') ? 'Docs/images/t13' : process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
     await mkdir(dir, { recursive: true });
     await page.screenshot({ path: resolve(dir, name + '.png'), fullPage: true });
   };
@@ -197,6 +197,10 @@ try {
   if (process.argv.includes('--matrix-ui')) {
     const { verifyMatrixUI } = await import('./matrix-ui.browser.mjs');
     await verifyMatrixUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
+  }
+  if (process.argv.includes('--recommendations-ui')) {
+    const { verifyRecommendationsUI } = await import('./recommendations-ui.browser.mjs');
+    await verifyRecommendationsUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
 } finally {

@@ -1,6 +1,6 @@
 # MeetFlow 正式前端
 
-T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端，沿用暖白、靛蓝、珊瑚橙风格。T10登录、T13小组、T16负责人排期编辑/发布、T18三态填写及T20矩阵与进度已接入真实接口；推荐、会议和任务页面仍待接入。[T02原型](../prototype/README.md)单独保留。
+T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端，沿用暖白、靛蓝、珊瑚橙风格。T10登录、T13小组、T16负责人排期编辑/发布、T18三态填写、T20矩阵及T23推荐已接入真实接口；会议和任务页面仍待接入。[T02原型](../prototype/README.md)单独保留。
 
 ## 本机运行与开发
 
@@ -58,6 +58,7 @@ npm run check:polls
 npm run check:poll-editor
 npm run check:votes-ui
 npm run check:matrix-ui
+npm run check:recommendations-ui
 $env:PROTOTYPE_BROWSER='msedge'
 npm run check:auth
 ```
@@ -69,3 +70,5 @@ npm run check:auth
 `check:votes-ui`验证T18真实三态填写、完整校验、保存回显、断连核对、关闭只读及权限；开发代理用`node browser.check.mjs --votes-ui`。说明与截图见[29号记录](../../Docs/29-空闲状态填写页面.md)。
 
 `check:matrix-ui`验证T20矩阵、进度、读取失败恢复、访问权限和20×15键盘滚动；开发代理用`node browser.check.mjs --matrix-ui`。说明与截图见[31号记录](../../Docs/31-矩阵与提交进度页面.md)。
+
+`check:recommendations-ui`验证T23真实排名、分数组成、必到风险、全时段冲突及失败保留；开发代理用`node browser.check.mjs --recommendations-ui`。说明与截图见[34号记录](../../Docs/34-推荐结果与冲突提示页面.md)。
