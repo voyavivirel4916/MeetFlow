@@ -8,6 +8,13 @@ PLAN = ROOT / 'Docs/44-第二版范围与任务计划.md'
 
 
 class V2PlanTests(unittest.TestCase):
+    def test_v2_requirements_have_design_coverage(self):
+        requirement = (ROOT / 'Docs/09-需求分析文档.md').read_text(encoding='utf-8-sig')
+        design = (ROOT / 'Docs/12-系统设计文档.md').read_text(encoding='utf-8-sig')
+        expected = {f'V2-R{i:02}' for i in range(1, 11)}
+        self.assertEqual(set(re.findall(r'\| (V2-R\d{2}) \|', requirement)), expected)
+        self.assertLessEqual(expected, set(re.findall(r'V2-R\d{2}', design)))
+
     def test_tasks_are_unique_and_dependencies_precede_tasks(self):
         rows = [line.split('|') for line in PLAN.read_text(encoding='utf-8').splitlines()
                 if re.match(r'\| V2-\d{2} \|', line)]
