@@ -1,6 +1,6 @@
 # MeetFlow 正式前端
 
-T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端，沿用暖白、靛蓝、珊瑚橙风格。T10登录、T13小组及T16负责人排期编辑/发布已接入真实接口；填写、推荐、会议和任务页面仍待接入。[T02原型](../prototype/README.md)单独保留。
+T06建立 Vue 3、TypeScript、Vite、Vue Router 和 API 客户端，沿用暖白、靛蓝、珊瑚橙风格。T10登录、T13小组、T16负责人排期编辑/发布及T18三态填写已接入真实接口；矩阵、推荐、会议和任务页面仍待接入。[T02原型](../prototype/README.md)单独保留。
 
 ## 本机运行与开发
 
@@ -56,6 +56,7 @@ npm run check:groups
 npm run check:groups-ui
 npm run check:polls
 npm run check:poll-editor
+npm run check:votes-ui
 $env:PROTOTYPE_BROWSER='msedge'
 npm run check:auth
 ```
@@ -63,3 +64,5 @@ npm run check:auth
 先运行 `npm run build`。检查脚本显式迁移独立临时数据库；`check:browser`验证Vite开发代理，`check:delivery`只启动后端并验证正式构建的同源页面。使用空闲端口，结束后清理，不使用开发数据库或占用8000/5173。加 `-- --screenshots` 更新对应截图。本轮结果与截图见[19号记录](../../Docs/19-本机同源运行与健康检查.md)，T06/T07历史结果见[18号记录](../../Docs/18-前端与数据库工程记录.md)。
 
 `check:auth`验证真实Cookie、跨来源表单和多会话隔离；`check:auth-ui`验证登录页；`check:groups`验证小组接口；`check:groups-ui`验证小组页面；`check:polls`验证排期接口；`check:poll-editor`验证编辑、发布和异常核对。开发代理可用 `node browser.check.mjs --poll-editor --groups-ui --auth-ui`。结果见[20号](../../Docs/20-认证与会话接口记录.md)、[21号](../../Docs/21-注册登录页面与守卫.md)、[23号](../../Docs/23-小组成员与邀请码接口.md)、[24号](../../Docs/24-小组页面与交互验证.md)、[26号](../../Docs/26-草稿与排期状态接口.md)和[27号记录](../../Docs/27-负责人排期编辑与发布.md)。
+
+`check:votes-ui`验证T18真实三态填写、完整校验、保存回显、断连核对、关闭只读及权限；开发代理用`node browser.check.mjs --votes-ui`。说明与截图见[29号记录](../../Docs/29-空闲状态填写页面.md)。

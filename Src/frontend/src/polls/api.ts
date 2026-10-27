@@ -37,7 +37,7 @@ function decode(value: unknown, id: string, writing = false): Poll {
     response_deadline: value.response_deadline, updated_at: value.updated_at, status: value.status as PollStatus,
     effective_status: value.effective_status as PollStatus, participants, slots }
 }
-function identifier(value: number | string) {
+export function identifier(value: number | string) {
   const id = String(value)
   if (!/^[1-9]\d*$/.test(id) || BigInt(id) > 9223372036854775807n) throw new ApiFailure('http', '未找到可访问的排期。', 404, 'NOT_FOUND')
   return id

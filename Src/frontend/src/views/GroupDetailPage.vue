@@ -88,6 +88,6 @@ async function copy() {
       <label for="current-invite" class="form-help">{{ uncertain || readError || loading ? '上次读取的邀请码（待核对）' : '当前邀请码' }}</label><input id="current-invite" ref="selectedCode" class="invite-display" readonly :value="uncertain || readError || loading ? '' : group.invite_code" :placeholder="uncertain || readError || loading ? '请先重新读取' : ''" :aria-label="uncertain ? '邀请码待核对' : '当前邀请码'">
       <p v-if="group.invite_enabled === false" class="field-error">当前邀请已停用，负责人可重置后重新邀请。</p><div class="invite-actions"><button :disabled="!ready || uncertain || copying || !group.invite_enabled" @click="copy">{{ copying ? '正在复制…' : '复制邀请码' }}</button><button class="text-button" :disabled="!ready || uncertain || copying" @click="reset">{{ pending ? '正在重置…' : '重置邀请码' }}</button></div><small v-if="manualCopy" class="muted">选中代码后按 Ctrl+C 复制。</small><p class="form-help">重置会立即使旧码失效，已加入的成员保留。</p>
     </section><section v-else class="member-guide"><p class="eyebrow">一起参与</p><h2>你已在小组中</h2><p class="muted">想邀请新的伙伴？请联系小组负责人分享邀请码。</p></section>
-    <section class="next-step-card"><span class="puzzle-label" aria-hidden="true">↗</span><h2>接下来，找到共同时间</h2><p class="muted">负责人可以先设置候选时间并发布收集。填写、推荐和会议任务将逐步接入。</p></section></div>
+    <section class="next-step-card"><span class="puzzle-label" aria-hidden="true">↗</span><h2>接下来，找到共同时间</h2><p class="muted">负责人设置候选时间并发布收集后，参与者就可以从小组排期中填写自己的空闲状态。</p></section></div>
   </div>
 </template>
