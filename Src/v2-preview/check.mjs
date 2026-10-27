@@ -45,6 +45,18 @@ try{
    await page.goto(`http://127.0.0.1:${server.address().port}/#${view}`);
    await page.locator('h1').waitFor();
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${view}/${width} overflow`);
+   if(view==='group'){
+    const columns=await page.locator('[data-poll]').evaluateAll(rows=>rows.map(row=>{
+     const status=row.querySelector('.tag').getBoundingClientRect();
+     const action=row.querySelector('.row-actions').getBoundingClientRect();
+     return {status:status.x,action:action.x,statusCenter:status.y+status.height/2,actionCenter:action.y+action.height/2};
+    }));
+    for(const row of columns){
+     assert.ok(Math.abs(row.status-columns[0].status)<1,`Status column/${width}`);
+     assert.ok(Math.abs(row.action-columns[0].action)<1,`Action column/${width}`);
+     assert.ok(Math.abs(row.statusCenter-row.actionCenter)<1,`Row vertical alignment/${width}`);
+    }
+   }
    const name=`${view}-${width}.png`;await page.screenshot({path:resolve(screenshotDir,name),fullPage:true});screenshots.push(name);
   }
  }
