@@ -87,7 +87,7 @@ try {
     assert.equal(await page.title(), `${title} · MeetFlow`);
   }
   assert.ok(requests.filter(url => new URL(url).pathname.startsWith('/api/')).every(url =>
-    /^\/api\/v1\/(users\/me|groups(?:\/1(?:\/members|\/polls)?)?|polls\/1(?:\/matrix)?|meetings\/1)$/.test(new URL(url).pathname)));
+    /^\/api\/v1\/(users\/me|groups(?:\/1(?:\/members|\/polls|\/tasks)?)?|polls\/1(?:\/matrix)?|meetings\/1|tasks\/mine)$/.test(new URL(url).pathname)));
   await page.goto(origin + '/polls/1/results');
   await page.reload();
   await page.getByRole('heading', { name: '排期结果', exact: true }).waitFor();
@@ -105,7 +105,7 @@ try {
   }
   const screenshot = async name => {
     if (!process.argv.includes('--screenshots')) return;
-    const dir = resolve(root, process.argv.includes('--meeting-ui') ? 'Docs/images/t27' : process.argv.includes('--confirmation-ui') ? 'Docs/images/t25' : process.argv.includes('--recommendations-ui') ? 'Docs/images/t23' : process.argv.includes('--matrix-ui') ? 'Docs/images/t20' : process.argv.includes('--votes-ui') ? 'Docs/images/t18' : process.argv.includes('--poll-editor') ? 'Docs/images/t16' : process.argv.includes('--groups-ui') ? 'Docs/images/t13' : process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
+    const dir = resolve(root, process.argv.includes('--tasks-ui') ? 'Docs/images/t29' : process.argv.includes('--meeting-ui') ? 'Docs/images/t27' : process.argv.includes('--confirmation-ui') ? 'Docs/images/t25' : process.argv.includes('--recommendations-ui') ? 'Docs/images/t23' : process.argv.includes('--matrix-ui') ? 'Docs/images/t20' : process.argv.includes('--votes-ui') ? 'Docs/images/t18' : process.argv.includes('--poll-editor') ? 'Docs/images/t16' : process.argv.includes('--groups-ui') ? 'Docs/images/t13' : process.argv.includes('--auth-ui') ? 'Docs/images/t10' : built ? 'Docs/images/t08' : 'Docs/images/t06');
     await mkdir(dir, { recursive: true });
     await page.screenshot({ path: resolve(dir, name + '.png'), fullPage: true });
   };
@@ -197,6 +197,10 @@ try {
   if (process.argv.includes('--matrix-ui')) {
     const { verifyMatrixUI } = await import('./matrix-ui.browser.mjs');
     await verifyMatrixUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
+  }
+  if (process.argv.includes('--tasks-ui')) {
+    const { verifyTasksUI } = await import('./tasks-ui.browser.mjs');
+    await verifyTasksUI(browser, origin, { root, screenshots: process.argv.includes('--screenshots') });
   }
   if (process.argv.includes('--meeting-ui')) {
     const { verifyMeetingUI } = await import('./meeting-ui.browser.mjs');

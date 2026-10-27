@@ -3,6 +3,7 @@ import {computed,onBeforeUnmount,onMounted,reactive,ref,watch} from 'vue'
 import {useRoute} from 'vue-router'
 import type {ApiFailure} from '../api/client'
 import StateNotice from '../components/StateNotice.vue'
+import TaskPanel from '../components/TaskPanel.vue'
 import {useSession} from '../auth/session'
 import {groupsApi} from '../groups/api'
 import {failure,useGroupLifetime} from '../groups/forms'
@@ -74,5 +75,6 @@ onBeforeUnmount(()=>reader?.abort())
         <section v-if="checked" class="meeting-reconcile"><h3>服务端已保存的内容</h3><h4>会议议程</h4><p class="plain-text">{{checked.agenda||'尚未填写议程。'}}</p><h4>会议纪要</h4><p class="plain-text">{{checked.minutes||'尚未填写纪要。'}}</p><div class="dialog-actions"><button type="button" class="secondary" :disabled="pending" @click="adopt(checked)">使用已保存内容</button><button type="button" :disabled="pending" @click="keepEditing">保留输入继续编辑</button></div></section>
         <div class="dialog-actions"><button type="button" class="secondary" :disabled="pending||uncertain" @click="cancel">取消编辑</button><button type="submit" :disabled="pending||uncertain||loading||!!readError||!dirty">{{pending?'正在处理…':'保存议程与纪要'}}</button></div></form>
     </section>
+    <TaskPanel :group-id="saved.group_id" :meeting-id="saved.id"/>
   </template>
 </template>

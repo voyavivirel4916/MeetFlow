@@ -9,6 +9,7 @@ import PollEditorPage from './views/PollEditorPage.vue'
 import VotePage from './views/VotePage.vue'
 import MatrixPage from './views/MatrixPage.vue'
 import MeetingPage from './views/MeetingPage.vue'
+import TasksPage from './views/TasksPage.vue'
 import { onUnauthorized } from './api/client'
 import type { Session } from './auth/session'
 import { safeReturnPath } from './navigation'
@@ -27,7 +28,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/polls/:pollId([1-9]\\d*)/vote', component: VotePage, meta: { title: '填写时间', requiresAuth: true } },
   { path: '/polls/:pollId([1-9]\\d*)/results', component: MatrixPage, meta: { title: '排期结果', requiresAuth: true } },
   {path:'/meetings/:meetingId([1-9]\\d*)',component:MeetingPage,meta:{title:'会议与行动',requiresAuth:true}},
-  page('/tasks/mine', '我的待办', '这里将汇总分配给你的会议任务。'),
+  {path:'/tasks/mine',component:TasksPage,meta:{title:'我的待办',requiresAuth:true}},
   { path: '/login', name: 'login', component: AuthPage, props: { registering: false }, meta: { title: '登录', authPage: true } },
   { path: '/register', name: 'register', component: AuthPage, props: { registering: true }, meta: { title: '注册', authPage: true } },
   { path: '/session-check', name: 'session-check', component: SessionCheckPage, meta: { title: '确认登录状态' } },

@@ -96,3 +96,14 @@
 .meeting-text h3 { font-size:17px; margin:8px 0 14px; }
 .meeting-reconcile { padding:20px; border:1px solid #e2d4b6; border-radius:14px; background:#fffbf2; }
 @media(max-width:600px) { .meeting-overview,.meeting-content { padding:22px; } }
+.task-panel { margin-top:24px; padding:28px; background:#fff; border:1px solid #ded9dc; border-radius:22px; min-width:0; }
+.task-panel>.section-heading { flex-wrap:wrap; gap:12px; }
+.task-toolbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin:18px 0; }
+.task-panel select { font:inherit; max-width:100%; min-height:42px; padding:8px 12px; border:1px solid #bbb7d0; border-radius:9px; color:#292d50; background:#fff; }
+.task-empty { color:var(--muted); padding:20px 0; }
+.task-list { list-style:none; margin:0 0 20px; padding:0; }
+.task-list>li { padding:22px 0; border-top:1px solid #eeebf1; display:flex; justify-content:space-between; align-items:flex-start; gap:22px; }
+.task-main { min-width:0; flex:1; }.task-main h3 { font-size:18px; margin:0 0 10px; }.task-main p { margin:8px 0; }.task-main .form-help { display:block; margin-top:10px; }
+.task-meta { color:var(--muted); font-size:13px; }.task-status { font-size:12px; display:grid; gap:5px; color:var(--muted); flex-shrink:0; }.task-overdue { margin-left:8px; color:#954c39; }
+.task-create { padding:24px; margin-top:20px; border:1px solid #dbd7e8; background:#faf9fd; border-radius:16px; }.task-create fieldset { border:0; padding:0; margin:0; min-width:0; }.task-create-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:18px; }.task-create select { width:100%; }
+@media(max-width:700px){.task-panel{padding:22px}.task-list>li{flex-wrap:wrap}.task-create-grid{grid-template-columns:minmax(0,1fr);gap:0}.task-create{padding:18px}}

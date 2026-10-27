@@ -5,6 +5,7 @@ import { ApiFailure } from '../api/client'
 import { useSession } from '../auth/session'
 import StateNotice from '../components/StateNotice.vue'
 import PollList from '../components/PollList.vue'
+import TaskPanel from '../components/TaskPanel.vue'
 import { groupsApi, type Group, type Member } from '../groups/api'
 import { failure, useGroupLifetime } from '../groups/forms'
 
@@ -83,6 +84,7 @@ async function copy() {
     <div><section class="group-about"><p class="eyebrow">OUR SHARED SPACE</p><h2>关于这个小组</h2><p class="plain-text">{{ group.description || '还没有填写说明，从一次共同讨论开始吧。' }}</p></section>
       <section class="members-card"><div class="section-heading"><h2>小组成员</h2><span class="member-capacity" :aria-label="`小组成员${members.length}人，上限20人`">{{ members.length.toString().padStart(2, '0') }}/20</span></div><ul class="member-list"><li v-for="member in orderedMembers" :key="member.user_id" :class="{ 'current-member': member.user_id === session.state.user?.id }" :aria-label="member.user_id === session.state.user?.id ? `${member.username}，当前登录成员` : undefined"><span class="member-avatar" aria-hidden="true">{{ member.username.slice(0, 1).toUpperCase() }}</span><div><strong>{{ member.username }}</strong></div><span class="role-badge">{{ member.role === 'OWNER' ? '负责人' : '成员' }}</span></li></ul></section>
       <PollList ref="pollList" :group-id="group.id" :can-create="!!owner && ready" />
+      <TaskPanel :group-id="group.id"/>
     </div>
     <div><section v-if="owner" class="invite-card"><p class="eyebrow">邀请伙伴，补齐拼图</p><h2>小组邀请码</h2><p class="muted">分享给同学，登录后即可加入。{{ group.member_count >= 20 ? '目前已满20人。' : `还可加入${20 - group.member_count}人。` }}</p>
       <label for="current-invite" class="form-help">{{ uncertain || readError || loading ? '上次读取的邀请码（待核对）' : '当前邀请码' }}</label><input id="current-invite" ref="selectedCode" class="invite-display" readonly :value="uncertain || readError || loading ? '' : group.invite_code" :placeholder="uncertain || readError || loading ? '请先重新读取' : ''" :aria-label="uncertain ? '邀请码待核对' : '当前邀请码'">
