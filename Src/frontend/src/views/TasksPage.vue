@@ -1,4 +1,4 @@
 <script setup lang="ts">
 import TaskPanel from '../components/TaskPanel.vue'
 </script>
-<template><section class="group-heading"><div><p class="eyebrow">MEETFLOW / 接住下一步</p><h1>我的待办</h1><p class="muted">从会议里的决定，到自己负责的行动。</p></div></section><TaskPanel/></template>
+<template><section class="group-heading"><div><h1>我的任务</h1><p class="muted">勾选圆圈标记完成，截止时间不会改变任务状态。</p></div></section><TaskPanel/></template>

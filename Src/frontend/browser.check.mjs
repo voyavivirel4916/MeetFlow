@@ -84,7 +84,7 @@ try {
   for (const [path, title] of [
     ['/groups/1', '小组空间'], ['/groups/1/polls/new', '发起排期'], ['/polls/1/edit', '编辑排期'],
     ['/polls/1/vote', '填写时间'], ['/polls/1/results', '排期结果'], ['/meetings/1', '会议与行动'],
-    ['/tasks/mine', '我的待办'],
+    ['/tasks/mine', '我的任务'],
     ['/groups/0', '找不到这个页面'], ['/missing', '找不到这个页面'],
   ]) {
     await page.goto(origin + path);
@@ -242,7 +242,7 @@ try {
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
   if(process.argv.includes('--acceptance')){
     const folder=resolve(root,'Docs/evidence');await mkdir(folder,{recursive:true});
-    await writeFile(resolve(folder,`${process.argv.includes('--search-theme')?'ui-restored-acceptance':'t32'}-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
+    await writeFile(resolve(folder,`${process.argv.includes('--search-theme')?'purple-sample-acceptance':'t32'}-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
   }
 } finally {
   if (browser) await browser.close();

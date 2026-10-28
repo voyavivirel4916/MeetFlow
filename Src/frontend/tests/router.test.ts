@@ -16,7 +16,7 @@ afterEach(() => { for (const router of routers.splice(0)) router.disposeSessionL
 it.each([
   ['/dashboard', '工作台'], ['/groups', '我的小组'], ['/groups/1', '小组空间'], ['/groups/1/polls/new', '发起排期'],
   ['/polls/2/edit', '编辑排期'], ['/polls/2/vote', '填写时间'], ['/polls/2/results', '排期结果'],
-  ['/meetings/3', '会议与行动'], ['/tasks/mine', '我的待办'], ['/login', '登录'], ['/register', '注册'],
+  ['/meetings/3', '会议与行动'], ['/tasks/mine', '我的任务'], ['/login', '登录'], ['/register', '注册'],
   ['/connection', '连接检查'], ['/groups/0', '找不到这个页面'], ['/groups/-1', '找不到这个页面'],
   ['/polls/abc/vote', '找不到这个页面'], ['/missing', '找不到这个页面'],
 ])('resolves %s', (path, title) => {
