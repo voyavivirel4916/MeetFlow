@@ -1,0 +1,25 @@
+{
+  "started_at": "2026-10-28T01:17:09.609Z",
+  "finished_at": "2026-10-28T01:18:29.823Z",
+  "elapsed_seconds": 80.2122932,
+  "browser": "msedge",
+  "version": "155.0.4283.62",
+  "platform": "win32",
+  "architecture": "x64",
+  "node": "v22.20.0",
+  "mode": "built same-origin",
+  "suites": [
+    "--auth-ui",
+    "--groups-ui",
+    "--poll-editor",
+    "--votes-ui",
+    "--matrix-ui",
+    "--recommendations-ui",
+    "--confirmation-ui",
+    "--meeting-ui",
+    "--tasks-ui"
+  ],
+  "result": "passed",
+  "database": "isolated temporary database; removed after run",
+  "human_review": false
+}

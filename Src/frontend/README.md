@@ -87,4 +87,4 @@ npm run check:auth
 
 工作台验证：`node browser.check.mjs --built --dashboard`，当前306项前端测试通过。登录默认工作台，有效返回位置不变；见[49号记录](../../Docs/49-工作台汇总与页面验证.md)。
 
-紫色样稿接入与搜索回归：`node browser.check.mjs --built --search-theme --acceptance`，当前310项前端测试通过。三类工作页面通过sample-layout.css按V2-02样稿接入；其余页面保留style.css与组件样式，搜索控件在search.css维护，结果见[50号记录](../../Docs/50-搜索筛选与全站界面整理.md)。
+紫色样稿接入与搜索回归：`node browser.check.mjs --built --search-theme --acceptance`，当前310项前端测试通过。sample-layout.css映射V2-02样稿布局，workflow-layout.css统一其余流程的卡片与控件；保留style.css与组件中的操作布局，搜索控件在search.css维护，结果见[50号记录](../../Docs/50-搜索筛选与全站界面整理.md)。

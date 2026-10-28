@@ -33,8 +33,8 @@ export async function verifySearchTheme(browser,origin,{root}){
   await search.getByRole('button',{name:'清除',exact:true}).click();await pollReady(page);assert.equal(await page.locator('.poll-list>li').count(),3);
   const taskSearch=page.getByRole('search',{name:'任务搜索',exact:true});await taskSearch.getByRole('searchbox').fill(keyword);await taskSearch.getByRole('button',{name:'搜索',exact:true}).click();await taskReady(page);assert.equal(await page.locator('.task-list>li').count(),1);
   await taskSearch.getByRole('button',{name:'清除',exact:true}).click();await taskReady(page);assert.equal(await page.locator('.task-list>li').count(),2);
-  const folder=resolve(root,'Docs/images/purple-sample');await mkdir(folder,{recursive:true});
-  const paths={dashboard:'/dashboard',group:`/groups/${group.id}`,tasks:'/tasks/mine',vote:`/polls/${poll.id}/vote`,matrix:`/polls/${poll.id}/results`,meeting:`/meetings/${meeting.id}`};
+  const folder=resolve(root,'Docs/images/workflow-theme');await mkdir(folder,{recursive:true});
+  const paths={dashboard:'/dashboard',group:`/groups/${group.id}`,tasks:'/tasks/mine',vote:`/polls/${poll.id}/vote`,editor:`/polls/${searchable.id}/edit`,matrix:`/polls/${poll.id}/results`,meeting:`/meetings/${meeting.id}`};
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});
    for(const [name,path] of Object.entries(paths)){
@@ -45,10 +45,10 @@ export async function verifySearchTheme(browser,origin,{root}){
     if(name==='matrix')await page.locator('.time-matrix').waitFor();
     if(name==='vote')await page.locator('.vote-card').waitFor();
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${name}/${width} overflow`);
-    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).fontSize),['dashboard','group','tasks'].includes(name)?'14px':'16px');
-    if(['dashboard','group','tasks'].includes(name)){
+    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).fontSize),'14px');
+    {
       assert.equal(await page.locator('.shell').evaluate(el=>getComputedStyle(el).getPropertyValue('--brand').trim()),'#7250a1');
-      assert.equal(await page.locator('.eyebrow').count(),0);
+      if(['dashboard','group','tasks'].includes(name))assert.equal(await page.locator('.eyebrow').count(),0);
       if(width===1440)assert.equal(Math.round((await page.locator('.shell>aside').boundingBox()).width),208);
     }
     if(name==='tasks'){
@@ -73,8 +73,19 @@ export async function verifySearchTheme(browser,origin,{root}){
   for(let i=0;i<21;i++)await post(owner,`meetings/${meeting.id}/tasks`,taskBody('分页任务'+i));
   await page.getByRole('button',{name:'刷新任务',exact:true}).click();await taskReady(page);await page.getByRole('button',{name:'下一页任务',exact:true}).click();await taskReady(page);
   const form=page.getByRole('search',{name:'任务搜索',exact:true});await form.getByRole('searchbox').fill(keyword);await form.getByRole('button',{name:'搜索',exact:true}).click();await taskReady(page);assert.equal(await page.locator('.task-list>li').count(),1);assert.equal(await page.getByRole('button',{name:'上一页任务',exact:true}).count(),0);
-  const context=await browser.newContext({viewport:{width:390,height:844}});contexts.push(context);const login=await context.newPage();await login.goto(origin+'/login');await login.getByRole('heading',{name:'欢迎回来',exact:true}).waitFor();assert.ok(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await login.screenshot({path:resolve(folder,'login-390.png'),fullPage:true});
+  await page.goto(origin+'/groups');await page.locator('.group-card').first().waitFor();
+  for(const width of [1440,888,390]){
+    await page.setViewportSize({width,height:1000});
+    const card=page.locator('.group-card').first();
+    for(const property of ['borderTopRightRadius','borderBottomRightRadius'])assert.equal(await card.evaluate((el,key)=>getComputedStyle(el)[key],property),'12px');
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    await page.screenshot({path:resolve(folder,`groups-${width}.png`),fullPage:true});
+  }
+  const context=await browser.newContext({viewport:{width:390,height:844}});contexts.push(context);const login=await context.newPage();await login.goto(origin+'/login');await login.getByRole('heading',{name:'欢迎回来',exact:true}).waitFor();assert.ok(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.equal(await login.evaluate(()=>getComputedStyle(document.documentElement).fontSize),'14px');
+  await login.screenshot({path:resolve(folder,'login-390.png'),fullPage:true});
+  await login.setViewportSize({width:1440,height:1000});await login.screenshot({path:resolve(folder,'login-1440.png'),fullPage:true});
+  await login.goto(origin+'/register');await login.locator('#email').waitFor();await login.setViewportSize({width:390,height:1000});assert.ok(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await login.screenshot({path:resolve(folder,'register-390.png'),fullPage:true});
   assert.deepEqual(errors,[]);
-  const evidence={date:new Date().toISOString(),browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),checks:['literal-special-character-search','view-and-query-combination','task-search-before-pagination','clear-query','sample-members-on-right','six-pages-two-viewports','mobile-login'],result:'passed',temporary_database:true,human_review:false};await mkdir(resolve(root,'Docs/evidence'),{recursive:true});await writeFile(resolve(root,`Docs/evidence/purple-sample-${evidence.browser}.json`),JSON.stringify(evidence,null,2)+'\n');console.log('PASS purple sample layout with live search and task tabs');
+  const evidence={date:new Date().toISOString(),browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),checks:['literal-special-character-search','view-and-query-combination','task-search-before-pagination','clear-query','sample-members-on-right','seven-pages-two-viewports','mobile-login-register-and-rounded-group-card'],result:'passed',temporary_database:true,human_review:false};await mkdir(resolve(root,'Docs/evidence'),{recursive:true});await writeFile(resolve(root,`Docs/evidence/workflow-theme-${evidence.browser}.json`),JSON.stringify(evidence,null,2)+'\n');console.log('PASS shared purple workflow style, rounded groups, live search and task tabs');
  }finally{for(const c of contexts)await c.close()}
 }

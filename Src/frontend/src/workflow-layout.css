@@ -1,0 +1,44 @@
+/* V2-15：保留表单、矩阵和会议的操作布局，仅统一样稿中的视觉规范。 */
+.sample-shell .auth-card,.sample-shell .notice,.sample-shell .poll-editor,
+.sample-shell .poll-summary,.sample-shell .vote-intro,.sample-shell .vote-card,
+.sample-shell .matrix-progress,.sample-shell .matrix-card,.sample-shell .recommendations-section,
+.sample-shell .meeting-overview,.sample-shell .meeting-content,.sample-shell .meeting-notes,
+.sample-shell .meeting-confirmed,.sample-shell .task-panel{border-radius:12px;border-color:var(--line);box-shadow:none;background:#fff}
+.sample-shell .auth-card,.sample-shell .poll-editor{padding:26px}
+.sample-shell .vote-intro,.sample-shell .meeting-overview,.sample-shell .meeting-confirmed{background:#faf8fc}
+.sample-shell .auth-story h1{font-size:28px;line-height:1.45;margin:16px 0}
+.sample-shell .auth-story>p:not(.eyebrow){font-size:14px}
+.sample-shell .eyebrow{font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.sample-shell .auth-card h2{font-size:24px;margin:0 0 16px}
+.sample-shell .auth-card .auth-submit{font-size:14px;min-height:44px}
+.sample-shell .time-pieces{transform:none;gap:8px;margin:28px 0}
+.sample-shell .time-pieces span{border-radius:8px;padding:12px 14px;background:#f0eaf7;color:#60418b;transform:none}
+.sample-shell .time-pieces span:nth-child(2){background:#f6f2fa}.sample-shell .time-pieces span:nth-child(3){background:#faf8fc}
+.sample-shell .form-field{margin:18px 0}
+.sample-shell .form-field label{font-size:13px;margin-bottom:7px}
+.sample-shell .form-field input,.sample-shell .form-field textarea,.sample-shell .form-field select{border:1px solid #d5cfde;border-radius:6px;color:inherit;font-size:14px}
+.sample-shell .form-field input{min-height:44px;padding:9px 11px}
+.sample-shell .password-row input{padding-right:52px}
+.sample-shell .form-field input[aria-invalid=true],.sample-shell .form-field textarea[aria-invalid=true]{border-color:#a5514e}
+.sample-shell .password-row .password-toggle:hover{background:#f0eaf7;color:var(--brand)}
+.sample-shell .auth-note{background:#f0eaf7;border-radius:6px;font-size:13px}
+.sample-shell .form-summary,.sample-shell .success-note,.sample-shell .matrix-stale{border-radius:6px;font-size:13px}
+.sample-shell .candidate-card,.sample-shell .participant-list label{border-radius:8px;border-color:var(--line)}
+.sample-shell .poll-editor legend{font-size:16px}
+.sample-shell .vote-card h2{font-size:16px}
+.sample-shell .vote-choice{border-radius:8px}
+.sample-shell .vote-choice.chosen{background:#f0eaf7;border-color:var(--brand);color:#60418b}
+.sample-shell .vote-date,.sample-shell .confirmed-time{font-size:20px}
+.sample-shell .matrix-scroll{border-radius:8px}
+.sample-shell .time-matrix th,.sample-shell .time-matrix td{border-color:var(--line)}
+.sample-shell .time-matrix .matrix-me>th,.sample-shell .time-matrix .matrix-me>td{background:#faf8fc}
+.sample-shell .matrix-state.available{background:#f0eaf7;color:#60418b}
+.sample-shell .matrix-person-name .role-badge{background:#f0eaf7;color:#60418b}
+.sample-shell .recommendation-item{border-radius:8px;border-color:var(--line)}
+.sample-shell .recommendation-item.first-ranked{background:#faf8fc;border-color:#c9b7df}
+.sample-shell .ranking-number,.sample-shell .recommendation-score strong{color:var(--brand)}
+.sample-shell .recommendation-time h3{font-size:16px;font-weight:600}
+.sample-shell .meeting-content h3{font-size:15px}
+.sample-shell .task-create{background:#faf8fc;border-color:var(--line);border-radius:8px}
+.sample-shell .poll-organize-dialog,.sample-shell .task-action-dialog,.sample-shell .task-edit-dialog{border-color:var(--line);border-radius:8px}
+@media(max-width:760px){.sample-shell .auth-card,.sample-shell .poll-editor,.sample-shell .notice,.sample-shell .vote-intro,.sample-shell .vote-card,.sample-shell .matrix-progress,.sample-shell .matrix-card,.sample-shell .recommendations-section,.sample-shell .meeting-overview,.sample-shell .meeting-content,.sample-shell .meeting-notes,.sample-shell .task-panel{padding:20px}.sample-shell .auth-story h1{font-size:25px}.sample-shell .vote-date,.sample-shell .confirmed-time{font-size:18px}.sample-shell .group-primary>.task-panel,.sample-shell .workspace main>.personal-task-panel{padding:0}}

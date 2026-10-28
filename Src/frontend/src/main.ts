@@ -6,6 +6,7 @@ import { createSession, sessionKey } from './auth/session'
 import './style.css'
 import './search.css'
 import './sample-layout.css'
+import './workflow-layout.css'
 
 const session = createSession()
 createApp(App).provide(sessionKey, session).use(createApplicationRouter(createWebHistory(), session)).mount('#app')
