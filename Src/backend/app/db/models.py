@@ -156,3 +156,13 @@ tasks = Table('tasks', metadata,
     CheckConstraint("length(client_request_id) = 36 AND substr(client_request_id,9,1) = '-' AND substr(client_request_id,14,1) = '-' AND substr(client_request_id,19,1) = '-' AND substr(client_request_id,24,1) = '-' AND length(replace(client_request_id,'-','')) = 32 AND replace(client_request_id,'-','') NOT GLOB '*[^0-9a-f]*'", name='ck_tasks_request_id'))
 Index('ix_tasks_assignee_status_due', tasks.c.assignee_id, tasks.c.status, tasks.c.due_at)
 Index('ix_tasks_group_created', tasks.c.group_id, tasks.c.created_at)
+
+password_resets = Table('password_resets', metadata,
+    Column('token_hash', Text, primary_key=True),
+    Column('user_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
+    Column('created_at', Integer, nullable=False),
+    Column('expires_at', Integer, nullable=False),
+    Column('used_at', Integer),
+    CheckConstraint('length(token_hash) = 64', name='ck_reset_hash'),
+    CheckConstraint('expires_at > created_at', name='ck_reset_expiry'))
+Index('ix_password_resets_user_created', password_resets.c.user_id, password_resets.c.created_at)

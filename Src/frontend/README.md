@@ -88,3 +88,5 @@ npm run check:auth
 工作台验证：`node browser.check.mjs --built --dashboard`，当前306项前端测试通过。登录默认工作台，有效返回位置不变；见[49号记录](../../Docs/49-工作台汇总与页面验证.md)。
 
 紫色样稿接入与搜索回归：`node browser.check.mjs --built --search-theme --acceptance`，当前310项前端测试通过。sample-layout.css映射V2-02样稿布局，workflow-layout.css统一其余流程的卡片与控件；保留style.css与组件中的操作布局，搜索控件在search.css维护，结果见[50号记录](../../Docs/50-搜索筛选与全站界面整理.md)。
+
+找回密码：/forgot-password、/reset-password；313项前端测试通过。新增流程检查node browser.check.mjs --built --password-reset，可组合--acceptance；SMTP未配置显示暂未开放，不会假报发信。见[51号记录](../../Docs/51-本地发布准备与账户防护.md)。

@@ -37,7 +37,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title='MeetFlow', version='0.1.0', lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url='/openapi.json')
     app.state.settings = config
-    app.add_middleware(RequestContextMiddleware)
+    app.add_middleware(RequestContextMiddleware, settings=config)
 
     @app.exception_handler(ApiError)
     async def api_error(request: Request, error: ApiError):

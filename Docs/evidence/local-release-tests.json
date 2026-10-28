@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-28",
+  "backend_full": {
+    "passed": 658,
+    "elapsed_seconds": 350.25
+  },
+  "backend_followup_auth_and_race": {
+    "passed": 75,
+    "elapsed_seconds": 19.25
+  },
+  "frontend": {
+    "passed": 313,
+    "build": "passed"
+  },
+  "smtp_delivery": "simulated only",
+  "public_deployment": false
+}

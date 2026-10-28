@@ -43,10 +43,10 @@ def add_group(connection, **changes):
 def test_fresh_migration_has_implemented_tables_and_matches_model(engine, settings):
     require_current_schema(settings)
     with engine.connect() as connection:
-        assert set(inspect(connection).get_table_names()) == {'users', 'sessions', 'groups', 'group_members', 'polls', 'participants', 'slots', 'votes', 'meetings', 'tasks', 'alembic_version'}
+        assert set(inspect(connection).get_table_names()) == {'users', 'sessions', 'groups', 'group_members', 'polls', 'participants', 'slots', 'votes', 'meetings', 'tasks', 'password_resets', 'alembic_version'}
         context = MigrationContext.configure(connection, opts={'compare_type': True, 'compare_server_default': True})
         assert compare_metadata(context, metadata) == []
-        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0007_task_updates'
+        assert connection.exec_driver_sql('SELECT version_num FROM alembic_version').scalar_one() == '0008_password_resets'
         assert connection.execute(select(users)).all() == []
 
 

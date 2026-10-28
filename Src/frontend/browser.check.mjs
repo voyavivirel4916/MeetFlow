@@ -219,6 +219,16 @@ try {
     const {verifySearchTheme}=await import('./search-theme.browser.mjs');
     await verifySearchTheme(browser,origin,{root});
   }
+  if(process.argv.includes('--password-reset')){
+    const {verifyPasswordReset}=await import('./password-reset.browser.mjs');
+    const issueReset=email=>{
+      const result=spawnSync(python,['-c',"import sys; from app.common.config import load_settings; from app.db.connection import database_path,make_engine; from app.auth.reset import issue; e=make_engine(database_path(load_settings())); print(issue(e,sys.argv[1])); e.dispose()",email],{...backendOptions,encoding:'utf8',timeout:15000});
+      assert.equal(result.status,0,'Temporary reset fixture failed');
+      assert.match(result.stdout.trim(),/^[A-Za-z0-9_-]{43}$/);
+      return result.stdout.trim();
+    };
+    await verifyPasswordReset(browser,origin,{root,issueReset});
+  }
   if(process.argv.includes('--dashboard')){
     const {verifyDashboard}=await import('./dashboard.browser.mjs');
     await verifyDashboard(browser,origin,{root});
@@ -242,7 +252,7 @@ try {
   console.log(`PASS ${built ? 'T08 built same-origin' : 'T06 development proxy'}: direct routes/reload, real database health, live 503/recovery, structured 404, success/error/loading, no duplicate request, keyboard, 6 window widths, no external requests or local storage.`);
   if(process.argv.includes('--acceptance')){
     const folder=resolve(root,'Docs/evidence');await mkdir(folder,{recursive:true});
-    await writeFile(resolve(folder,`${process.argv.includes('--search-theme')?'workflow-theme-acceptance':'t32'}-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
+    await writeFile(resolve(folder,`${process.argv.includes('--password-reset')?'local-release-acceptance':process.argv.includes('--search-theme')?'workflow-theme-acceptance':'t32'}-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({started_at:startedAt,finished_at:new Date().toISOString(),elapsed_seconds:(performance.now()-startedClock)/1000,browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),platform:process.platform,architecture:process.arch,node:process.version,mode:built?'built same-origin':'development proxy',suites:acceptanceFlags,result:'passed',database:'isolated temporary database; removed after run',human_review:false},null,2)+'\n');
   }
 } finally {
   if (browser) await browser.close();

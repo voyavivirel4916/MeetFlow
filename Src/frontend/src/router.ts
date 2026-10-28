@@ -11,6 +11,7 @@ import MatrixPage from './views/MatrixPage.vue'
 import MeetingPage from './views/MeetingPage.vue'
 import TasksPage from './views/TasksPage.vue'
 import DashboardPage from './views/DashboardPage.vue'
+import ResetPasswordPage from './views/ResetPasswordPage.vue'
 import { onUnauthorized } from './api/client'
 import type { Session } from './auth/session'
 import { safeReturnPath } from './navigation'
@@ -33,6 +34,8 @@ export const routes: RouteRecordRaw[] = [
   {path:'/tasks/mine',component:TasksPage,meta:{title:'我的任务',requiresAuth:true}},
   { path: '/login', name: 'login', component: AuthPage, props: { registering: false }, meta: { title: '登录', authPage: true } },
   { path: '/register', name: 'register', component: AuthPage, props: { registering: true }, meta: { title: '注册', authPage: true } },
+  { path: '/forgot-password', component: ResetPasswordPage, meta: {title:'找回密码'} },
+  { path: '/reset-password', component: ResetPasswordPage, props:{resetting:true}, meta: {title:'设置新密码'} },
   { path: '/session-check', name: 'session-check', component: SessionCheckPage, meta: { title: '确认登录状态' } },
   { path: '/connection', component: ConnectionPage, meta: { title: '连接检查' } },
   page('/:pathMatch(.*)*', '找不到这个页面', '请检查地址，或返回我的小组。'),

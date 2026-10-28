@@ -151,6 +151,7 @@ async function submit() {
         </fieldset>
       </form>
       <p class="auth-switch">{{ registering ? '已经有账号？' : '还没有账号？' }} <RouterLink :to="{ name: registering ? 'login' : 'register', query: links }">{{ registering ? '去登录' : '创建账号' }}</RouterLink></p>
+      <p v-if="!registering" class="form-help"><RouterLink to="/forgot-password">忘记密码？</RouterLink></p>
       <p v-if="dirty" class="form-help">输入尚未提交，离开页面后会清空。</p>
     </section>
   </div>

@@ -16,7 +16,9 @@ def main() -> int:
         return 2
     logging.basicConfig(level=settings.log_level, format='%(levelname)s %(name)s %(message)s')
     uvicorn.run(create_app(settings), host=settings.bind_host, port=settings.port,
-                workers=1, access_log=False, log_config=None)
+                workers=1, access_log=False, log_config=None,
+                proxy_headers=bool(settings.trusted_proxies),
+                forwarded_allow_ips=','.join(settings.trusted_proxies))
     return 0
 
 

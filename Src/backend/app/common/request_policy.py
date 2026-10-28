@@ -26,10 +26,10 @@ def same_origin(origin: str, scheme: str, host: str) -> bool:
 def policy_error(scope, headers: Headers):
     origins = headers.getlist('origin')
     if origins and (len(origins) != 1 or not same_origin(origins[0], scope['scheme'], headers.get('host', ''))):
-        return 403, 'CSRF_REJECTED', '请求来源不受支持，请从本机页面操作。'
+        return 403, 'CSRF_REJECTED', '请求来源不受支持，请从本站页面操作。'
     fetch_site = headers.get('sec-fetch-site')
     if fetch_site is not None and fetch_site not in {'same-origin', 'none'}:
-        return 403, 'CSRF_REJECTED', '请求来源不受支持，请从本机页面操作。'
+        return 403, 'CSRF_REJECTED', '请求来源不受支持，请从本站页面操作。'
     if scope['method'] in WRITE_METHODS:
         if headers.get('content-type', '').split(';')[0].strip().lower() != 'application/json':
             return 400, 'INVALID_INPUT', '写入请求须使用application/json。'

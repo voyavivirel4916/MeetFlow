@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-28",
+  "local_only": true,
+  "revision": "0008_password_resets",
+  "pre_update_backup_verified": true,
+  "existing_business_rows_preserved": true,
+  "recovery_into_separate_directory": true,
+  "recovery_sessions_revoked": true,
+  "health": "ok",
+  "smtp_configured": false,
+  "public_deployed": false
+}

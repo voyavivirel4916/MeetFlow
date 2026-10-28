@@ -51,6 +51,10 @@ def login(engine, data: LoginIn, current_token: str | None) -> tuple[UserOut, st
     old_digest = token_digest(current_token)
     with write_transaction(engine) as connection:
         now = clock.now_ms()
+        # A concurrent password reset may have changed credentials after verification.
+        current_hash = connection.execute(select(users.c.password_hash).where(users.c.id == account['id'])).scalar_one_or_none()
+        if current_hash != account['password_hash']:
+            raise ApiError(401, 'UNAUTHENTICATED', '用户名或密码错误。')
         connection.execute(insert(sessions).values(user_id=account['id'], token_hash=token_digest(token),
             created_at=now, expires_at=now + SESSION_SECONDS * 1000))
         if old_digest:
