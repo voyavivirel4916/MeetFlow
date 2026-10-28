@@ -74,27 +74,27 @@ async function submit() {
 </script>
 
 <template>
-  <section class="group-heading"><div><h1>我的小组</h1><p class="muted">创建小组，或使用邀请码加入。</p></div><button class="secondary" :disabled="loading || pending" @click="load()">{{ loading ? '正在读取…' : '刷新列表' }}</button></section>
+  <section class="group-heading"><div><p class="eyebrow">MEETFLOW / 从这里一起开始</p><h1>我的小组</h1><p class="muted">把分散的时间，拼成共同的下一步。</p></div><button class="secondary" :disabled="loading || pending" @click="load()">{{ loading ? '正在读取…' : '刷新列表' }}</button></section>
   <div class="groups-layout">
     <section class="groups-list" aria-label="我的小组列表" :aria-busy="loading">
       <StateNotice v-if="loading && !saved" kind="loading" title="正在读取小组" message="请稍候，你的小组马上呈现。" />
       <StateNotice v-if="readError" kind="error" title="小组列表暂时无法读取" :message="readError.message" :request-id="readError.requestId"><button :disabled="loading" @click="load()">重新读取</button></StateNotice>
       <p v-if="saved && (loading || readError)" class="muted">下方保留上次读取的内容，请重新读取后再提交。</p>
       <template v-if="saved">
-        <p class="list-count">共 {{ saved.total }} 个小组 </p>
-        <StateNotice v-if="!saved.items.length && !loading && !readError" kind="empty" :title="saved.total ? '这一页还没有小组' : '尚未加入小组'" message="创建一个课程小组，或用负责人分享的邀请码加入。" />
+        <p class="list-count">共 {{ saved.total }} 个小组 <span>每个小组，都是一块新的拼图</span></p>
+        <StateNotice v-if="!saved.items.length && !loading && !readError" kind="empty" :title="saved.total ? '这一页还没有小组' : '你的第一块拼图，还在等你'" message="创建一个课程小组，或用负责人分享的邀请码加入。" />
         <article v-for="(group, index) in saved.items" :key="group.id" class="group-card">
           <div class="group-card-top"><span class="puzzle-label" aria-hidden="true">{{ String((saved.page - 1) * 20 + index + 1).padStart(2, '0') }}</span><span class="role-badge">{{ group.owner_id === session.state.user?.id ? '负责人' : '成员' }}</span></div>
-          <h2><RouterLink :to="`/groups/${group.id}`">{{ group.name }}</RouterLink></h2><p class="group-preview">{{ group.description || '暂无小组说明。' }}</p>
+          <h2><RouterLink :to="`/groups/${group.id}`">{{ group.name }}</RouterLink></h2><p class="group-preview">{{ group.description || '从一次讨论开始，慢慢把想法变成行动。' }}</p>
           <div class="group-card-bottom"><span>{{ group.member_count }} / 20 位成员</span><RouterLink :to="`/groups/${group.id}`">进入小组 <span aria-hidden="true">↗</span></RouterLink></div>
         </article>
         <nav v-if="pages > 1 || saved.page > 1" class="pagination" aria-label="小组分页"><button class="secondary" :disabled="loading || pending || saved.page <= 1" @click="load(saved.page - 1)">上一页</button><span>第 {{ saved.page }} / {{ pages }} 页</span><button class="secondary" :disabled="loading || pending || saved.page >= pages" @click="load(saved.page + 1)">下一页</button></nav>
       </template>
     </section>
     <section class="group-form-card" :aria-busy="pending">
-
+      <p class="eyebrow">把伙伴聚在一起</p>
       <div class="mode-switch" aria-label="选择小组操作"><button type="button" :aria-pressed="mode === 'create'" :disabled="pending" @click="changeMode('create')">创建小组</button><button type="button" :aria-pressed="mode === 'join'" :disabled="pending" @click="changeMode('join')">邀请码加入</button></div>
-      <h2>{{ mode === 'create' ? '创建小组' : '加入小组' }}</h2><p class="muted">{{ mode === 'create' ? '你将成为负责人。创建后可复制邀请码给同学。' : '输入负责人分享的12位邀请码，加入后即可查看小组。' }}</p>
+      <h2>{{ mode === 'create' ? '留一处，一起协作' : '找到你的伙伴' }}</h2><p class="muted">{{ mode === 'create' ? '你将成为负责人。创建后可复制邀请码给同学。' : '输入负责人分享的12位邀请码，加入后即可查看小组。' }}</p>
       <section v-if="message" ref="summary" class="form-summary" :class="{ uncertain }" role="alert" tabindex="-1"><p>{{ message }}</p><ul><template v-for="(error, field) in errors" :key="field"><li v-if="error"><button class="text-button" type="button" @click="focusField(field)">{{ error }}</button></li></template></ul><small v-if="writeError?.requestId">请求编号：{{ writeError.requestId }}</small>
         <template v-if="uncertain"><p>{{ mode === 'create' ? '请查看列表，找到后进入小组核对。名称可能重复，不能仅凭同名确定创建结果；再次提交可能产生重复小组。' : '请查看列表核对。再次加入同一小组不会产生重复成员。' }}</p><button class="secondary" :disabled="loading" @click="load(1)">核对小组列表</button><label v-if="checked" class="retry-check"><input v-model="acknowledged" type="checkbox">{{ mode === 'create' ? '我已核对，仍需重新提交创建（可能重复）' : '我已核对，仍需再次提交加入' }}</label></template>
       </section>

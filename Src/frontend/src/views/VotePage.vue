@@ -92,7 +92,7 @@ const label = (value: string) => options.find(option => option.value === value)?
 
 <template>
   <RouterLink class="back-link" :to="poll ? `/groups/${poll.group_id}` : '/groups'">← 返回小组</RouterLink>
-  <section class="group-heading"><div><h1>填写时间</h1><p class="muted">选择每个候选时段的空闲状态。</p></div><button class="secondary" :disabled="loading || pending" @click="recovery || needsAck ? load(true) : reload()">{{ loading ? '正在读取…' : '重新读取填写' }}</button></section>
+  <section class="group-heading"><div><p class="eyebrow">MEETFLOW / 拼出共同的时间</p><h1>填写时间</h1><p class="muted">让大家知道，你在哪些时间可以一起参与。</p></div><button class="secondary" :disabled="loading || pending" @click="recovery || needsAck ? load(true) : reload()">{{ loading ? '正在读取…' : '重新读取填写' }}</button></section>
   <StateNotice v-if="loading && !poll" kind="loading" title="正在读取候选时间" message="正在读取排期和你已保存的选择。" />
   <StateNotice v-if="readError" kind="error" :title="readError.status === 404 ? '未找到可访问的排期' : '填写结果暂时无法读取'" :message="readError.message" :request-id="readError.requestId"><button :disabled="loading || pending" @click="load(recovery || needsAck || dirty)">重新读取结果</button></StateNotice>
   <p v-if="success" class="success-note" role="status">{{ success }}</p>

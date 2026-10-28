@@ -4,7 +4,7 @@ import { createWebHistory } from 'vue-router'
 import { createApplicationRouter } from './router'
 import { createSession, sessionKey } from './auth/session'
 import './style.css'
-import './theme.css'
+import './search.css'
 
 const session = createSession()
 createApp(App).provide(sessionKey, session).use(createApplicationRouter(createWebHistory(), session)).mount('#app')

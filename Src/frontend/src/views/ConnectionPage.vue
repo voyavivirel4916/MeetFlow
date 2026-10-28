@@ -18,7 +18,7 @@ async function check() {
 }
 </script>
 <template>
-  <h1>连接检查</h1>
+  <p class="eyebrow">MEETFLOW / 工程检查</p><h1>连接检查</h1>
   <StateNotice :kind="state" :title="state === 'success' ? '连接成功' : state === 'error' ? '连接失败' : '本机服务'" :message="message" :request-id="requestId">
     <button :disabled="state === 'loading'" @click="check">{{ state === 'loading' ? '正在检查…' : '检查连接' }}</button>
   </StateNotice>

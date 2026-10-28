@@ -33,7 +33,7 @@ export async function verifySearchTheme(browser,origin,{root}){
   await search.getByRole('button',{name:'清除',exact:true}).click();await pollReady(page);assert.equal(await page.locator('.poll-list>li').count(),3);
   const taskSearch=page.getByRole('search',{name:'任务搜索',exact:true});await taskSearch.getByRole('searchbox').fill(keyword);await taskSearch.getByRole('button',{name:'搜索',exact:true}).click();await taskReady(page);assert.equal(await page.locator('.task-list>li').count(),1);
   await taskSearch.getByRole('button',{name:'清除',exact:true}).click();await taskReady(page);assert.equal(await page.locator('.task-list>li').count(),2);
-  const folder=resolve(root,'Docs/images/v2-15');await mkdir(folder,{recursive:true});
+  const folder=resolve(root,'Docs/images/ui-restored');await mkdir(folder,{recursive:true});
   const paths={dashboard:'/dashboard',group:`/groups/${group.id}`,tasks:'/tasks/mine',vote:`/polls/${poll.id}/vote`,matrix:`/polls/${poll.id}/results`,meeting:`/meetings/${meeting.id}`};
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});
@@ -45,7 +45,7 @@ export async function verifySearchTheme(browser,origin,{root}){
     if(name==='matrix')await page.locator('.time-matrix').waitFor();
     if(name==='vote')await page.locator('.vote-card').waitFor();
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${name}/${width} overflow`);
-    assert.equal(await page.locator('.eyebrow').count(),0);
+    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).fontSize),'16px');
     await page.evaluate(()=>{if(document.activeElement instanceof HTMLElement)document.activeElement.blur()});
     await page.screenshot({path:resolve(folder,`${name}-${width}.png`),fullPage:true});
    }
@@ -55,12 +55,12 @@ export async function verifySearchTheme(browser,origin,{root}){
   await page.locator('.task-edit-dialog').screenshot({path:resolve(folder,'task-editor-390.png')});
   await page.locator('.task-edit-dialog').getByRole('button',{name:'取消编辑',exact:true}).click();
   await page.goto(groupUrl);await pollReady(page);await page.setViewportSize({width:1440,height:1000});
-  const positions=await page.evaluate(()=>({poll:document.querySelector('.poll-list-card').getBoundingClientRect().x,member:document.querySelector('.members-card').getBoundingClientRect().x}));assert.ok(positions.member>positions.poll);
+  const positions=await page.evaluate(()=>({poll:document.querySelector('.poll-list-card').getBoundingClientRect().y,member:document.querySelector('.members-card').getBoundingClientRect().y}));assert.ok(positions.member<positions.poll);
   for(let i=0;i<21;i++)await post(owner,`meetings/${meeting.id}/tasks`,taskBody('分页任务'+i));
   await page.getByRole('button',{name:'刷新任务',exact:true}).click();await taskReady(page);await page.getByRole('button',{name:'下一页任务',exact:true}).click();await taskReady(page);
   const form=page.getByRole('search',{name:'任务搜索',exact:true});await form.getByRole('searchbox').fill(keyword);await form.getByRole('button',{name:'搜索',exact:true}).click();await taskReady(page);assert.equal(await page.locator('.task-list>li').count(),1);assert.equal(await page.getByRole('button',{name:'上一页任务',exact:true}).count(),0);
   const context=await browser.newContext({viewport:{width:390,height:844}});contexts.push(context);const login=await context.newPage();await login.goto(origin+'/login');await login.getByRole('heading',{name:'欢迎回来',exact:true}).waitFor();assert.ok(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await login.screenshot({path:resolve(folder,'login-390.png'),fullPage:true});
   assert.deepEqual(errors,[]);
-  const evidence={date:new Date().toISOString(),browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),checks:['literal-special-character-search','view-and-query-combination','task-search-before-pagination','clear-query','right-side-members','six-pages-two-viewports','mobile-login'],result:'passed',temporary_database:true,human_review:false};await mkdir(resolve(root,'Docs/evidence'),{recursive:true});await writeFile(resolve(root,`Docs/evidence/v2-15-${evidence.browser}.json`),JSON.stringify(evidence,null,2)+'\n');console.log('PASS V2-14/15 search and compact theme');
+  const evidence={date:new Date().toISOString(),browser:process.env.PROTOTYPE_BROWSER||'chrome',version:browser.version(),checks:['literal-special-character-search','view-and-query-combination','task-search-before-pagination','clear-query','restored-members-above-polls','six-pages-two-viewports','mobile-login'],result:'passed',temporary_database:true,human_review:false};await mkdir(resolve(root,'Docs/evidence'),{recursive:true});await writeFile(resolve(root,`Docs/evidence/ui-restored-${evidence.browser}.json`),JSON.stringify(evidence,null,2)+'\n');console.log('PASS restored interface with search retained');
  }finally{for(const c of contexts)await c.close()}
 }

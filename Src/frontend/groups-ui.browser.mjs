@@ -30,7 +30,7 @@ export async function verifyGroupsUI(browser, origin, { root, screenshots }) {
     const page = owner.page;
     await page.goto(origin + '/groups');
     await ready(page);
-    await heading(page, '尚未加入小组');
+    await heading(page, '你的第一块拼图，还在等你');
     await shot(page, '03-empty');
     await submit(page).click();
     await page.locator('.form-summary[role="alert"]').waitFor();

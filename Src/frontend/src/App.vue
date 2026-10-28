@@ -29,13 +29,14 @@ async function logout() {
   <a class="skip" href="#content">跳到主要内容</a>
   <div class="shell">
     <aside>
-      <RouterLink class="brand" to="/dashboard"><span class="mark" aria-hidden="true">m</span><span>MeetFlow</span></RouterLink>
+      <RouterLink class="brand" to="/dashboard"><span class="mark" aria-hidden="true">m</span><span>MeetFlow<small>凑时 · 小组协作</small></span></RouterLink>
       <nav aria-label="主导航">
         <RouterLink to="/dashboard">工作台</RouterLink>
-        <RouterLink to="/groups">我的小组</RouterLink>
-        <RouterLink to="/tasks/mine">我的待办</RouterLink>
+        <RouterLink to="/groups">▦ 我的小组</RouterLink>
+        <RouterLink to="/tasks/mine">✓ 我的待办</RouterLink>
+        <RouterLink to="/connection">↗ 连接检查</RouterLink>
       </nav>
-      <div class="sidebar-bottom"><RouterLink class="sidebar-utility" to="/connection">连接检查</RouterLink><div v-if="session.state.user" class="sidebar-account"><span class="sidebar-avatar" aria-hidden="true">{{session.state.user.username.slice(0,1).toUpperCase()}}</span><div>{{session.state.user.username}}<small>个人空间</small></div></div></div>
+      <p class="aside-note">从找到共同时间，<br>到完成下一件事。</p>
     </aside>
     <div class="workspace">
       <header><span>{{ route.meta.requiresAuth ? '工作空间' : 'MeetFlow' }} / {{ route.meta.title || '正在读取' }}</span>

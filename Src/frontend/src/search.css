@@ -1,0 +1,7 @@
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.list-toolbar .poll-view-tabs{margin-bottom:12px}
+.list-search{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.list-search input{font:inherit;min-width:0;width:180px;max-width:100%;min-height:44px;padding:8px 10px;border:1px solid #bbb7d0;border-radius:10px;color:inherit;background:#fff}
+.list-search button{padding:8px 12px;min-height:44px}
+.task-search{margin:12px 0 20px}
+@media(max-width:600px){.list-search{width:100%}.list-search input{flex:1;width:auto;min-width:100px}}

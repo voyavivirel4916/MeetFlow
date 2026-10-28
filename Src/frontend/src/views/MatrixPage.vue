@@ -57,7 +57,7 @@ onBeforeUnmount(() => controller?.abort())
 
 <template>
   <RouterLink class="back-link" :to="poll ? `/groups/${poll.group_id}` : '/groups'">← 返回小组</RouterLink>
-  <section class="group-heading"><div><h1>排期结果</h1><p class="muted">比较候选时间、查看推荐与成员填写情况。</p></div><button class="secondary" :disabled="loading" @click="refresh">{{ loading ? '正在刷新…' : '刷新' }}</button></section>
+  <section class="group-heading"><div><p class="eyebrow">MEETFLOW / 拼出共同的时间</p><h1>排期结果</h1><p class="muted">看看大家的时间，找到可以一起讨论的可能。</p></div><button class="secondary" :disabled="loading" @click="refresh">{{ loading ? '正在刷新…' : '刷新' }}</button></section>
   <StateNotice v-if="loading && !matrix" kind="loading" title="正在读取时间矩阵" message="正在核对大家已保存的填写结果。" />
   <StateNotice v-if="error" kind="error" :title="[403,404].includes(error.status || 0) ? '未找到可访问的排期' : '排期结果暂时无法读取'" :message="error.message" :request-id="error.requestId"><button :disabled="loading" @click="refresh">重新读取矩阵</button></StateNotice>
   <p v-if="matrix && (loading || error)" class="matrix-stale" role="status">下方保留上次读取的结果，请刷新成功后再核对。</p>
