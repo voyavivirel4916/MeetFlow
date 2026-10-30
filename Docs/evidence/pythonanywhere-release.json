@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-30",
+  "public_probe": {
+    "url": "https://mrrrxxxi.pythonanywhere.com/",
+    "status": 200,
+    "project": "MeetFlow deployment probe"
+  },
+  "archive": "meetflow-pythonanywhere.zip",
+  "sha256": "888a03580ffac3da9d3f414d2705f94580d685ebc9a6263099e1364798735a34",
+  "bytes": 180646,
+  "allowlisted_archive": true,
+  "no_local_database_or_secrets": true,
+  "extracted_production_config_migration_and_runtime_check": "passed",
+  "linux_python313_locked_wheels": "downloaded and hash-verified",
+  "production_site_replaced": false
+}
