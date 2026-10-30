@@ -24,6 +24,8 @@ def build(output, root=ROOT):
             files['frontend/dist/' + source.relative_to(frontend).as_posix()] = source
     files['install.py'] = root / 'Deploy/pythonanywhere/install.py'
     files['DEPLOY.md'] = root / 'Deploy/pythonanywhere/README.md'
+    for name in ['WSGI.md', 'requirements-wsgi.txt']:
+        files[name] = root / 'Deploy/pythonanywhere' / name
     if any(source.is_symlink() or not source.resolve().is_relative_to(root.resolve()) for source in files.values()):
         raise ValueError('Release source must be a regular file inside the workspace.')
     output = Path(output)

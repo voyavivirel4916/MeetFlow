@@ -1,5 +1,7 @@
 # PythonAnywhere 首次部署
 
+**2026-10-30实测更新：下面的ASGI首次部署路径在当前账号遇到平台协议转发问题，完整站点尚不可用。不要重复安装或关闭HTTPS校验；已准备[常规Web/WSGI备用方案](WSGI.md)，先确认账号Web页面功能再切换。下文保留作为原部署和回退记录。**
+
 适用：已创建并运行 meetflow-probe，原网站命令指向 ~/meetflow-probe/probe.py，使用 ~/meetflow-probe/venv。安装不购买资源、不读取平台令牌、不上传本机数据库，不包含演示账号或SMTP凭据。
 
 1. 在 Files 页面将 meetflow-pythonanywhere.zip 上传到 /home/mrrrxxxi。

@@ -4,6 +4,10 @@
 #
 #    pip-compile --find-links=.venv/wheelhouse-t09 --generate-hashes --no-emit-find-links --no-emit-index-url --no-index --output-file=requirements-dev.txt --strip-extras requirements-dev.in
 #
+a2wsgi==1.10.10 \
+    --hash=sha256:d2b21379479718539dc15fce53b876251a0efe7615352dfe49f6ad1bc507848d \
+    --hash=sha256:a5bcffb52081ba39df0d5e9a884fc6f819d92e3a42389343ba77cbf809fe1f45
+    # via -r ../../Deploy/pythonanywhere/requirements-wsgi.txt
 alembic==1.20.1 \
     --hash=sha256:83490def1f723413db5096591f7609ac52544805be93849170088ed04f5a2e0b \
     --hash=sha256:9970712cfb81ea26c8658d378aaa5b8f6ff9146e5bb111d70497c164016cf598

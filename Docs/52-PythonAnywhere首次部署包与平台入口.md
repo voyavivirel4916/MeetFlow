@@ -36,3 +36,13 @@ PythonAnywhere把HTTP请求通过DOMAIN_SOCKET交给Uvicorn。通用TCP可信代
 入口增加失败诊断：仅返回ASGI协议和七种常见协议头的固定枚举分类；未知值统一other，不回传Cookie、Authorization、IP或任意原始头值。仍拒绝非HTTPS或模糊协议，未增加可信头和放宽传输边界。38项后端专项通过，包括敏感字段不泄露及错误响应禁止缓存。
 
 下一步只更新远端backend/app/hosting.py并重载，采集错误details中的协议分类。首次安装脚本不能重复执行，不覆盖.env、生产数据库和probe.py备份。确认平台信号之后，再决定兼容适配或部署路径调整；旧ZIP仍为原始首次发布包，未悄悄替换其中内容。
+
+## 实际协议结果与备用入口
+
+用户回传诊断，随后独立实测公网HTTP和HTTPS地址，均返回scheme=http、X-Forwarded-Proto=http。现有ASGI通道没有提供可区分两者的已知可信信号；保留拒绝策略，不能把所有平台请求直接认定为HTTPS。
+
+增加可选[hosting_wsgi.py](../Src/backend/app/hosting_wsgi.py)，通过a2wsgi 1.10.10使用平台常规Web服务的服务器协议环境。版本及发布包哈希在[可选锁文件](../Deploy/pythonanywhere/requirements-wsgi.txt)中固定，开发依赖同步包含它。工厂显式执行原lifespan的全部运行检查；客户端IP仅取平台保证的末项，Host、来源、HTTPS和Cookie策略不变。原ASGI及本地入口不切换。
+
+[准备和切换步骤](../Deploy/pythonanywhere/WSGI.md)要求先确认账号有常规Web及匹配Python版本，再备份并切换；现阶段不删除网站、不覆盖生产.env和数据库。此入口本地验证不等于平台已经可用，公网登录、静态资源及重载持久性仍待验收。
+
+本轮44项后端专项、40项仓库检查通过。新增覆盖服务器协议、伪造HTTPS头拒绝、注册登录、安全Cookie、静态资源与深链接、来源与Host、末项IP限流，以及重建应用工厂后账号和会话保留。开发锁文件离线安装预检通过；可选依赖安装包按哈希校验。后续发布包会包含备用方案说明和适配锁文件，先前交付的旧ZIP未覆盖。

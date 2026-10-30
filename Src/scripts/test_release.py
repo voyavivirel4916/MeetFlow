@@ -17,13 +17,16 @@ class ReleaseTests(unittest.TestCase):
             fixtures=['Src/backend/app/main.py','Src/backend/migrations/env.py','Src/backend/requirements.txt',
                 'Src/frontend/dist/index.html','Src/frontend/dist/assets/app.js','Deploy/pythonanywhere/install.py',
                 'Deploy/pythonanywhere/README.md','Src/backend/.env','Src/backend/data/private.sqlite3',
+                'Deploy/pythonanywhere/WSGI.md','Deploy/pythonanywhere/requirements-wsgi.txt',
                 'Src/backend/.venv/private.py','Src/frontend/dist/.env','Src/frontend/dist/assets/private.sqlite3']
             for name in fixtures:
                 path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('fixture')
             output=root/'release.zip';build(output,root)
             with zipfile.ZipFile(output) as bundle:
                 names=bundle.namelist()
-                self.assertEqual(len(names),7)
+                self.assertEqual(len(names),9)
+                self.assertIn('meetflow-release/WSGI.md',names)
+                self.assertIn('meetflow-release/requirements-wsgi.txt',names)
                 self.assertFalse(any('.env' in name or '.sqlite3' in name or '.venv' in name for name in names))
             before=output.read_bytes()
             with self.assertRaises(FileExistsError):build(output,root)
