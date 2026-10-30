@@ -28,3 +28,11 @@ PythonAnywhere把HTTP请求通过DOMAIN_SOCKET交给Uvicorn。通用TCP可信代
 实际ZIP解压到临时目录后，生成独立生产配置、新库迁移及validate_runtime均通过，原探针文件不变。Linux x86_64/Python3.13的22个锁定依赖轮子已下载并按锁定哈希验证；平台pip安装结果仍待实际执行。[原始结果](evidence/pythonanywhere-release.json)。
 
 本轮未替换公网网站，当前仍为最小探针。下一步：用户上传ZIP并执行安装/重载 → 验证HTTPS、静态资源、注册登录、深链接及Host/来源边界 → 在两次平台重载前后核对测试数据 → 再接入真实邮件及人工试用。若失败，恢复原probe.py备份并重载，保留生产库排查。
+
+## 首次上传后的HTTPS阻断排查
+
+用户上传完整包并重载后，HTTPS页面返回HTTPS_REQUIRED，说明请求已进入专用入口，但不满足唯一X-Forwarded-Proto=https的假设。平台真实协议头尚未采集，不能宣称部署完成。[官方论坛同类ASGI问题](https://www.pythonanywhere.com/forums/topic/36596/)也说明TLS终止后应用识别协议可能受平台转发限制。
+
+入口增加失败诊断：仅返回ASGI协议和七种常见协议头的固定枚举分类；未知值统一other，不回传Cookie、Authorization、IP或任意原始头值。仍拒绝非HTTPS或模糊协议，未增加可信头和放宽传输边界。38项后端专项通过，包括敏感字段不泄露及错误响应禁止缓存。
+
+下一步只更新远端backend/app/hosting.py并重载，采集错误details中的协议分类。首次安装脚本不能重复执行，不覆盖.env、生产数据库和probe.py备份。确认平台信号之后，再决定兼容适配或部署路径调整；旧ZIP仍为原始首次发布包，未悄悄替换其中内容。

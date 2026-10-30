@@ -1,4 +1,5 @@
 from copy import deepcopy
+import json
 
 import pytest
 from starlette.testclient import TestClient
@@ -59,6 +60,25 @@ async def test_tcp_or_ambiguous_transport_never_reaches_app(changes):
     await DomainSocketHeaders(endpoint,SOCKET)(scope,None,send)
     assert reached==[]
     assert messages[0]['status']==400
+
+
+@pytest.mark.anyio
+async def test_https_failure_reports_only_safe_protocol_classifications():
+    messages=[]
+    async def endpoint(*args):pytest.fail('HTTPS failure must not reach the app')
+    async def send(message):messages.append(message)
+    scope={'type':'http','scheme':'http','server':(SOCKET,None),'client':None,
+           'headers':[(b'cookie',b'session=private-cookie'),
+                      (b'authorization',b'Bearer private-token'),
+                      (b'x-forwarded-ssl',b'on'),
+                      (b'x-url-scheme',b'private-value')]}
+    await DomainSocketHeaders(endpoint,SOCKET)(scope,None,send)
+    body=json.loads(messages[1]['body'])
+    assert body['error']['details']=={
+        'scheme':'http', 'protocol_headers':{'x-forwarded-ssl':['on'],'x-url-scheme':['other']}}
+    assert b'private' not in messages[1]['body']
+    assert messages[0]['status']==400
+    assert (b'cache-control',b'no-store') in messages[0]['headers']
 
 
 def test_real_production_login_and_limit_behind_uds(settings):
