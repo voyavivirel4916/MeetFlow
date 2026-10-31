@@ -6,8 +6,9 @@ import {resolve} from 'node:path';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH||'playwright');
 const origin=process.env.MEETFLOW_SHOWCASE_ORIGIN||'http://localhost:8001';
-assert.equal(origin,'http://localhost:8001','Use only the dedicated local showcase.');
-const root=resolve(import.meta.dirname,'../..'),folder=resolve(root,'Docs/images/v2-showcase');
+assert.ok(['http://localhost:8001','http://localhost:8002'].includes(origin),'Use only a dedicated local showcase.');
+const artifact=origin.endsWith(':8002')?'local-rehearsal':'v2-showcase';
+const root=resolve(import.meta.dirname,'../..'),folder=resolve(root,'Docs/images/'+artifact);
 await mkdir(folder,{recursive:true});
 const browser=await chromium.launch({channel:process.env.PROTOTYPE_BROWSER||'chrome',headless:true});
 const context=await browser.newContext(),page=await context.newPage(),errors=[];
@@ -41,6 +42,6 @@ try{
   await page.getByRole('navigation',{name:'任务分类',exact:true}).getByRole('button',{name:label,exact:true}).click();await ready();assert.equal(await page.locator('.task-list>li').count(),1);
  }
  assert.deepEqual(errors,[]);
- await writeFile(resolve(root,`Docs/evidence/v2-showcase-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({date:new Date().toISOString(),result:'passed',demo_only:true,origin,groups:2,polls:9,meetings:3,tasks:10,checks:['real-login','dashboard-counts','history-and-trash','completed-and-cancelled','1440-and-390-no-overflow']},null,2)+'\n');
+ await writeFile(resolve(root,`Docs/evidence/${artifact}-${process.env.PROTOTYPE_BROWSER||'chrome'}.json`),JSON.stringify({date:new Date().toISOString(),result:'passed',demo_only:true,origin,groups:2,polls:9,meetings:3,tasks:10,checks:['real-login','dashboard-counts','history-and-trash','completed-and-cancelled','1440-and-390-no-overflow']},null,2)+'\n');
  console.log('PASS rich V2 showcase: live login, dashboard, poll categories, task states and responsive pages');
 }finally{await context.close();await browser.close();}

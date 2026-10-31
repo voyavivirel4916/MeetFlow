@@ -26,9 +26,11 @@ NOW = to_ms(parse_rfc3339('2026-10-27T00:00:00Z'))
 def setup(owner, other, settings, monkeypatch):
     now = [NOW]
     monkeypatch.setattr(clock, 'now_ms', lambda: now[0])
-    # Keep authentication independent of the controlled business clock.
+    # Sessions were created before this fixture froze the business clock.
+    # Align both timestamps so the fixed expiry never precedes a real-world
+    # creation date as the calendar advances. Production auth is unchanged.
     with sqlite3.connect(database_path(settings)) as connection:
-        connection.execute('UPDATE sessions SET expires_at=?', (NOW + 100_000_000,))
+        connection.execute('UPDATE sessions SET created_at=?, expires_at=?', (NOW, NOW + 100_000_000))
     group = data(create(owner), 201)
     join(other, group['invite_code'])
     return group, now

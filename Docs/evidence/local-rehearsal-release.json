@@ -1,0 +1,13 @@
+{
+  "checked_on": "2026-10-31",
+  "backend": {"command": "python -m pytest -q", "passed": 679, "elapsed_seconds": 353.70},
+  "repository_scripts": {"command": "python -m unittest discover -s Src/scripts -p test_*.py", "passed": 45},
+  "showcase": {"origin": "http://localhost:8002", "presentation_date": "2026-11-02", "response_deadline_beijing": "2026-11-03 10:00"},
+  "browser_showcase": "local-rehearsal-chrome.json",
+  "browser_four_session_workflow": "local-rehearsal-e2e.json",
+  "restart_and_backup": "local-rehearsal-restart.json",
+  "historical_test_fixture_fix": "Controlled session creation and expiry timestamps now use the same clock; production auth was not changed.",
+  "human_usability": "pending manual execution",
+  "public_deployment": "not accepted",
+  "real_email": "not verified"
+}

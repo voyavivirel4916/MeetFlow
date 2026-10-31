@@ -1,0 +1,16 @@
+{
+  "checked_on": "2026-10-31",
+  "origin": "http://localhost:8002",
+  "presentation_date": "2026-11-02",
+  "counts": {
+    "users": 4,
+    "groups": 2,
+    "polls": 9,
+    "meetings": 3,
+    "tasks": 10
+  },
+  "restart_preserved_database_bytes": true,
+  "occupied_port_preserved_database": true,
+  "verified_backup": "Src/backend/data/backups/showcase-20261102-initial.sqlite3",
+  "human_usability": false
+}

@@ -66,3 +66,43 @@ def test_showcase_still_refuses_existing_directory_and_production(settings):
     assert database_path(settings).read_bytes()==before
     settings.app_env='production'
     with pytest.raises(ValueError):seed(settings,showcase=True)
+
+
+def test_showcase_dates_remain_open_on_presentation_day_without_freezing_real_time(settings, monkeypatch):
+    from datetime import date
+    from fastapi.testclient import TestClient
+    from app.common import clock
+    from app.common.times import parse_rfc3339, to_ms
+    from app.main import create_app
+    from app.demo import PASSWORD
+    current=to_ms(parse_rfc3339('2026-10-31T16:30:12+08:00'))
+    monkeypatch.setattr(clock,'now_ms',lambda:current)
+    result=seed(settings,showcase=True,presentation_date=date(2026,11,2))
+    with sqlite3.connect(database_path(settings)) as db:
+        deadline=db.execute('SELECT response_deadline FROM polls WHERE id=?',(result['open_poll_id'],)).fetchone()[0]
+        assert deadline==to_ms(parse_rfc3339('2026-11-03T10:00:00+08:00'))
+        assert db.execute('SELECT created_at FROM polls WHERE id=?',(result['open_poll_id'],)).fetchone()[0]==current
+    current=to_ms(parse_rfc3339('2026-11-02T23:59:00+08:00'))
+    with TestClient(create_app(settings),base_url='http://127.0.0.1') as client:
+        assert client.post('/api/v1/auth/login',json={'username':'demo_owner','password':PASSWORD}).status_code==200
+        assert client.get('/api/v1/dashboard').json()['data']['pending_polls']['total']==1
+    before=database_path(settings).read_bytes()
+    with pytest.raises(ValueError):seed(settings,showcase=True,presentation_date=date(2026,11,2))
+    assert database_path(settings).read_bytes()==before
+
+
+@pytest.mark.parametrize('offset',[-1,366])
+def test_invalid_presentation_date_does_not_create_directory(settings,offset):
+    from datetime import datetime,timedelta
+    from app.common import clock
+    from app.demo import BEIJING
+    today=datetime.fromtimestamp(clock.now_ms()/1000,BEIJING).date()
+    with pytest.raises(ValueError):seed(settings,showcase=True,presentation_date=today+timedelta(days=offset))
+    assert not settings.data_dir.exists()
+
+
+def test_presentation_date_requires_explicit_showcase(settings):
+    from datetime import datetime
+    from app.demo import BEIJING
+    with pytest.raises(ValueError):seed(settings,presentation_date=datetime.now(BEIJING).date())
+    assert not settings.data_dir.exists()

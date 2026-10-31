@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-31T03:35:04.489Z",
+  "result": "passed",
+  "demo_only": true,
+  "origin": "http://localhost:8002",
+  "groups": 2,
+  "polls": 9,
+  "meetings": 3,
+  "tasks": 10,
+  "checks": [
+    "real-login",
+    "dashboard-counts",
+    "history-and-trash",
+    "completed-and-cancelled",
+    "1440-and-390-no-overflow"
+  ]
+}

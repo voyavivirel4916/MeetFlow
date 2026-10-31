@@ -1,5 +1,6 @@
 """Explicit disposable demo data; never seed an existing directory or the main database."""
 import argparse
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -22,13 +23,28 @@ from app.tasks import service as tasks
 from app.tasks.models import TaskIn
 
 PASSWORD = 'MeetFlowDemo2026!'
+BEIJING = timezone(timedelta(hours=8))
 
 
-def seed(settings, *, member_count=4, slot_count=3, task_count=2, showcase=False):
+def showcase_anchor(presentation_date, actual_ms):
+    """Keep real clocks intact; move only fictional schedule dates."""
+    if presentation_date is None:
+        return actual_ms // 60000 * 60000
+    today = datetime.fromtimestamp(actual_ms / 1000, BEIJING).date()
+    if not isinstance(presentation_date, date) or not today <= presentation_date <= today + timedelta(days=365):
+        raise ValueError('Presentation date must be today or within the next 365 days (Beijing time).')
+    planned = int(datetime.combine(presentation_date, time(10), BEIJING).timestamp() * 1000)
+    return max(actual_ms // 60000 * 60000, planned)
+
+
+def seed(settings, *, member_count=4, slot_count=3, task_count=2, showcase=False, presentation_date=None):
     if settings.app_env == 'production' or settings.data_dir == Settings(_env_file=None).data_dir or settings.data_dir.exists():
         raise ValueError('Use a new, separate demo directory; existing directories are never modified.')
     if not 4 <= member_count <= 20 or not 3 <= slot_count <= 15 or not 0 <= task_count <= 200:
         raise ValueError('Unsupported demo dimensions.')
+    if presentation_date is not None and not showcase:
+        raise ValueError('Presentation date is only supported for the rich showcase.')
+    now = showcase_anchor(presentation_date, clock.now_ms())
     upgrade(settings)
     engine = make_engine(database_path(settings))
     try:
@@ -37,7 +53,6 @@ def seed(settings, *, member_count=4, slot_count=3, task_count=2, showcase=False
         lead=users[0].id
         group=groups.create_group(engine, lead, GroupIn(name='软件工程课程小组 · 演示' if showcase else 'MeetFlow 独立演示小组',description='专用虚构示例，可自由体验排期、会议和任务；不涉及真实小组。'))
         for user in users[1:]:groups.join_group(engine,user.id,group.invite_code)
-        now=clock.now_ms()//60000*60000
         def poll(title, *, publish=True, group_id=group.id):
             value=polls.create_draft(engine,lead,group_id,DraftIn(title=title,location='计算机大楼2015A',
                 response_deadline=format_ms(now+86400000),participants=[{'user_id':user.id,'importance':'REQUIRED' if i<2 else 'NORMAL'} for i,user in enumerate(users)],
@@ -112,9 +127,10 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-dir',type=Path,required=True,help='New absolute directory; never the normal data directory.')
     parser.add_argument('--showcase',action='store_true',help='Rich second-version examples: two groups, nine polls and ten tasks.')
+    parser.add_argument('--presentation-date',type=date.fromisoformat,help='Beijing demonstration date, YYYY-MM-DD; requires --showcase.')
     args=parser.parse_args()
     if not args.data_dir.is_absolute():parser.error('Use an absolute path.')
-    try:summary=seed(Settings(_env_file=None,data_dir=args.data_dir),showcase=args.showcase)
+    try:summary=seed(Settings(_env_file=None,data_dir=args.data_dir),showcase=args.showcase,presentation_date=args.presentation_date)
     except ValueError as error:parser.error(str(error))
     print('Demo created in the requested isolated directory.')
     print('Accounts: '+', '.join(summary['usernames']))
