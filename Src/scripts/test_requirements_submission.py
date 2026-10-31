@@ -67,8 +67,52 @@ class RequirementsSubmissionTests(unittest.TestCase):
             manifest = json.loads(archive.read('manifest.json'))
             for name, digest in manifest['files'].items():
                 self.assertEqual(hashlib.sha256(archive.read(name)).hexdigest(), digest)
-            self.assertEqual(manifest['version'], 'V1.3')
+            self.assertEqual(manifest['version'], 'V1.4')
             self.assertEqual(len(manifest['artifacts']), 3)
+
+    def test_all_raw_evidence_is_inline_and_exact(self):
+        body = submission.combined_document()
+        embedded = [json.loads(block) for block in re.findall(r'```json\n(.*?)\n```', body, re.S)]
+        self.assertEqual(len(embedded), len(submission.EVIDENCE))
+        for name, actual in zip(submission.EVIDENCE, embedded):
+            expected = json.loads((DOCS / 'evidence' / name).read_text(encoding='utf-8-sig'))
+            self.assertEqual(actual, expected, name)
+        for record in submission.RECORDS:
+            self.assertIn('#### ' + record, body)
+
+    def test_inline_samples_recalculate_p95(self):
+        body = submission.evidence_appendix()
+        rows = re.findall(r'^\| (\d+) \| ([\d.]+) \| ([\d.]+) \|$', body, re.M)
+        self.assertEqual([int(r[0]) for r in rows], list(range(1, 31)))
+        self.assertEqual(sorted(float(r[1]) for r in rows)[28], 46.9619)
+        self.assertEqual(sorted(float(r[2]) for r in rows)[28], 38.2339)
+
+    def test_goals_optional_gate_and_role_information_are_explicit(self):
+        for number in range(1, 5):
+            row = re.search(rf'^\| G{number} \| P0 \| (.+)$', self.requirements, re.M)
+            self.assertIsNotNone(row)
+            self.assertIn('AC-', row.group(1))
+            self.assertIn('E2E-01', row.group(1))
+        self.assertIn('不单独导致P0核心验收失败', self.requirements)
+        for number in range(1, 6):
+            self.assertIn(f'| UI-R{number:02} |', self.requirements)
+        self.assertIn('保存空字符串即清空', self.requirements)
+
+    def test_v2_child_requirements_have_parent_priority_and_assertions(self):
+        rows = re.findall(r'^\| (V2-D\d{2}) \| P0 \| ([^|]+) \| ([^|]+) \|$', self.requirements, re.M)
+        self.assertEqual([r[0] for r in rows], [f'V2-D{i:02}' for i in range(1, 13)])
+        for identifier, parents, assertion in rows:
+            self.assertRegex(parents, r'V2-R\d{2}')
+            self.assertGreater(len(assertion), 20, identifier)
+
+    def test_dated_decisions_and_original_ai_excerpts_preserve_provenance(self):
+        for commit in ('f7de546', 'a50eebe', 'c9187e2'):
+            self.assertIn(commit, self.requirements)
+        record = (DOCS / '10-AI协作记录.md').read_text(encoding='utf-8')
+        for number in range(1, 5):
+            self.assertIn(f'| AI-Q{number:02} |', record)
+        self.assertIn('第5轮', record)
+        self.assertIn('没有真实受访者或操作签认', record)
 
 
 if __name__ == '__main__':
