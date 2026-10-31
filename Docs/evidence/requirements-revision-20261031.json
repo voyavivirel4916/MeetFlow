@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-31",
+  "scope": "Requirements V1.3 documentation, packaging, and targeted contract regression; product code unchanged.",
+  "repository_checks": {
+    "command": "python -m unittest discover -s Src/scripts -p 'test_*.py' -q",
+    "passed": 53
+  },
+  "backend_targeted": {
+    "working_directory": "Src/backend",
+    "command": ".venv/Scripts/python.exe -m pytest tests/test_recommendation_boundaries.py tests/test_auth.py tests/test_auth_boundaries.py tests/test_acceptance.py -q",
+    "passed": 72,
+    "seconds": 19.68,
+    "isolation": "pytest temporary databases; no developer or demo database",
+    "note": "Restricted run stalled after recommendation tests and was interrupted; final run with local process permissions passed."
+  },
+  "not_performed": [
+    "Full backend suite",
+    "Frontend suite",
+    "New performance sampling",
+    "Human usability trial",
+    "Independent human arithmetic sign-off",
+    "Human permission matrix walkthrough"
+  ],
+  "historical_evidence": [
+    "t33-delivery.json",
+    "t36-e2e.json"
+  ],
+  "human_review_completed": false
+}
