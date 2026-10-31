@@ -1,0 +1,14 @@
+{
+  "pptx": {
+    "installed": true,
+    "required_files_verified": 7,
+    "python_sources_parsed": 15,
+    "execution_dependencies": "not yet smoke-tested; no slide generation requested"
+  },
+  "frontend-slides": {
+    "installed": true,
+    "required_files_verified": 8,
+    "python_sources_parsed": 2,
+    "execution_dependencies": "not yet smoke-tested; no slide generation requested"
+  }
+}

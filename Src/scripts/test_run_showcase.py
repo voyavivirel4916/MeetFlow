@@ -67,3 +67,15 @@ class ShowcaseLauncherTests(unittest.TestCase):
             for today in [date(2026,10,31),date(2026,11,1),date(2026,11,2)]:
                 self.assertEqual(default_presentation_date(root,today),date(2026,11,2))
             self.assertEqual(default_presentation_date(root,date(2026,11,5)),date(2026,11,7))
+
+    def test_project_show_date_takes_priority_over_earlier_practice_data(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            config=root/'Deploy/local-showcase.json';config.parent.mkdir()
+            config.write_text('{"presentation_date":"2026-11-06"}')
+            marker=root/'Src/backend/data/showcase-for-2026-11-02/showcase.json'
+            marker.parent.mkdir(parents=True)
+            marker.write_text('{"format":1,"presentation_date":"2026-11-02"}')
+            for today in [date(2026,10,31),date(2026,11,2),date(2026,11,6)]:
+                self.assertEqual(default_presentation_date(root,today),date(2026,11,6))
+            self.assertEqual(default_presentation_date(root,date(2026,11,7)),date(2026,11,9))

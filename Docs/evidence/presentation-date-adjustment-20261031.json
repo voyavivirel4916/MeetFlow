@@ -1,0 +1,24 @@
+{
+  "checked_on": "2026-10-31",
+  "presentation_date": "2026-11-06",
+  "ppt_preparation_date": "2026-11-02",
+  "response_deadline_beijing": "2026-11-07 10:00",
+  "first_candidate_beijing": "2026-11-08 10:00",
+  "first_task_due_beijing": "2026-11-09 10:00",
+  "counts": {
+    "users": 4,
+    "groups": 2,
+    "polls": 9,
+    "meetings": 3,
+    "tasks": 10
+  },
+  "old_practice_database_preserved": true,
+  "default_launcher_uses_project_date": true,
+  "initial_snapshot_verified": true,
+  "origin": "http://localhost:8002",
+  "tests": {
+    "demo": 10,
+    "scripts": 46
+  },
+  "full_backend_rerun": false
+}

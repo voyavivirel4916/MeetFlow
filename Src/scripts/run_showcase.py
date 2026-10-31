@@ -12,6 +12,12 @@ BEIJING = timezone(timedelta(hours=8))
 
 
 def default_presentation_date(root, today):
+    config = root / 'Deploy/local-showcase.json'
+    if config.is_file():
+        value = json.loads(config.read_text(encoding='utf-8'))
+        planned = date.fromisoformat(value['presentation_date'])
+        if today <= planned <= today + timedelta(days=365):
+            return planned
     candidates = []
     for marker in (root / 'Src/backend/data').glob('showcase-for-*/showcase.json'):
         if marker.is_symlink() or marker.parent.is_symlink():
@@ -76,7 +82,10 @@ def main(argv=None):
     parser.add_argument('--port', type=int, default=8002)
     args = parser.parse_args(argv)
     if args.presentation_date is None:
-        args.presentation_date = default_presentation_date(ROOT, datetime.now(BEIJING).date())
+        try:
+            args.presentation_date = default_presentation_date(ROOT, datetime.now(BEIJING).date())
+        except (OSError, ValueError, KeyError, TypeError):
+            parser.error('Invalid local presentation-date configuration.')
     if not 1024 <= args.port <= 65535:
         parser.error('Use a local port from 1024 to 65535.')
     try:
