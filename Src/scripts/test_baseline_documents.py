@@ -20,6 +20,13 @@ def rows(body, pattern):
 
 
 class BaselineDocumentTests(unittest.TestCase):
+    def test_member_gitee_accounts_match_confirmed_two_person_team(self):
+        body = (ROOT/'README.md').read_text(encoding='utf-8-sig')
+        members = rows(body, r'^\| `[^`]+` \|')
+        actual = {row[1]: row[0].strip('`') for row in members if row[1] in {'马若曦', '陈明强'}}
+        self.assertEqual(actual, {'马若曦':'kimsisreal', '陈明强':'cmq15629989387'})
+        self.assertNotIn('Gitee登录名待填写', body)
+
     def test_core_requirement_acceptance_mapping_matches_authority(self):
         def mapping(body):
             return {r[0]: re.findall(r'AC-\d+', r[-1])
