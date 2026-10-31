@@ -1,5 +1,9 @@
 # 常规 Web/WSGI 备用部署入口
 
+**2026-10-31结论：不再推荐在PythonAnywhere常规Web服务上使用此方案。用户实际收到504-backend；官方说明常规Web不支持线程，而a2wsgi依赖后台线程。本地适配测试不能覆盖这一平台限制。尚无服务器日志，不能把线程限制记为本次504的已证实唯一原因。公网尝试停止，以下为历史步骤，不应继续照做。**
+
+依据：[官方线程限制](https://help.pythonanywhere.com/pages/AsyncInWebApps/)。不删除现有平台文件或备份，不追加付费资源，不改变本机运行入口。
+
 状态：2026-10-30仅本地验证，尚未切换公网。现有ASGI网站在HTTP和HTTPS访问下均传入scheme=http、X-Forwarded-Proto=http，因此无法从这些信息可靠判断外部TLS；不要关闭生产HTTPS校验或把所有套接字请求标成HTTPS。
 
 备用方案使用PythonAnywhere常规Web服务和a2wsgi转换器。前后端和现有生产库不变。该方案依赖账号可创建常规Web应用，须先查看Web页面；如没有该选项或提示需要付费，应先停下，不能直接删除现有ASGI站点。

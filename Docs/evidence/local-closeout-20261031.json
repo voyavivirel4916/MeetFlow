@@ -1,0 +1,18 @@
+{
+  "checked_on": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "product_source_commit": "35cba2f6ee52ad9b282acd7afc125860497b8697",
+  "local_health": {"8000": "HTTP 200, status=ok", "8001": "HTTP 200, status=ok"},
+  "frontend_tests": {"files_passed": 15, "tests_passed": 313},
+  "frontend_build": "vue-tsc and vite build passed",
+  "repository_tests": {"tests_passed": 40},
+  "browser": "Chrome 156.0.8078.49, Windows x64",
+  "browser_command": "node browser.check.mjs --built --auth-ui --groups-ui --poll-editor --votes-ui --matrix-ui --recommendations-ui --confirmation-ui --meeting-ui --tasks-ui",
+  "browser_result": "exit 0; all nine requested UI suites and base delivery checks passed",
+  "browser_data": "isolated temporary database; developer and showcase data not used",
+  "human_review": false,
+  "backend_full_suite_rerun": false,
+  "public_deployment": "not accepted; current PythonAnywhere attempt stopped",
+  "real_email": "not verified",
+  "five_person_usability_trial": "pending manual execution"
+}

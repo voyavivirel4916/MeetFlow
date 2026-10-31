@@ -59,7 +59,7 @@ class BaselineDocumentTests(unittest.TestCase):
         self.assertEqual(visited, set(graph), 'Final acceptance must depend on every planned task')
 
     def test_changed_document_links_resolve(self):
-        paths = [next(DOCS.glob(f'{i:02}-*.md')) for i in (*range(2, 10), *range(12, 53))]
+        paths = [next(DOCS.glob(f'{i:02}-*.md')) for i in (*range(2, 10), *range(12, 54))]
         paths += [ROOT/'README.md', ROOT/'使用说明.md', ROOT/'Src/README.md', ROOT/'Src/prototype/README.md']
         paths += [ROOT/'Src/scripts/diagrams/README.md']
         paths += [ROOT/'Src/backend/README.md']
