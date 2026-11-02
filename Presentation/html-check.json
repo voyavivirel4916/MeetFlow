@@ -1,0 +1,10 @@
+{
+  "slides": 9,
+  "offline": true,
+  "navigation": true,
+  "viewports": [
+    "1440x900",
+    "888x704"
+  ],
+  "overflow_risks": []
+}
