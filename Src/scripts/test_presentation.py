@@ -66,6 +66,35 @@ class PresentationChecks(unittest.TestCase):
                 filename = source.split('，')[0]
                 self.assertTrue((ROOT / filename).is_file(), filename)
 
+    def test_plain_language_guide_and_local_links(self):
+        guide = (OUT / '项目底层逻辑通俗讲解.md').read_text(encoding='utf-8')
+        for term in ['未填不等于有空', '事务', '唯一约束', '幂等', '逾期', '软删除',
+                     '前端', '后端', '数据库', 'localhost', '真人试用', '自测题']:
+            self.assertIn(term, guide)
+        for target in re.findall(r'\]\(([^)]+)\)', guide):
+            if not target.startswith(('http://', 'https://')):
+                self.assertTrue((OUT / target).is_file(), target)
+
+    def test_guide_ranking_example_matches_implementation(self):
+        import importlib.util
+        import sys
+        location = ROOT / 'Src/backend/app/recommendations/core.py'
+        spec = importlib.util.spec_from_file_location('presentation_ranking_example', location)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        people = [module.Person(i, 'REQUIRED' if i < 3 else 'NORMAL') for i in range(1, 5)]
+        slots = [module.Candidate(i, i * 100, i * 100 + 50) for i in range(1, 4)]
+        values = [
+            ['AVAILABLE', 'UNAVAILABLE', 'AVAILABLE', 'AVAILABLE'],
+            ['AVAILABLE', 'AVAILABLE', 'MAYBE', 'AVAILABLE'],
+            ['AVAILABLE', None, 'AVAILABLE', 'AVAILABLE'],
+        ]
+        answers = [module.Answer(person, slot, value) for slot, row in enumerate(values, 1)
+                   for person, value in enumerate(row, 1)]
+        results = module.rank_slots(people, slots, answers)
+        self.assertEqual([(r.slot_id, r.score) for r in results], [(2, 15), (3, 8), (1, -16)])
+
 
 if __name__ == '__main__':
     unittest.main()
