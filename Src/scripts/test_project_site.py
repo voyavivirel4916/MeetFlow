@@ -25,6 +25,14 @@ class Resources(HTMLParser):
 
 
 class SiteChecks(unittest.TestCase):
+    def test_repository_homepage_has_prominent_public_entry(self):
+        readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+        section = readme.split('## 项目介绍与演示入口', 1)[1].split('## ', 1)[0]
+        self.assertIn('https://voyavivirel4916.github.io/MeetFlow/', section)
+        self.assertIn('https://voyavivirel4916.github.io/MeetFlow/downloads/MeetFlow-Windows-Demo.zip', section)
+        self.assertIn('只在运行程序的那台电脑上有效', section)
+        self.assertIn('不提供云端登录', section)
+
     def test_public_release_record_matches_download(self):
         record = json.loads((ROOT / 'Docs/evidence/project-site-release-20261105.json').read_text(encoding='utf-8-sig'))
         self.assertEqual(record['http_status'], 200)

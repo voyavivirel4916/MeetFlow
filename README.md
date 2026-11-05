@@ -1,8 +1,14 @@
 # MeetFlow（凑时）
 
-**项目介绍网站：<https://voyavivirel4916.github.io/MeetFlow/>** · [下载跨电脑演示包](https://voyavivirel4916.github.io/MeetFlow/downloads/MeetFlow-Windows-Demo.zip) · [另一台电脑运行说明](Deploy/portable/另一台电脑演示说明.md)
+## 项目介绍与演示入口
 
-介绍页提供真实截图、功能说明与获取方法；完整应用仍在本机运行，不代表多人公网业务已部署。该网站使用GitHub Pages，Gitee与GitHub仓库首页同步保留入口。站点发布与验证说明见[Site](Site/README.md)。
+**公开项目介绍页：[点击查看 MeetFlow](https://voyavivirel4916.github.io/MeetFlow/)**
+
+- **演示包下载：**[MeetFlow Windows 演示包](https://voyavivirel4916.github.io/MeetFlow/downloads/MeetFlow-Windows-Demo.zip)
+- **在另一台电脑运行：**[安装与启动说明](Deploy/portable/另一台电脑演示说明.md)
+- **本机完整演示：**安装后运行“启动演示.cmd”，再打开 `http://localhost:8002/login`。此地址只在运行程序的那台电脑上有效。
+
+公开页提供真实截图、功能说明与获取方法，不提供云端登录或共享数据；完整应用通过下载后本地运行体验。介绍页托管在GitHub Pages，Gitee仓库在此保留同一公开入口。站点发布与验证说明见[Site](Site/README.md)。
 
 第二版[范围与24项任务计划](Docs/44-第二版范围与任务计划.md)已获准执行，需求与设计增量已形成，[三页界面样稿](Docs/45-第二版界面样稿与确认记录.md)排版已认可，主题调整为偏紫。第一版人工试用继续保留为待执行。
 
