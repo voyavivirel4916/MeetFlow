@@ -1,5 +1,9 @@
 # MeetFlow（凑时）
 
+**项目介绍网站：<https://voyavivirel4916.github.io/MeetFlow/>** · [下载跨电脑演示包](https://voyavivirel4916.github.io/MeetFlow/downloads/MeetFlow-Windows-Demo.zip) · [另一台电脑运行说明](Deploy/portable/另一台电脑演示说明.md)
+
+介绍页提供真实截图、功能说明与获取方法；完整应用仍在本机运行，不代表多人公网业务已部署。该网站使用GitHub Pages，Gitee与GitHub仓库首页同步保留入口。站点发布与验证说明见[Site](Site/README.md)。
+
 第二版[范围与24项任务计划](Docs/44-第二版范围与任务计划.md)已获准执行，需求与设计增量已形成，[三页界面样稿](Docs/45-第二版界面样稿与确认记录.md)排版已认可，主题调整为偏紫。第一版人工试用继续保留为待执行。
 
 > 面向课程小组的协作排期与会议任务管理平台

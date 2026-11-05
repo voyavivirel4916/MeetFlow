@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-05",
+  "viewports": [
+    1440,
+    975,
+    390
+  ],
+  "screenshots": "真实本地演示数据",
+  "tabs": true,
+  "keyboard": true,
+  "faq": true,
+  "download": true,
+  "horizontalOverflow": false,
+  "pageErrors": []
+}

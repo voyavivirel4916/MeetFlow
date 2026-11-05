@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="MeetFlow 凑时：为课程小组收集空闲时间，解释排期推荐，把会议决定落实为任务。查看真实界面并获取本地演示包。">
+  <meta name="theme-color" content="#705098"><title>MeetFlow 凑时 — 时间凑好，事情做好</title>
+  <link rel="stylesheet" href="style.css"><script src="site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<header class="top"><a class="brand" href="#" aria-label="MeetFlow 首页"><span class="mark">m</span> MeetFlow <span class="brand-cn">凑时</span></a><nav aria-label="主导航"><a href="#story">为什么做</a><a href="#inside">看看界面</a><a href="#start">获取与使用 <span aria-hidden="true">↗</span></a></nav></header>
+<main id="main">
+<section class="hero wrap">
+  <div class="hero-copy"><p class="eyebrow">给课程小组的一本协作手记 / 2026</p><h1>时间凑好，<br>事情<span class="ink-note">做好。</span></h1><p class="intro">少翻几屏聊天记录，<br>多留下一件有着落的事。</p><p class="hero-detail">从大家的空闲时间出发，找到合适的会议安排，<br class="desktop">再把讨论变成有负责人、有截止的任务。</p><div class="actions"><a class="button" href="#inside">翻开 MeetFlow <span aria-hidden="true">↓</span></a><a class="underlink" href="#start">获取本地演示 ↗</a></div><p class="quiet">课程项目 · 本地完整演示 · 规则可解释</p></div>
+  <div class="coordination" aria-label="排期示意：周四19点四位成员均有空，适合进一步确认">
+    <div class="paper-top"><span>本周，找个时间？</span><span class="stamp">排期手记 01</span></div>
+    <div class="paper-grid"><div></div><div>周三<br><strong>18:00</strong></div><div class="chosen">周四<br><strong>19:00</strong></div><div>周五<br><strong>15:00</strong></div><div class="person">同学 A <small>必到</small></div><div class="free">✓</div><div class="chosen free">✓</div><div class="busy">×</div><div class="person">同学 B <small>必到</small></div><div class="busy">×</div><div class="chosen free">✓</div><div class="unknown">—</div><div class="person">同学 C</div><div class="maybe">~</div><div class="chosen free">✓</div><div class="free">✓</div><div class="person">同学 D</div><div class="free">✓</div><div class="chosen free">✓</div><div class="maybe">~</div></div>
+    <div class="paper-bottom"><span class="circle-check">✓</span><p><strong>这一次，周四可以一起聊。</strong><br><span>必到成员均有空，再由负责人确认。</span></p></div><span class="paper-caption">示意数据，不是真实个人日程</span>
+  </div>
+</section>
+<section id="story" class="story wrap"><div class="section-index">01 / 起因</div><div><h2>“那到底定哪天？”<br><span class="muted">不必在群里再问一遍。</span></h2><div class="story-columns"><p>有人说有空，有人说“勉强吧”，还有人一直没回。消息一多，<strong>时间、关键成员和最后的决定</strong>就混在一起。</p><p>我们把这些信息放回同一条线上：先收集，再比较；确认之后，纪要和会后任务继续留在这里。</p></div></div></section>
+<section class="flow-band"><div class="wrap flow"><span><b>01</b> 收集时间</span><i aria-hidden="true">→</i><span><b>02</b> 比较与确认</span><i aria-hidden="true">→</i><span><b>03</b> 跟进任务</span></div></section>
+<section id="inside" class="inside wrap"><div class="section-heading"><div><p class="section-index">02 / 翻开看看</p><h2>一件事，从这里接着做。</h2></div><p class="small-note">以下为本地完整应用截图<br>使用虚构演示账号与数据</p></div>
+<div class="tabs" role="tablist" aria-label="界面截图"><button id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" tabindex="0">工作台 <span>01</span></button><button id="tab-matrix" role="tab" aria-selected="false" aria-controls="panel-matrix" tabindex="-1">时间矩阵 <span>02</span></button><button id="tab-tasks" role="tab" aria-selected="false" aria-controls="panel-tasks" tabindex="-1">我的任务 <span>03</span></button></div>
+<div id="panel-dashboard" class="screen-panel" role="tabpanel" aria-labelledby="tab-dashboard"><div class="screen-meta"><h3>今天先做什么，一眼能找到。</h3><p>把待填写的排期、本人任务和近期会议放在工作台。</p></div><figure><img src="assets/dashboard.png" alt="MeetFlow 工作台真实截图，展示待填写排期、本人任务与会议" width="1440" height="1000" fetchpriority="high"><figcaption>本地演示环境 / 工作台</figcaption></figure></div>
+<div id="panel-matrix" class="screen-panel" role="tabpanel" aria-labelledby="tab-matrix" hidden><div class="screen-meta"><h3>未填是未知，不把沉默当同意。</h3><p>逐人逐时段看三态答案，推荐同时说明必到冲突与未填风险。</p></div><figure><img src="assets/matrix.png" alt="真实时间矩阵：四名虚构成员对三个候选时段的有空、勉强、没空和未填情况" loading="lazy"><figcaption>本地演示环境 / 时间矩阵</figcaption></figure></div>
+<div id="panel-tasks" class="screen-panel" role="tabpanel" aria-labelledby="tab-tasks" hidden><div class="screen-meta"><h3>时间过去了，事情不一定做完了。</h3><p>任务由人明确标记完成；过期只提示逾期，完成记录仍可查阅。</p></div><figure><img src="assets/tasks.png" alt="MeetFlow 我的任务真实截图，含负责人、截止时间与状态筛选" loading="lazy"><figcaption>本地演示环境 / 我的任务</figcaption></figure></div>
+</section>
+<section class="rules wrap"><div class="section-index">03 / 一点坚持</div><div class="rule-list"><article><span>01</span><div><h3>推荐，要说得出理由。</h3><p>先比较必到冲突，再比较得分、有空人数和时间。第一名也可能有风险，最终由负责人确认。</p></div></article><article><span>02</span><div><h3>决定，要能找到来处。</h3><p>排期关联会议，会议留下议程与纪要，任务继续关联会议。归档整理历史，不把未完成任务一并丢掉。</p></div></article><article><span>03</span><div><h3>演示，要讲清楚边界。</h3><p>当前提供本地完整应用。这个介绍页不收集个人日程，也不提供多人在线业务；真人试用和公网应用仍待验收。</p></div></article></div></section>
+<section id="start" class="start"><div class="wrap start-grid"><div><p class="section-index">04 / 轮到你了</p><h2>换一台电脑，<br>也能从头试一遍。</h2><p>下载专用演示包，在自己的 Windows 电脑上运行。<br>不需要开通服务器，首次准备完成后可离线演示。</p><a class="button light" href="downloads/MeetFlow-Windows-Demo.zip" download>下载 Windows 演示包 <span aria-hidden="true">↓</span></a><p class="download-note">Windows 64 位 · Python 3.11（64位）<br>含已构建页面与离线依赖，不含你的真实数据库</p></div><ol class="steps"><li><span>01</span><div><h3>安装 Python，解压文件</h3><p>先装好 Python 3.11（64位），将压缩包完整解压到可写目录。不要在压缩包里面直接启动。</p></div></li><li><span>02</span><div><h3>双击「首次安装.cmd」</h3><p>在新电脑创建独立运行环境；包内已提供 Python 依赖，无需安装 Node.js。</p></div></li><li><span>03</span><div><h3>双击「启动演示.cmd」</h3><p>保留启动窗口，浏览器打开本机 localhost:8002。用户名 demo_owner，演示密码 MeetFlowDemo2026!。</p></div></li></ol></div></section>
+<section class="faq wrap"><p class="section-index">使用前的小问答</p><details><summary>这个公开页面可以直接登录使用吗？</summary><p>这是项目介绍与获取页。完整应用需要下载后在本机运行；这里没有云端账户或共享数据库。</p></details><details><summary>复制到另一台电脑，数据会同步吗？</summary><p>不会。演示包会在那台电脑生成独立的虚构数据，之后的修改只保存在那台电脑。它不包含当前电脑的真实数据或练习进度。</p></details><details><summary>能让同学连接我这台电脑上的应用吗？</summary><p>当前演示服务只接受本机访问。同一局域网共享需要专门配置监听地址、来源验证与防火墙，不能把localhost发给别人就实现。现在推荐每台电脑独立运行，避免展示前改变账户和部署边界。</p></details><details><summary>想看代码、设计或汇报材料？</summary><p>完整源代码与文档在下方仓库中；PPT、配套讲稿及通俗逻辑讲解位于Presentation目录。也可在仓库提出使用反馈。</p></details></section>
+</main>
+<footer class="wrap"><div><a class="brand" href="#"><span class="mark">m</span> MeetFlow</a><p>凑一个共同时间，留下一起做过的事。</p></div><div class="footer-links"><a href="https://gitee.com/kimsisreal/meet-flow" target="_blank" rel="noopener">Gitee 代码与文档 ↗</a><a href="https://github.com/voyavivirel4916/MeetFlow" target="_blank" rel="noopener">GitHub 仓库 ↗</a><a href="https://github.com/voyavivirel4916/MeetFlow/issues" target="_blank" rel="noopener">反馈问题 ↗</a></div><p class="credits">软件工程课程项目 · 马若曦 / 陈明强<br>页面使用虚构演示数据；未公布真人试用成效。</p></footer>
+</body></html>
