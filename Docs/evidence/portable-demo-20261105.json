@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-05",
+  "platform": "Windows x64 Python 3.11",
+  "validation": "本机新解压目录，不是另一台实体机",
+  "offlineInstall": true,
+  "pipCheck": true,
+  "health": true,
+  "login": true,
+  "dashboard": true,
+  "matrixParticipants": 4,
+  "personalTasks": true,
+  "originalDemoPort": 8002,
+  "testPort": 8003,
+  "userDataIncluded": false
+}

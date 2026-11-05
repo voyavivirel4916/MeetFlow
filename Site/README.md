@@ -26,4 +26,4 @@
 
 - `Src/scripts/test_project_site.py`：资源链接、真实性说明、打包排除用户数据、部署目录边界和安装失败路径。
 - `Src/scripts/check_project_site.cjs`：1440/975/390宽度、截图加载、切换标签与键盘、FAQ、下载及页面异常。
-- `checks.json`记录网页检查；独立包的安装启动证据见后续发布记录。
+- `checks.json`记录网页检查；[独立包安装启动证据](../Docs/evidence/portable-demo-20261105.json)记录全新目录离线安装、pip check、健康检查、真实登录、工作台、四人矩阵与任务页面验证。这是在本机的新目录测试，不冒充另一台实体机验收。
