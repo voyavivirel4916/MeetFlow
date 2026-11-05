@@ -1,5 +1,7 @@
 """Public page resource checks and portable-package safety contracts."""
 import importlib.util
+import hashlib
+import json
 from html.parser import HTMLParser
 from pathlib import Path
 import re
@@ -23,6 +25,15 @@ class Resources(HTMLParser):
 
 
 class SiteChecks(unittest.TestCase):
+    def test_public_release_record_matches_download(self):
+        record = json.loads((ROOT / 'Docs/evidence/project-site-release-20261105.json').read_text(encoding='utf-8-sig'))
+        self.assertEqual(record['http_status'], 200)
+        self.assertEqual(record['download_status'], 200)
+        self.assertTrue(record['download_matches_local'])
+        self.assertFalse(record['public_application'])
+        digest = hashlib.sha256((ROOT / 'Site/downloads/MeetFlow-Windows-Demo.zip').read_bytes()).hexdigest()
+        self.assertEqual(digest.lower(), record['download_sha256'].lower())
+
     def test_all_local_resources_exist_and_no_local_demo_link(self):
         html = (ROOT / 'Site/index.html').read_text(encoding='utf-8')
         parser = Resources()
